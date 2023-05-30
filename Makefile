@@ -24,7 +24,7 @@ iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: iso
-	qemu-system-x86_64 -cdrom sf.iso -d cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G 
+	qemu-system-x86_64 -cdrom sf.iso -d cpu_reset,int -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G  -cpu host -enable-kvm
 
 install: sfkrnl.elf
 	cp sfkrnl.elf /boot

@@ -1,5 +1,5 @@
 #include "page.h"
-#include "heap.h"
+#include "pageobj_heap.h"
 #include "debug.h"
 
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
@@ -44,7 +44,7 @@ unsigned char phys_mem_map[16777216];
 
 
 void page_init_map(){
-   // phys_mem_map = k_heapSSAlloc(&page_heap, );
+   // phys_mem_map = k_pageobj_alloc(&page_heap, );
 
     for(int i=0;i<16777216;++i){
         phys_mem_map[i] = 0;
@@ -91,7 +91,7 @@ void page_alloc(void *phy, void *vir){
 
 
     if(pml4_table[pml4i].present == 0){
-        set_paddr(&pml4_table[pml4i], (unsigned long)k_heapSSAlloc(&page_heap, 4096));
+        set_paddr(&pml4_table[pml4i], (unsigned long)k_pageobj_alloc(&page_heap, 4096));
     }
     pml4_table[pml4i].present = 1;
     pml4_table[pml4i].rw = 1;
@@ -100,7 +100,7 @@ void page_alloc(void *phy, void *vir){
     pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
 
     if(get_paddr(&pdpt_table[pdptei]) == 0 || pdpt_table[pdptei].present == 0){
-        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr((unsigned long)k_heapSSAlloc(&page_heap, 4096)));
+        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr((unsigned long)k_pageobj_alloc(&page_heap, 4096)));
     }
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
@@ -129,7 +129,7 @@ void page_alloc_dev(void *phy, void *vir){
 
 
     if(pml4_table[pml4i].present == 0){
-        set_paddr(&pml4_table[pml4i], (unsigned long)k_heapSSAlloc(&page_heap, 4096));
+        set_paddr(&pml4_table[pml4i], (unsigned long)k_pageobj_alloc(&page_heap, 4096));
     }
     pml4_table[pml4i].present = 1;
     pml4_table[pml4i].rw = 1;
@@ -141,7 +141,7 @@ void page_alloc_dev(void *phy, void *vir){
     pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
 
     if(pdpt_table[pdptei].present == 0){
-        set_paddr(&pdpt_table[pdptei],(unsigned long) k_heapSSAlloc(&page_heap, 4096));
+        set_paddr(&pdpt_table[pdptei],(unsigned long) k_pageobj_alloc(&page_heap, 4096));
     }
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
@@ -266,8 +266,8 @@ void *page_find_and_alloc(unsigned long pgs){
             page_alloc((void*)(pi * 2097152 + i*2097152),(void*) (addr + pi*2097152));
         }
 
-        dbgconout("PFAA: RETURN ");
-        dbgnumout_hex(addr);
+    //    dbgconout("PFAA: RETURN ");
+      //  dbgnumout_hex(addr);
 
         return (void*)addr;
     }
@@ -297,6 +297,7 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs){
         pdei_table[pdei].present = 0;
 
     }
+    page_flush();
 }
 
 void page_flush(){

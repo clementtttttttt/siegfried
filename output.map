@@ -2,13 +2,13 @@
 Discarded input sections
 
  .llvm_addrsig  0x0000000000000000        0x0 debug.o
- .llvm_addrsig  0x0000000000000000        0x0 heap.o
  .llvm_addrsig  0x0000000000000000        0x2 idt.o
  .llvm_addrsig  0x0000000000000000        0x0 io.o
  .llvm_addrsig  0x0000000000000000        0x0 klib.o
  .llvm_addrsig  0x0000000000000000        0x2 krnl_main.o
- .llvm_addrsig  0x0000000000000000        0x0 liballoc.o
+ .llvm_addrsig  0x0000000000000000        0x0 obj_heap.o
  .llvm_addrsig  0x0000000000000000        0x2 page.o
+ .llvm_addrsig  0x0000000000000000        0x0 pageobj_heap.o
  .llvm_addrsig  0x0000000000000000        0x0 pci.o
 
 Memory Configuration
@@ -19,13 +19,13 @@ Name             Origin             Length             Attributes
 Linker script and memory map
 
 LOAD debug.o
-LOAD heap.o
 LOAD idt.o
 LOAD io.o
 LOAD klib.o
 LOAD krnl_main.o
-LOAD liballoc.o
+LOAD obj_heap.o
 LOAD page.o
+LOAD pageobj_heap.o
 LOAD pci.o
 LOAD boot.o
 LOAD header.o
@@ -50,59 +50,60 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
                 0x0000000000101140                dbgnumout_bin
                 0x00000000001011e0                dbgconout
  *fill*         0x0000000000101226        0xa 
- .text          0x0000000000101230      0x2bf heap.o
-                0x0000000000101230                k_heapSSInit
-                0x0000000000101240                k_heapSSAddBlock
-                0x00000000001012d0                k_heapSSAlloc
-                0x00000000001014b0                k_heapSSFree
- *fill*         0x00000000001014ef        0x1 
- .text          0x00000000001014f0      0x128 idt.o
-                0x00000000001014f0                idt_pagefault_handler
-                0x0000000000101550                idt_set_addr
-                0x0000000000101570                idt_set_trap_ent
-                0x00000000001015b0                idt_flush
-                0x00000000001015c0                idt_setup
- .text          0x0000000000101618        0x0 io.o
- *fill*         0x0000000000101618        0x8 
- .text          0x0000000000101620       0x81 klib.o
-                0x0000000000101620                mem_cpy
- *fill*         0x00000000001016a1        0xf 
- .text          0x00000000001016b0      0x4df krnl_main.o
-                0x00000000001016b0                krnl_main
- *fill*         0x0000000000101b8f        0x1 
- .text          0x0000000000101b90      0x6d4 liballoc.o
-                0x0000000000101b90                liballoc_lock
-                0x0000000000101ba0                liballoc_unlock
-                0x0000000000101bb0                liballoc_alloc
-                0x0000000000101bc0                liballoc_free
-                0x0000000000101bd0                malloc
-                0x0000000000101e70                free
-                0x0000000000102060                calloc
-                0x00000000001020d0                realloc
- *fill*         0x0000000000102264        0xc 
- .text          0x0000000000102270      0x961 page.o
-                0x0000000000102270                page_init_map
-                0x0000000000102300                page_lookup_paddr
-                0x00000000001023d0                page_alloc
-                0x0000000000102660                page_alloc_dev
-                0x0000000000102860                page_virt_find_addr
-                0x00000000001029d0                page_find_and_alloc
-                0x0000000000102ae0                page_free_found
-                0x0000000000102bc0                page_flush
- *fill*         0x0000000000102bd1        0xf 
- .text          0x0000000000102be0      0x77e pci.o
-                0x0000000000102be0                pci_write_conw
-                0x0000000000102c10                pci_read_conw
-                0x0000000000102c50                pci_get_sub
-                0x0000000000102c80                pci_get_sec
-                0x0000000000102cb0                pci_get_base
-                0x0000000000102ce0                pci_get_type
-                0x0000000000102d10                pci_get_vendor
-                0x0000000000102d50                pci_enum_func
-                0x0000000000102f90                pci_enum_bus
-                0x0000000000103120                pci_enum_dev
-                0x0000000000103200                pci_enum
- *fill*         0x000000000010335e      0xca2 
+ .text          0x0000000000101230      0x128 idt.o
+                0x0000000000101230                idt_pagefault_handler
+                0x0000000000101290                idt_set_addr
+                0x00000000001012b0                idt_set_trap_ent
+                0x00000000001012f0                idt_flush
+                0x0000000000101300                idt_setup
+ .text          0x0000000000101358        0x0 io.o
+ *fill*         0x0000000000101358        0x8 
+ .text          0x0000000000101360       0x81 klib.o
+                0x0000000000101360                mem_cpy
+ *fill*         0x00000000001013e1        0xf 
+ .text          0x00000000001013f0      0x681 krnl_main.o
+                0x00000000001013f0                krnl_main
+ *fill*         0x0000000000101a71        0xf 
+ .text          0x0000000000101a80      0x6d4 obj_heap.o
+                0x0000000000101a80                liballoc_lock
+                0x0000000000101a90                liballoc_unlock
+                0x0000000000101aa0                liballoc_alloc
+                0x0000000000101ab0                liballoc_free
+                0x0000000000101ac0                k_obj_alloc
+                0x0000000000101d60                k_obj_free
+                0x0000000000101f50                k_obj_calloc
+                0x0000000000101fc0                k_obj_realloc
+ *fill*         0x0000000000102154        0xc 
+ .text          0x0000000000102160      0x951 page.o
+                0x0000000000102160                page_init_map
+                0x00000000001021f0                page_lookup_paddr
+                0x00000000001022c0                page_alloc
+                0x0000000000102550                page_alloc_dev
+                0x0000000000102750                page_virt_find_addr
+                0x00000000001028c0                page_find_and_alloc
+                0x00000000001029b0                page_free_found
+                0x0000000000102aa0                page_flush
+ *fill*         0x0000000000102ab1        0xf 
+ .text          0x0000000000102ac0      0x32c pageobj_heap.o
+                0x0000000000102ac0                k_pageobj_init_heap
+                0x0000000000102ad0                k_pageobj_add_heapblk
+                0x0000000000102b60                k_pageobj_alloc
+                0x0000000000102d20                k_pageobj_free
+ *fill*         0x0000000000102dec        0x4 
+ .text          0x0000000000102df0      0x8da pci.o
+                0x0000000000102df0                pci_new_dev_ent
+                0x0000000000102e50                pci_write_conw
+                0x0000000000102e80                pci_read_conw
+                0x0000000000102ec0                pci_get_sub
+                0x0000000000102ef0                pci_get_sec
+                0x0000000000102f20                pci_get_base
+                0x0000000000102f50                pci_get_type
+                0x0000000000102f80                pci_get_vendor
+                0x0000000000103080                pci_enum_func
+                0x00000000001032a0                pci_enum_bus
+                0x0000000000103430                pci_enum_dev
+                0x00000000001035b0                pci_enum
+ *fill*         0x00000000001036ca      0x936 
  .text          0x0000000000104000     0x50d7 boot.o
                 0x0000000000109000                _start
  *fill*         0x00000000001090d7        0x1 
@@ -121,15 +122,16 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
  .rodata.str1.16
                 0x0000000000109110       0x11 debug.o
 
-.rodata.str1.1  0x0000000000109121       0xf4
+.rodata.str1.1  0x0000000000109121       0xf6
  .rodata.str1.1
-                0x0000000000109121       0x58 heap.o
+                0x0000000000109121       0x21 idt.o
  .rodata.str1.1
-                0x0000000000109179       0x21 idt.o
+                0x0000000000109142       0x55 krnl_main.o
+                                         0x5d (size before relaxing)
  .rodata.str1.1
-                0x000000000010919a       0x4b krnl_main.o
+                0x0000000000109197       0x22 page.o
  .rodata.str1.1
-                0x00000000001091e5       0x30 page.o
+                0x00000000001091b9       0x5e pageobj_heap.o
 
 .rela.dyn       0x0000000000109218        0x0
  .rela.got      0x0000000000109218        0x0 debug.o
@@ -148,50 +150,51 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
 .igot.plt       0x0000000000109218        0x0
  .igot.plt      0x0000000000109218        0x0 debug.o
 
-.bss            0x000000000010a000  0x1007400
+.bss            0x000000000010a000  0x102a410
  *(COMMON)
  *(.bss)
  .bss           0x000000000010a000      0xffa idt.o
                 0x000000000010a000                idt_table
                 0x000000000010aff0                idtr
  *fill*         0x000000000010affa        0x6 
- .bss           0x000000000010b000       0x38 krnl_main.o
+ .bss           0x000000000010b000    0x17740 krnl_main.o
                 0x000000000010b000                page_heap
                 0x000000000010b010                m_info
                 0x000000000010b018                fbaddr
                 0x000000000010b020                fbw
                 0x000000000010b028                fbh
                 0x000000000010b030                fbb
- *fill*         0x000000000010b038        0x8 
- .bss           0x000000000010b040      0x190 liballoc.o
-                0x000000000010b050                l_freePages
-                0x000000000010b150                l_completePages
- *fill*         0x000000000010b1d0      0xe30 
- .bss           0x000000000010c000  0x1001000 page.o
-                0x000000000010c000                phys_mem_map
-                0x000000000110c000                pml4_table
- .bss           0x000000000110d000     0x4400 boot.o
-                0x0000000001111400                _krnl_end = .
+                0x000000000010b040                addr
+ .bss           0x0000000000122740      0x190 obj_heap.o
+                0x0000000000122750                l_freePages
+                0x0000000000122850                l_completePages
+ *fill*         0x00000000001228d0      0x730 
+ .bss           0x0000000000123000  0x1001000 page.o
+                0x0000000000123000                phys_mem_map
+                0x0000000001123000                pml4_table
+ .bss           0x0000000001124000        0x8 pci.o
+                0x0000000001124000                pci_root
+ *fill*         0x0000000001124008        0x8 
+ .bss           0x0000000001124010    0x10400 boot.o
+                0x0000000001134410                _krnl_end = .
 OUTPUT(sfkrnl.elf elf64-x86-64)
 
 .comment        0x0000000000000000       0x15
  .comment       0x0000000000000000       0x15 debug.o
                                          0x16 (size before relaxing)
- .comment       0x0000000000000015       0x16 heap.o
  .comment       0x0000000000000015       0x16 idt.o
  .comment       0x0000000000000015       0x16 io.o
  .comment       0x0000000000000015       0x16 klib.o
  .comment       0x0000000000000015       0x16 krnl_main.o
- .comment       0x0000000000000015       0x16 liballoc.o
+ .comment       0x0000000000000015       0x16 obj_heap.o
  .comment       0x0000000000000015       0x16 page.o
+ .comment       0x0000000000000015       0x16 pageobj_heap.o
  .comment       0x0000000000000015       0x16 pci.o
 
 .note.GNU-stack
                 0x0000000000000000        0x0
  .note.GNU-stack
                 0x0000000000000000        0x0 debug.o
- .note.GNU-stack
-                0x0000000000000000        0x0 heap.o
  .note.GNU-stack
                 0x0000000000000000        0x0 idt.o
  .note.GNU-stack
@@ -201,8 +204,10 @@ OUTPUT(sfkrnl.elf elf64-x86-64)
  .note.GNU-stack
                 0x0000000000000000        0x0 krnl_main.o
  .note.GNU-stack
-                0x0000000000000000        0x0 liballoc.o
+                0x0000000000000000        0x0 obj_heap.o
  .note.GNU-stack
                 0x0000000000000000        0x0 page.o
+ .note.GNU-stack
+                0x0000000000000000        0x0 pageobj_heap.o
  .note.GNU-stack
                 0x0000000000000000        0x0 pci.o

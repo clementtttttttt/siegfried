@@ -1,7 +1,7 @@
 .section .bss
 .align 16
 stack_bottom:
-.skip 16384
+.skip 65536
 stack_top:
 .skip 1024
 
@@ -115,7 +115,7 @@ _start:
 		addl $1 << 21, %ecx
 		addl $8, %edi
 
-		cmpl $0x80 << 21, %ecx
+		cmpl $0x40 << 21, %ecx
 		jnz .L1
 
 	movl %cr4, %eax

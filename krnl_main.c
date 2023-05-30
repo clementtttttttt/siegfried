@@ -1,7 +1,8 @@
 #include "multiboot2.h"
 #include "debug.h"
 #include "page.h"
-#include "heap.h"
+#include "pageobj_heap.h"
+#include "obj_heap.h"
 #include "klib.h"
 #include "pci.h"
 #include "idt.h"
@@ -15,6 +16,7 @@ unsigned int* m_info;
 
 KHEAPSS page_heap;
 
+        unsigned long addr[12000];
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
@@ -28,15 +30,15 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     }
 
 
-    k_heapSSInit(&page_heap, 4096);
-    k_heapSSAddBlock(&page_heap,((((unsigned long)&_krnl_end ) & 0xfffffffffffff000) + 0x2000) , 0x1000000);
-
-    dbgnumout_hex((((unsigned long)&_krnl_end ) & 0xfffffffffffff000) + 0x1000);
-
+    k_pageobj_init_heap(&page_heap, 4096);
+    k_pageobj_add_heapblk(&page_heap,((((unsigned long)&_krnl_end ) & 0xfffffffffffff000) + 0x2000) , 0x3000000/2);
 
     unsigned int sz = m_info_old[0];
-    m_info = k_heapSSAlloc(&page_heap, sz);
+    m_info = k_pageobj_alloc(&page_heap, sz);
     mem_cpy(m_info, m_info_old, sz);
+
+        idt_setup();
+
 
     struct multiboot_tag *tag_ptr = (struct multiboot_tag *)&(m_info[2]);
     while(((unsigned long long) tag_ptr - (unsigned long long) m_info) < sz){
@@ -67,9 +69,8 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     page_init_map();
 
-    idt_setup();
 
-    for(unsigned long i=0;i<0x18;++i){
+    for(unsigned long i=0;i<0x40;++i){
         page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
     }
 
@@ -88,9 +89,26 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
         unsigned int count = 0x2;
 
-    page_find_and_alloc(262144);
+
+
 
     while(1){
+
+    for(int i=0; i< 10; ++i){
+       // addr[i] =(unsigned long) k_pageobj_alloc(&page_heap,4096);
+        dbgconout("ALLOC: ");
+        dbgnumout_hex(addr[i]);
+        addr[i] = (unsigned long) k_obj_alloc(4096);
+
+    }
+    for(int i=0;i<10;++i){
+       // k_pageobj_free(&page_heap,(void*)(addr[i]));
+                dbgconout("DEALLOC: ");
+
+                dbgnumout_hex(addr[i]);
+
+        k_obj_free((void*)addr[i]);
+    }
         extern unsigned char phys_mem_map[];
         for(unsigned long i = 0; i < fbw*fbh; ++i){
             if(phys_mem_map[i/8] & (1 << ((i)%8))){

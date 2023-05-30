@@ -6,7 +6,7 @@ typedef struct pci_dev_ent{
 
     unsigned char cl, subcl;
 
-    unsigned short vendor;
+    unsigned short vendor, devid;
 
 
 

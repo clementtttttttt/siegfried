@@ -1,6 +1,29 @@
 #include "pci.h"
 #include "debug.h"
 #include "io.h"
+#include "obj_heap.h"
+
+pci_dev_ent *pci_root = 0;
+
+pci_dev_ent* pci_new_dev_ent(){
+    if(pci_root == 0){
+        pci_root = k_obj_alloc(sizeof(pci_dev_ent));
+
+        return pci_root;
+
+    }
+    else{
+
+        pci_dev_ent *i;
+
+        //skip to last ent in linked list.
+        for(i = pci_root; i->next; i = i->next);
+
+        i->next = k_obj_alloc(sizeof(pci_dev_ent));
+
+        return i->next;
+    }
+}
 
 void pci_write_conw(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset, unsigned short in) {
     unsigned int address;
@@ -60,14 +83,26 @@ unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char f
     return pci_read_conw(bus, dev, func, 0xe) & 0xff;
 }
 
-unsigned short pci_get_vendor(unsigned char bus, unsigned char slot, unsigned char func) {
-    unsigned short vendor, device;
+unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned char func) {
+    unsigned short vendor, devid;
     /* Try and read the first configuration register. Since there are no
      * vendors that == 0xFFFF, it must be a non-existent device. */
-    if ((vendor = pci_read_conw(bus, slot, func, 0)) != 0xFFFF) {
-       device = pci_read_conw(bus, slot, func, 2);
+    if ((vendor = pci_read_conw(bus, dev, func, 0)) != 0xFFFF) {
+       devid = pci_read_conw(bus, dev, func, 2);
 
-       vendor = vendor + device - device;
+        pci_dev_ent* e = pci_new_dev_ent();
+
+        e -> bus = bus;
+        e -> dev = dev;
+        e -> func = func;
+
+        e -> cl = pci_get_base(bus, dev, func);
+        e -> subcl = pci_get_sub(bus, dev, func);
+
+        e -> vendor = vendor;
+        e -> devid = devid;
+
+
 
        return vendor;
 
