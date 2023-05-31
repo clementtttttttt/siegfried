@@ -9,7 +9,7 @@
 
 #ifndef _HAVE_SIZE_T
 #define _HAVE_SIZE_T
-typedef	unsigned int	size_t;
+typedef	unsigned long	size_t;
 #endif
 
 
@@ -82,12 +82,12 @@ extern void* liballoc_alloc(int);
  */
 extern int liballoc_free(void*,int);
 
-       
+       #define PREFIX(func)		func
 
-void     *k_obj_alloc(size_t);				//< The standard function.
-void     *k_obj_realloc(void *, size_t);		//< The standard function.
-void     *k_obj_calloc(size_t, size_t);		//< The standard function.
-void      k_obj_free(void *);					//< The standard function.
+void     *PREFIX(k_obj_alloc)(unsigned long);				//< The standard function.
+void     *PREFIX(k_obj_realloc)(void *, size_t);		//< The standard function.
+void     *PREFIX(k_obj_calloc)(size_t, size_t);		//< The standard function.
+void      PREFIX(k_obj_free)(void *);					//< The standard function.
 
 
 #ifdef __cplusplus

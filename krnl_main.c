@@ -16,7 +16,7 @@ unsigned int* m_info;
 
 KHEAPSS page_heap;
 
-        unsigned long addr[12000];
+        unsigned long addr[50000];
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
@@ -87,28 +87,22 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     dbgconout("REACHED END OF KRNL MAIN\r\n");
 
-        unsigned int count = 0x2;
+        unsigned int count = 0xff;
 
 
 
 
     while(1){
 
-    for(int i=0; i< 10; ++i){
+    for(int i=0; i< 50000; ++i){
        // addr[i] =(unsigned long) k_pageobj_alloc(&page_heap,4096);
-        dbgconout("ALLOC: ");
-        dbgnumout_hex(addr[i]);
-        addr[i] = (unsigned long) k_obj_alloc(4096);
+    //    dbgconout("ALLOC: ");
+      //  dbgnumout_hex(addr[i]);
+        addr[i] = (unsigned long) k_obj_alloc(16384*2);
+      //  dbgnumout_hex(addr[i]);
 
     }
-    for(int i=0;i<10;++i){
-       // k_pageobj_free(&page_heap,(void*)(addr[i]));
-                dbgconout("DEALLOC: ");
 
-                dbgnumout_hex(addr[i]);
-
-        k_obj_free((void*)addr[i]);
-    }
         extern unsigned char phys_mem_map[];
         for(unsigned long i = 0; i < fbw*fbh; ++i){
             if(phys_mem_map[i/8] & (1 << ((i)%8))){
@@ -116,6 +110,14 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
             }
         }
         count++;
+            for(int i=0;i<50000;++i){
+       // k_pageobj_free(&page_heap,(void*)(addr[i]));
+      //          dbgconout("DEALLOC: ");
+
+       //         dbgnumout_hex(addr[i]);
+
+        k_obj_free((void*)addr[i]);
+    }
     }
 
 
