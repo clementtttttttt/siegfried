@@ -102,38 +102,38 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
                 0x0000000000102100                k_obj_calloc
                 0x0000000000102140                k_obj_realloc
  *fill*         0x000000000010234c        0x4 
- .text          0x0000000000102350      0x951 page.o
+ .text          0x0000000000102350      0x9c1 page.o
                 0x0000000000102350                page_init_map
                 0x00000000001023e0                page_lookup_paddr
                 0x00000000001024b0                page_alloc
                 0x0000000000102740                page_alloc_dev
                 0x0000000000102940                page_virt_find_addr
                 0x0000000000102ab0                page_find_and_alloc
-                0x0000000000102ba0                page_free_found
-                0x0000000000102c90                page_flush
- *fill*         0x0000000000102ca1        0xf 
- .text          0x0000000000102cb0      0x3dc pageobj_heap.o
-                0x0000000000102cb0                k_pageobj_init_heap
-                0x0000000000102cc0                k_pageobj_heap_setup
-                0x0000000000102d70                k_pageobj_add_heapblk
-                0x0000000000102e00                k_pageobj_alloc
-                0x0000000000102fc0                k_pageobj_free
- *fill*         0x000000000010308c        0x4 
- .text          0x0000000000103090      0x918 pci.o
-                0x0000000000103090                pci_get_next_dev_ent
-                0x00000000001030b0                pci_new_dev_ent
-                0x0000000000103120                pci_write_conw
-                0x0000000000103150                pci_read_conw
-                0x0000000000103190                pci_get_sub
-                0x00000000001031c0                pci_get_sec
-                0x00000000001031f0                pci_get_cl
-                0x0000000000103220                pci_get_type
-                0x0000000000103250                pci_get_vendor
-                0x0000000000103280                pci_enum_func
-                0x0000000000103560                pci_enum_bus
-                0x00000000001036f0                pci_enum_dev
-                0x0000000000103880                pci_enum
- *fill*         0x00000000001039a8      0x658 
+                0x0000000000102c10                page_free_found
+                0x0000000000102d00                page_flush
+ *fill*         0x0000000000102d11        0xf 
+ .text          0x0000000000102d20      0x3dc pageobj_heap.o
+                0x0000000000102d20                k_pageobj_init_heap
+                0x0000000000102d30                k_pageobj_heap_setup
+                0x0000000000102de0                k_pageobj_add_heapblk
+                0x0000000000102e70                k_pageobj_alloc
+                0x0000000000103030                k_pageobj_free
+ *fill*         0x00000000001030fc        0x4 
+ .text          0x0000000000103100      0x918 pci.o
+                0x0000000000103100                pci_get_next_dev_ent
+                0x0000000000103120                pci_new_dev_ent
+                0x0000000000103190                pci_write_conw
+                0x00000000001031c0                pci_read_conw
+                0x0000000000103200                pci_get_sub
+                0x0000000000103230                pci_get_sec
+                0x0000000000103260                pci_get_cl
+                0x0000000000103290                pci_get_type
+                0x00000000001032c0                pci_get_vendor
+                0x00000000001032f0                pci_enum_func
+                0x00000000001035d0                pci_enum_bus
+                0x0000000000103760                pci_enum_dev
+                0x00000000001038f0                pci_enum
+ *fill*         0x0000000000103a18      0x5e8 
  .text          0x0000000000104000     0x50d7 boot.o
                 0x0000000000109000                _start
  *fill*         0x00000000001090d7        0x1 

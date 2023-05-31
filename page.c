@@ -270,6 +270,9 @@ void *page_find_and_alloc(unsigned long pgs){
 
     //    dbgconout("PFAA: RETURN ");
       //  dbgnumout_hex(addr);
+      for(unsigned long i=0;i<(pgs*2097152/8);++i){
+        ((unsigned long*)addr)[i] = 0;
+    }
 
         return (void*)addr;
     }
