@@ -94,14 +94,6 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     while(1){
 
-    for(int i=0; i< 50000; ++i){
-       // addr[i] =(unsigned long) k_pageobj_alloc(&page_heap,4096);
-    //    dbgconout("ALLOC: ");
-      //  dbgnumout_hex(addr[i]);
-        addr[i] = (unsigned long) k_obj_alloc(16384*2);
-      //  dbgnumout_hex(addr[i]);
-
-    }
 
         extern unsigned char phys_mem_map[];
         for(unsigned long i = 0; i < fbw*fbh; ++i){
@@ -110,14 +102,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
             }
         }
         count++;
-            for(int i=0;i<50000;++i){
-       // k_pageobj_free(&page_heap,(void*)(addr[i]));
-      //          dbgconout("DEALLOC: ");
 
-       //         dbgnumout_hex(addr[i]);
-
-        k_obj_free((void*)addr[i]);
-    }
     }
 
 
