@@ -1,0 +1,3 @@
+void acpiman_setup(){
+
+}
