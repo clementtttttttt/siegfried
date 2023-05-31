@@ -27,13 +27,19 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         return;
     }
 
+    idt_setup();
+
     k_pageobj_heap_setup();
+    page_init_map();
+    for(unsigned long i=0;i<(((unsigned long)&_krnl_end)/0x200000 + 1);++i){
+        page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
+    }
+    page_flush();
 
     unsigned int sz = m_info_old[0];
     m_info = k_obj_alloc(sz);
     mem_cpy(m_info, m_info_old, sz);
 
-    idt_setup();
 
     unsigned long long fbaddr, fbw, fbh, fbb, fbp;
 
@@ -66,13 +72,6 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     }
 
 
-    page_init_map();
-
-
-    for(unsigned long i=0;i<(((unsigned long)&_krnl_end)/0x200000 + 1);++i){
-        page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
-    }
-    page_flush();
 
     draw_setup(fbaddr, fbw, fbh, fbb, fbp);
 
