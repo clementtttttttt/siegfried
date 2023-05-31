@@ -240,8 +240,10 @@ unsigned long page_virt_find_addr(unsigned long pgs){
             }
 
         }
-        return 69420;
+        return 0xDEAD;
 }
+
+extern int _krnl_end;
 
 void *page_find_and_alloc(unsigned long pgs){
 
@@ -271,7 +273,7 @@ void *page_find_and_alloc(unsigned long pgs){
 
         return (void*)addr;
     }
-    return (void*)69420;
+    return (void*)0xDEAD;
 
 }
 

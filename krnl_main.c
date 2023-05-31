@@ -6,12 +6,15 @@
 #include "klib.h"
 #include "pci.h"
 #include "idt.h"
+#include "draw.h"
+#include "drivers.h"
 
-unsigned long long fbaddr, fbw, fbh, fbb;
 
 unsigned int* m_info;
 
 unsigned long addr[50000];
+
+extern int _krnl_end;
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
@@ -32,6 +35,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     idt_setup();
 
+    unsigned long long fbaddr, fbw, fbh, fbb, fbp;
+
+
     struct multiboot_tag *tag_ptr = (struct multiboot_tag *)&(m_info[2]);
     while(((unsigned long long) tag_ptr - (unsigned long long) m_info) < sz){
      //   dbgnumout(tag_ptr->type);
@@ -48,6 +54,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
                 fbw = fbtag->common.framebuffer_width;
                 fbh = fbtag->common.framebuffer_height;
                 fbb = fbtag->common.framebuffer_bpp;
+                fbp = fbtag->common.framebuffer_pitch;
 
 
 
@@ -62,38 +69,27 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     page_init_map();
 
 
-    for(unsigned long i=0;i<0x40;++i){
+    for(unsigned long i=0;i<(((unsigned long)&_krnl_end)/0x200000 + 1);++i){
         page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
     }
+    page_flush();
 
-
-    for(unsigned long i=0;i<0x10;++i){
-        page_alloc_dev((void*) (fbaddr + 0x200000 * i), (void*) 0xFE000000000 + 0x200000 * i);
-    }
-    fbaddr = 0xfe000000000;
-
+    draw_setup(fbaddr, fbw, fbh, fbb, fbp);
 
     page_flush();
 
     pci_enum();
 
-    dbgconout("REACHED END OF KRNL MAIN\r\n");
+    drivers_setup();
 
-        unsigned int count = 0xff;
+    dbgconout("REACHED END OF KRNL MAIN\r\n");
+    draw_string("HELLO WORLD!");
 
 
 
 
     while(1){
 
-
-        extern unsigned char phys_mem_map[];
-        for(unsigned long i = 0; i < fbw*fbh; ++i){
-            if(phys_mem_map[i/8] & (1 << ((i)%8))){
-                ((unsigned int*)fbaddr)[i] = 0x11111111 * (count/12);
-            }
-        }
-        count++;
 
     }
 

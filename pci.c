@@ -5,10 +5,24 @@
 
 pci_dev_ent *pci_root = 0;
 
+pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in){
+    if(in == 0){
+        in = pci_root;
+    }
+    else{
+        in = in->next;
+    }
+
+    return in;
+
+}
+
 pci_dev_ent* pci_new_dev_ent(){
     if(pci_root == 0){
+        dbgconout("TESTCRASH1\n");
         pci_root = k_obj_alloc(sizeof(pci_dev_ent));
 
+        dbgconout("TESTCRASH2\n");
         return pci_root;
 
     }
@@ -66,16 +80,16 @@ unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned cha
 }
 
 unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
-    return pci_read_conw(bus, dev, func, 0x10) & 0xff;
+    return pci_read_conw(bus, dev, func, 0xa) & 0xff;
 }
 
 unsigned char pci_get_sec(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0x18) >> 8;
 }
 
-unsigned char pci_get_base(unsigned char bus, unsigned char dev, unsigned char func){
+unsigned char pci_get_cl(unsigned char bus, unsigned char dev, unsigned char func){
 
-    return pci_read_conw(bus, dev, func, 0x10) >> 8;
+    return pci_read_conw(bus, dev, func, 0xa) >> 8;
 }
 
 unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char func){
@@ -84,43 +98,43 @@ unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char f
 }
 
 unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned char func) {
-    unsigned short vendor, devid;
     /* Try and read the first configuration register. Since there are no
      * vendors that == 0xFFFF, it must be a non-existent device. */
-    if ((vendor = pci_read_conw(bus, dev, func, 0)) != 0xFFFF) {
-       devid = pci_read_conw(bus, dev, func, 2);
 
-        pci_dev_ent* e = pci_new_dev_ent();
-
-        e -> bus = bus;
-        e -> dev = dev;
-        e -> func = func;
-
-        e -> cl = pci_get_base(bus, dev, func);
-        e -> subcl = pci_get_sub(bus, dev, func);
-
-        e -> vendor = vendor;
-        e -> devid = devid;
-
-
-
-       return vendor;
-
-    } return (vendor);
+    return pci_read_conw(bus, dev, func, 0);
 }
 
- void pci_enum_func(unsigned char bus, unsigned char device, unsigned char function) {
-     unsigned char baseClass;
-     unsigned char subClass;
-     unsigned char secondaryBus;
+ void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
+    unsigned char base;
+    unsigned char sub;
+    unsigned char secondaryBus;
 
-     baseClass = pci_get_base(bus, device, function);
-     subClass = pci_get_sub(bus, device, function);
 
-        dbgnumout_hex(pci_get_vendor(bus, device, function));
+    base = pci_get_cl(bus, dev, func);
 
-     if ((baseClass == 0x6) && (subClass == 0x4)) {
-         secondaryBus = pci_get_sec(bus, device, function);
+    sub = pci_get_sub(bus, dev, func);
+
+
+    unsigned short devid, vendor;
+
+    devid = pci_read_conw(bus, dev, func, 2);
+    vendor = pci_get_vendor(bus, dev, func);
+
+    pci_dev_ent* e = pci_new_dev_ent();
+
+    e -> bus = bus;
+    e -> dev = dev;
+    e -> func = func;
+
+    e -> cl = base;
+    e -> subcl = sub;
+
+    e -> vendor = vendor;
+    e -> devid = devid;
+
+
+     if ((base == 0x6) && (sub == 0x4)) {
+         secondaryBus = pci_get_sec(bus, dev, func);
          pci_enum_bus(secondaryBus);
      }
  }

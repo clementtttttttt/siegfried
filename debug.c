@@ -3,7 +3,7 @@
 
 void dbgconchar(char in){
 
-
+    io_outb(0xe9, in);
  	while (( ! io_inb( 0x379 ) )& 0x80 )
  	{
  		io_wait();

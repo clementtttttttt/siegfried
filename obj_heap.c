@@ -245,6 +245,7 @@ static struct liballoc_major *allocate_new_page( unsigned int size )
 		#endif
 
 
+
       return maj;
 }
 
@@ -312,6 +313,7 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 		printf( "liballoc: set up first memory major %x\n", l_memRoot );
 		FLUSH();
 		#endif
+
 	}
 
 
@@ -326,6 +328,19 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 
 	maj = l_memRoot;
 	startedBet = 0;
+
+
+	// test oom.
+
+	struct liballoc_minor *oldtest = maj->first;
+	maj->first = (struct liballoc_minor*)0xdeadbeef;
+
+	if(maj->first == oldtest){
+		dbgconout("OYYYYYY! OOM! HELP ME");
+		while(1);
+	}
+
+	maj->first = oldtest;
 
 	// Start at the best bet....
 	if ( l_bestBet != 0 )
@@ -378,6 +393,7 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 
 			// Create a new major block next to this one and...
 			maj->next = allocate_new_page( size );	// next one will be okay.
+
 			if ( maj->next == 0 ) break;			// no more memory.
 			maj->next->prev = maj;
 			maj = maj->next;
@@ -388,6 +404,7 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 #endif
 
 #ifdef USE_CASE2
+
 
 		// CASE 2: It's a brand new block.
 		if ( maj->first == 0 )
