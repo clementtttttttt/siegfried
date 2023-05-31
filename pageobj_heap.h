@@ -17,3 +17,5 @@ void k_pageobj_init_heap(KHEAPSS *heap, unsigned long bsize);
 void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size);
 int k_pageobj_add_heapblk(KHEAPSS *heap, unsigned long addr, unsigned long size);
 void k_pageobj_free(KHEAPSS *heap, void *ptr) ;
+
+void k_pageobj_heap_setup();

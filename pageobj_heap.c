@@ -2,9 +2,18 @@
 #include "page.h"
 #include "debug.h"
 
+KHEAPSS page_heap;
+extern int _krnl_end;
+
 void k_pageobj_init_heap(KHEAPSS *heap, unsigned long bsize) {
 	heap->fblock = 0;
 	heap->bsize = bsize;
+}
+
+void k_pageobj_heap_setup(){
+	k_pageobj_init_heap(&page_heap, 4096);
+    k_pageobj_add_heapblk(&page_heap,((((unsigned long)&_krnl_end ) & 0xfffffffffffff000) + 0x2000) , 0x3000000/2);
+
 }
 
 int k_pageobj_add_heapblk(KHEAPSS *heap, unsigned long addr, unsigned long size) {
