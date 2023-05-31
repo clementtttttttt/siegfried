@@ -48,9 +48,9 @@ fb_tag_start:
 
 .int fb_tag_end - fb_tag_start
 
-.int 800
+.int 0
 
-.int 600
+.int 0
 
 .int 32
 

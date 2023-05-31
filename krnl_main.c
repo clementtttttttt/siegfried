@@ -8,7 +8,10 @@
 #include "idt.h"
 #include "draw.h"
 #include "drivers.h"
-
+#include "io.h"
+#include "timer.h"
+#include "apic.h"
+#include "acpiman.h"
 
 unsigned int* m_info;
 
@@ -53,6 +56,12 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
             break;
 
+            case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+            case MULTIBOOT_TAG_TYPE_ACPI_OLD:
+                                dbgconout("FOUND ACPITAG");
+
+            break;
+
             case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
 
 
@@ -71,25 +80,29 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     }
 
-
-
     draw_setup(fbaddr, fbw, fbh, fbb, fbp);
-
     page_flush();
+
+
+    acpiman_setup();
+    apic_setup();
+    timer_setup();
+
+
 
     pci_enum();
 
     drivers_setup();
 
-    dbgconout("REACHED END OF KRNL MAIN\r\n");
-    draw_string("HELLO WORLD!");
+    draw_string("REACHED END OF KRNL MAIN\r\n");
 
 
 
-
+ //   char count []= " ";
     while(1){
 
 
+        //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
     }
 
 
