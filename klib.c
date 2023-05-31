@@ -16,3 +16,18 @@ void mem_set(void *dest, unsigned int val, unsigned long sz){
         d[i] = (unsigned char)val;
     }
 }
+
+//return 0 when not same
+
+int mem_cmp(char *l, char *r, unsigned long sz){
+
+    while(sz){
+        if(*l != *r){
+            return 0;
+        }
+        --sz;
+        ++l;
+        ++r;
+    }
+    return 1;
+}

@@ -1,5 +1,6 @@
 #include "idt.h"
 #include "debug.h"
+#include "draw.h"
 
 idt_desc idt_table[255];
 
@@ -15,6 +16,13 @@ void idt_pagefault_handler(unsigned long rdi, unsigned long rsi, unsigned long r
 
     dbgconout("CR2: ");
     dbgnumout_hex(cr2);
+
+    draw_string("\xcd\xcd\xcd\xcdPAGE FAULT\xcd\xcd\xcd\xcd\nERRCODE=");
+    draw_hex(errcode);
+    draw_string("RIP=");
+    draw_hex(rip);
+    draw_string("CR2=");
+    draw_hex(cr2);
 
     while(1){
 

@@ -141,3 +141,15 @@ void draw_string(const char* str){
 
     draw_textbuf();
 }
+
+void draw_hex(unsigned long in){
+    char hexlookup[] = "0123456789ABCDEF";
+
+    for(int i=0;i<16;++i){
+        char c = hexlookup[((in>>((15-i)*4))&0xf)];
+        draw_append_text_buf(c);
+    }
+    draw_append_text_buf('\n');
+
+    draw_textbuf();
+}

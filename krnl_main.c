@@ -15,8 +15,6 @@
 
 unsigned int* m_info;
 
-unsigned long addr[50000];
-
 extern int _krnl_end;
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
@@ -47,18 +45,15 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     unsigned long long fbaddr, fbw, fbh, fbb, fbp;
 
 
+
     struct multiboot_tag *tag_ptr = (struct multiboot_tag *)&(m_info[2]);
     while(((unsigned long long) tag_ptr - (unsigned long long) m_info) < sz){
      //   dbgnumout(tag_ptr->type);
         struct multiboot_tag_framebuffer *fbtag = (struct multiboot_tag_framebuffer *) tag_ptr;
+        struct multiboot_tag_new_acpi *acpitag = (struct multiboot_tag_new_acpi *)tag_ptr;
+
         switch(tag_ptr->type){
             case MULTIBOOT_TAG_TYPE_CMDLINE:
-
-            break;
-
-            case MULTIBOOT_TAG_TYPE_ACPI_NEW:
-            case MULTIBOOT_TAG_TYPE_ACPI_OLD:
-                                dbgconout("FOUND ACPITAG");
 
             break;
 
@@ -71,20 +66,22 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
                 fbb = fbtag->common.framebuffer_bpp;
                 fbp = fbtag->common.framebuffer_pitch;
 
+                draw_setup(fbaddr, fbw, fbh, fbb, fbp);
+                page_flush();
 
 
+            break;
 
+
+            case MULTIBOOT_TAG_TYPE_ACPI_NEW:
+                acpiman_setup(&acpitag->rsdp);
             break;
         }
         tag_ptr = (struct multiboot_tag*) ((unsigned long long)tag_ptr +  ((tag_ptr->size + 7) & ~7));
 
     }
 
-    draw_setup(fbaddr, fbw, fbh, fbb, fbp);
-    page_flush();
 
-
-    acpiman_setup();
     apic_setup();
     timer_setup();
 
