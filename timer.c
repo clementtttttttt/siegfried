@@ -27,7 +27,7 @@ void timer_setup(){
 
     apic_write_reg(0x3e0, 32); //set timer divider
 
-    apic_write_reg(0x380, 100); //set timer init count
+    apic_write_reg(0x380, 100000000); //set timer init count
 
 
     idt_flush();
