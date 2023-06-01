@@ -46,9 +46,6 @@ void idt_gpf_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, un
     dbgconout("RIP: ");
     dbgnumout_hex(rip);
 
-    dbgconout("CR2: ");
-    dbgnumout_hex(cr2);
-
     draw_string("\xcd\xcd\xcd\xcdGENERAL PROTECTION FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
     draw_hex(errcode);
     struct gpf_err err;

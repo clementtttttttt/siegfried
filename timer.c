@@ -3,6 +3,7 @@
 #include "idt.h"
 #include "draw.h"
 #include "apic.h"
+#include "rtc.h"
 
 void idt_timer_handler_s();
 
@@ -23,11 +24,25 @@ void timer_setup(){
     draw_string("LVT TIMER REG: ");
     draw_hex(lvt_tmr.raw);
 
-    apic_write_reg(0x320, lvt_tmr.raw);
-
+    //measure timer speed
     apic_write_reg(0x3e0, 32); //set timer divider
 
-    apic_write_reg(0x380, 1000); //set timer init count
+    apic_write_reg(0x3e0, 0xffffffff);
+
+    asm("sti");
+    rtc_sleep_for_TTEth_sec(3);
+    asm("cli");
+
+    unsigned int cnts_in_TTFth = apic_read_reg(0x390);
+
+    //enable timer irq
+    apic_write_reg(0x320, lvt_tmr.raw);
+
+
+    draw_string("APIC TIMER INIT COUNT=");
+    draw_hex(cnts_in_TTFth);
+
+    apic_write_reg(0x380, cnts_in_TTFth); //set timer init count
 
 
     idt_flush();
@@ -40,5 +55,5 @@ void timer_wait(){
 }
 
 void timer_handler(){
-    //draw_string("TIMER IRQ!\n");
+    draw_string("I");
 }
