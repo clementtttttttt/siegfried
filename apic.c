@@ -8,6 +8,21 @@ acpi_madt *madt;
 
 unsigned int* ioapic_addr;
 
+void apic_write_reg(unsigned char idx, unsigned int val){
+    ioapic_addr[0] = idx;
+    ioapic_addr[0x4] = val;
+}
+
+unsigned int apic_read_reg(unsigned char idx){
+    ioapic_addr[0] = idx;
+    return ioapic_addr[0x4];
+}
+
+void apic_get_redir_ent(unsigned int irq, apic_redir_ent *ent){
+    ent->lower_raw = apic_read_reg(0x10 + irq*2);
+    ent->upper_raw = apic_read_reg(0x10 + irq*2 + 1);
+}
+
 void apic_setup(){
 
     //disable old pic
@@ -29,12 +44,20 @@ void apic_setup(){
         switch(it->type){
             case 1: //IO APIC ENT TYPE.
 
+                if(ce->int_base == 0){
+                    //only deal with irqs
 
+                    ioapic_addr = page_map_paddr((unsigned long)ce, 1);
+                    draw_string("IRQ IOAPIC VADDR ");
+                    draw_hex((unsigned long)ioapic_addr);
 
+                    apic_redir_ent ent;
+                    apic_get_redir_ent(0, &ent);
+                    draw_hex(apic_read_reg(0));
+                    draw_hex((unsigned long)ent.raw);
 
-                ioapic_addr = page_map_paddr((unsigned long)ce, 1);
-                draw_string("IOAPIC VADDR ");
-                draw_hex((unsigned long)ioapic_addr);
+                }
+
                 break;
 
         }

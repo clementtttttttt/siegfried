@@ -64,6 +64,31 @@ typedef struct apic_loc_x2apic_ent{
     unsigned int apic_id;
 }__attribute__((packed))apic_loc_x2apic_ent;
 
+typedef union apic_redir_ent{
+
+    struct {
+    unsigned long int_num;
+    unsigned long deliv_mode : 2;
+    unsigned long dest_mode : 1;
+    unsigned long deliv_status : 1;
+    unsigned long polarity : 1;
+    unsigned long remote_irr : 1;
+    unsigned long trigger_mode : 1;
+    unsigned long mask : 1;
+
+    unsigned long rsvd : 39;
+
+    unsigned long dest : 8;
+    };
+
+    struct{
+        unsigned int lower_raw;
+        unsigned int upper_raw;
+    };
+
+    unsigned long raw;
+
+}__attribute__((packed))apic_redir_ent;
 
 void apic_setup();
 
