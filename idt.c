@@ -29,7 +29,50 @@ void idt_pagefault_handler(unsigned long rdi, unsigned long rsi, unsigned long r
     };
 }
 
+struct gpf_err{
+    unsigned int e : 1;
+    unsigned int tbl : 2;
+    unsigned int idx : 13;
+    unsigned int rsvd : 16;
+};
+
+void idt_gpf_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, unsigned long rcx, unsigned long r8, unsigned long r9, unsigned long rax, unsigned long rbx, unsigned long rsp, unsigned long rbp, unsigned long r10, unsigned long r11, unsigned long r12, unsigned long r13, unsigned long r14, unsigned long r15, unsigned long cr2, unsigned int errcode, unsigned long rip, unsigned long seg){
+
+    dbgconout("GENERAL PROPTECTION FAULT: ERRCODE=");
+    dbgnumout_bin(errcode);
+
+    dbgconout("RIP: ");
+    dbgnumout_hex(rip);
+
+    dbgconout("CR2: ");
+    dbgnumout_hex(cr2);
+
+    draw_string("\xcd\xcd\xcd\xcdGENERAL PROTECTION FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
+    draw_hex(errcode);
+    struct gpf_err err;
+
+    *(unsigned int*)(&err) = errcode;
+
+    draw_string("IS_EXTERNAL=");
+    draw_hex(err.e);
+    draw_string("TBL=");
+    draw_hex(err.tbl);
+    draw_string("SEL=");
+    draw_hex(err.idx);
+
+    draw_string("RIP=");
+    draw_hex(rip);
+    draw_string("CR2=");
+    draw_hex(cr2);
+
+    while(1){
+
+    };
+}
+
 void idt_pagefault_handler_s();
+
+void idt_gpf_handler_s();
 
 void idt_set_addr(idt_desc* desc, unsigned long addr){
 
@@ -64,6 +107,7 @@ void idt_setup(){
 
 
     idt_set_trap_ent(0xe, idt_pagefault_handler_s);
+    idt_set_trap_ent(0xd, idt_gpf_handler_s);
 
     idt_flush();
 

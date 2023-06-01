@@ -256,6 +256,16 @@ void *page_map_paddr(unsigned long paddr,unsigned long pgs){
     return (void*)(vaddr + off);
 }
 
+void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs){
+    unsigned long off = paddr & 0x1fffff;
+    paddr &= ~((unsigned long)0x1FFFFF);
+    unsigned long vaddr = page_virt_find_addr(pgs);
+    for(unsigned long i=0;i<pgs*2097152; i += 2097152){
+        page_alloc_dev((void*)(paddr + i),(void*) (vaddr + i));
+    }
+    return (void*)(vaddr + off);
+}
+
 void *page_find_and_alloc(unsigned long pgs){
 
     for(unsigned long i=0;i < 16777216*8 - pgs; ++i){

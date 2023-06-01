@@ -188,7 +188,11 @@ _start:
 
 	wrmsr
 
-
+	//enable apic
+	movl $0x1b, %ecx
+	rdmsr
+	btsl $11, %eax
+	wrmsr
 
 
 	//enter c code

@@ -12,24 +12,33 @@ volatile unsigned int* apic_addr;
 
 unsigned long cpu0_apic_id;
 
-void apic_write_reg(unsigned char idx, unsigned int val){
+void apic_write_reg(unsigned long off, unsigned int val){
+    apic_addr[off/4] = val;
+}
+
+unsigned int apic_read_reg(unsigned long off){
+    volatile unsigned int ret = apic_addr[off/4];
+    return ret;
+}
+
+void ioapic_write_reg(unsigned char idx, unsigned int val){
     ioapic_addr[0] = idx;
     ioapic_addr[0x4] = val;
 }
 
-unsigned int apic_read_reg(unsigned char idx){
+unsigned int ioapic_read_reg(unsigned char idx){
     ioapic_addr[0] = idx;
     return ioapic_addr[4];
 }
 
 void apic_get_redir_ent(unsigned int irq, apic_redir_ent *ent){
-    ent->lower_raw = apic_read_reg(0x10 + irq*2);
-    ent->upper_raw = apic_read_reg(0x10 + irq*2 + 1);
+    ent->lower_raw = ioapic_read_reg(0x10 + irq*2);
+    ent->upper_raw = ioapic_read_reg(0x10 + irq*2 + 1);
 }
 
 void apic_write_redir_ent(unsigned int irq, apic_redir_ent *ent){
-    apic_write_reg(0x10 + irq*2, ent->lower_raw);
-    apic_write_reg(0x10 + irq*2 + 1, ent->upper_raw);
+    ioapic_write_reg(0x10 + irq*2, ent->lower_raw);
+    ioapic_write_reg(0x10 + irq*2 + 1, ent->upper_raw);
 }
 
 apic_cpu_tab *cpus_tab;
@@ -83,19 +92,18 @@ void apic_setup(){
                     ioapic_addr = page_map_paddr((unsigned long)ce->apic_addr, 1);
 
                     apic_redir_ent ent;
-                    apic_get_redir_ent(0x2, &ent);
+
+                    apic_get_redir_ent(0x1, &ent);
 
                     ent.mask = 0;
-                    ent.int_num = 0x20;
+                    ent.int_num = 0x21;
                     ent.dest = cpus_tab[0].apic_id;
                     ent.dest_mode = 0;
 
                     draw_string("CPU0 ID IS ");
                     draw_hex(ent.dest);
 
-                    apic_write_redir_ent(2, &ent);
-
-                    apic_get_redir_ent(0, &ent);
+                    apic_write_redir_ent(1, &ent);
 
                 }
 
@@ -135,7 +143,7 @@ void apic_setup(){
 
     draw_string("APIC ADDR ");
     draw_hex((unsigned long)madt->apic_addr);
-    apic_addr = page_map_paddr(madt->apic_addr, 1);
+    apic_addr = page_map_paddr_dev(madt->apic_addr, 1);
 
     apic_addr[0x80/4] = 0;
 

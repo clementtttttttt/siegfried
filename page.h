@@ -86,3 +86,4 @@ void page_init_map();
 void *page_find_and_alloc(unsigned long pgs);
 void page_free_found(unsigned long in_vaddr, unsigned long pgs);
 void *page_map_paddr(unsigned long paddr,unsigned long pgs);
+void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs);

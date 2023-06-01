@@ -98,4 +98,7 @@ typedef struct apic_cpu_tab{
 
 void apic_setup();
 
+unsigned int apic_read_reg(unsigned long off);
+void apic_write_reg(unsigned long off, unsigned int val);
+
 #endif
