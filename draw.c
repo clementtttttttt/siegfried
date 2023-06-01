@@ -52,7 +52,7 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
 
 }
 
-void draw_textbuf(){
+void draw_swap_textbuf(){
 
     for(unsigned long y = 0; y < th*tw; y += tw){
         for(unsigned long x=0; x < tw; ++x){
@@ -89,7 +89,7 @@ void draw_scroll_text_buf(){
     mem_cpy(text_buf, text_buf + tw, tw*(th-1));
     mem_set(text_buf + tw * (th-1), 0, tw);
     mem_set(draw_fb_addr, 0, w*h*bb/8);
-    draw_textbuf();
+    draw_swap_textbuf();
 
 
 }
@@ -139,7 +139,7 @@ void draw_string(const char* str){
         draw_append_text_buf(*str);
     }
 
-    draw_textbuf();
+    draw_swap_textbuf();
 }
 
 void draw_hex(unsigned long in){
@@ -151,5 +151,5 @@ void draw_hex(unsigned long in){
     }
     draw_append_text_buf('\n');
 
-    draw_textbuf();
+    draw_swap_textbuf();
 }

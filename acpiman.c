@@ -18,6 +18,18 @@ int acpiman_isvalid(void* stuff, unsigned long size){
     return !((unsigned char)sum);
 }
 
+acpi_sdt_header *acpiman_get_tab(char* magic){
+    unsigned long ptrs = (sys_xsdt_addr->sz - sizeof(acpi_sdt_header))/8;
+
+    for(unsigned long i=0;i<ptrs;++i){
+        if(mem_cmp(sys_xsdt_addr->tabs_ptr[i]->magic, magic,4)){
+
+            return sys_xsdt_addr->tabs_ptr[i];
+        }
+    }
+    return (acpi_sdt_header*) 0xdead;
+}
+
 void acpiman_setup(void* rsdp){
     mem_cpy(&sys_rsdp_desc, rsdp, sizeof(acpi_rsdp_desc));
 
@@ -81,7 +93,7 @@ void acpiman_setup(void* rsdp){
         draw_string("FOUND PTR AT ");
         draw_hex((unsigned long)h);
         dbgnumout_hex((unsigned long)h);
-        h = page_map_paddr((unsigned long) h, 1);
+        h = sys_xsdt_addr->tabs_ptr[i] = page_map_paddr((unsigned long) h, 1);
         draw_string("VADDR ");
         draw_hex((unsigned long)h);
 

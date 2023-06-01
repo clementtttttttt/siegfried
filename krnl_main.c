@@ -44,13 +44,13 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     unsigned long long fbaddr, fbw, fbh, fbb, fbp;
 
+        struct multiboot_tag_new_acpi *acpitag;
 
 
     struct multiboot_tag *tag_ptr = (struct multiboot_tag *)&(m_info[2]);
     while(((unsigned long long) tag_ptr - (unsigned long long) m_info) < sz){
      //   dbgnumout(tag_ptr->type);
         struct multiboot_tag_framebuffer *fbtag = (struct multiboot_tag_framebuffer *) tag_ptr;
-        struct multiboot_tag_new_acpi *acpitag = (struct multiboot_tag_new_acpi *)tag_ptr;
 
         switch(tag_ptr->type){
             case MULTIBOOT_TAG_TYPE_CMDLINE:
@@ -74,12 +74,13 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
 
             case MULTIBOOT_TAG_TYPE_ACPI_NEW:
-                acpiman_setup(&acpitag->rsdp);
+                acpitag = (struct multiboot_tag_new_acpi *)tag_ptr;
             break;
         }
         tag_ptr = (struct multiboot_tag*) ((unsigned long long)tag_ptr +  ((tag_ptr->size + 7) & ~7));
 
     }
+    acpiman_setup(&acpitag->rsdp);
 
 
     apic_setup();

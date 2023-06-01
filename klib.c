@@ -1,4 +1,7 @@
 
+#include "klib.h"
+#include "debug.h"
+
 void mem_cpy(void *dest, void *src, unsigned long n)
 {
 // Typecast src and dest addresses to (char *)
@@ -21,6 +24,8 @@ void mem_set(void *dest, unsigned int val, unsigned long sz){
 
 int mem_cmp(char *l, char *r, unsigned long sz){
 
+    dbgnumout_hex((unsigned long)l);
+    dbgnumout_hex((unsigned long)r);
     while(sz){
         if(*l != *r){
             return 0;

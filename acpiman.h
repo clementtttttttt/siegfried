@@ -1,3 +1,5 @@
+#include "apic.h"
+
 typedef struct acpi_rsdp_desc_leg{
     char magic[8];
     unsigned char chksum;
@@ -42,4 +44,15 @@ typedef struct acpi_xsdt{
 
 }__attribute__((packed))acpi_xsdt;
 
+typedef struct acpi_madt{
+    acpi_sdt_header header;
+
+    unsigned int apic_addr;
+    unsigned int flags;
+
+    apic_madt_ent_head ents_start;
+
+}acpi_madt;
+
 void acpiman_setup(void*);
+acpi_sdt_header *acpiman_get_tab(char* magic);
