@@ -147,8 +147,8 @@ void apic_setup(){
 
     apic_addr[0x80/4] = 0;
 
-    apic_addr[0xd0/4] |= 1 << 24;
-    apic_addr[0xe0/4] = 0b1111 << 28;
+    apic_addr[0xd0/4] = (apic_addr[0xd0/4] | 1 << 24);
+    apic_addr[0xe0/4] = 0xf0000000;
 
     //enable receiving irqs on APIC not IOAPIC
     apic_addr[0xf0/4] |= 0x100;
