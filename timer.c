@@ -18,13 +18,16 @@ void timer_setup(){
     lvt_tmr.int_base = 0x20; //timer handler int int_base
     draw_hex(lvt_tmr.raw);
     lvt_tmr.is_disabled = 0;
+    lvt_tmr.mode = 1; //periodic mode set
 
     draw_string("LVT TIMER REG: ");
     draw_hex(lvt_tmr.raw);
 
     apic_write_reg(0x320, lvt_tmr.raw);
 
-    apic_write_reg(0x3e0, 32);
+    apic_write_reg(0x3e0, 32); //set timer divider
+
+    apic_write_reg(0x380, 100); //set timer init count
 
 
     idt_flush();
