@@ -156,7 +156,6 @@ void apic_setup(){
 
     draw_string("APIC SIVR=");
     draw_hex(apic_addr[0xf0/4]);
-    asm("sti");
 
 
 

@@ -62,7 +62,7 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
                 0x0000000000101100                acpiman_get_tab
                 0x0000000000101180                acpiman_setup
  *fill*         0x000000000010151d        0x3 
- .text          0x0000000000101520      0x397 apic.o
+ .text          0x0000000000101520      0x395 apic.o
                 0x0000000000101520                apic_write_reg
                 0x0000000000101540                apic_read_reg
                 0x0000000000101570                ioapic_write_reg
@@ -70,7 +70,7 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
                 0x00000000001015b0                apic_get_redir_ent
                 0x00000000001015f0                apic_write_redir_ent
                 0x0000000000101620                apic_setup
- *fill*         0x00000000001018b7        0x9 
+ *fill*         0x00000000001018b5        0xb 
  .text          0x00000000001018c0      0x20a debug.o
                 0x00000000001018c0                dbgconchar
                 0x0000000000101900                dbg_crash

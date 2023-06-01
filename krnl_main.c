@@ -85,6 +85,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     apic_setup();
     timer_setup();
 
+        asm("sti");
+
+
     pci_enum();
 
     drivers_setup();
