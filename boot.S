@@ -175,6 +175,19 @@ _start:
 	btsq $10, %rax
 	movq %rax,%cr4
 
+	//set pat for framebuffer pages
+
+	movl $0x277, %ecx
+	rdmsr
+
+	bts $24, %edx
+
+	//wrmsr
+
+
+
+
+
 	//enter c code
 
 	movq eax_keep, %rdi

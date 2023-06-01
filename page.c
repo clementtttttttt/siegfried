@@ -159,6 +159,8 @@ void page_alloc_dev(void *phy, void *vir){
     pdei_table[pdei].write_through = 1;
     pdei_table[pdei].rsvd8 = 0;
     pdei_table[pdei].rsvd4 = 0;
+    pdei_table[pdei].attr_tab_or_rsvd = 1;
+    pdei_table[pdei].nocache = 1;
 
     if(vir == 0){
         dbgconout("ZERO ENTRY ADDR: ");
