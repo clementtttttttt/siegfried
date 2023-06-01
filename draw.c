@@ -24,6 +24,9 @@ static inline void draw_pixel_at(unsigned long x,unsigned long y, unsigned int c
 }*/
 
 void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
+
+    if(in == 0 ) return;
+
     switch(in){
         case 'y':
         case 'g':
@@ -106,7 +109,7 @@ void draw_scroll_text_buf(){
 
     mem_cpy(text_buf, text_buf + tw, tw*(th-1));
     mem_set(text_buf + tw * (th - 1),0, tw);
- //   mem_set(draw_fb_addr, 0, w*h*bb/8);
+    mem_set((void*)((unsigned long)draw_fb_addr), 0, p*(h));
     draw_swap_textbuf();
 
 

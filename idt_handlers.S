@@ -2,9 +2,17 @@
 .globl idt_pagefault_handler_s
 .globl idt_timer_handler_s
 
+.extern apic_addr
+.extern timer_handler
+
 tmp_r15: .quad 0
 
 rip_save: .quad 0
+
+apic_ack_int:
+    movq apic_addr, %rdi
+    movl $0, 0xb0(%rdi)
+    ret
 
 idt_save_regs:
     pushq %rax
@@ -16,7 +24,9 @@ idt_save_regs:
     pushq %r9
     pushq %r10
     pushq %r11
-    jmp rip_save
+
+    pushq rip_save
+    ret
 
 
 idt_load_regs:
@@ -29,25 +39,25 @@ idt_load_regs:
     popq %rsi
     popq %rdi
     popq %rax
-    jmp rip_save
+
+    pushq rip_save
+    ret
 
 
 idt_timer_handler_s:
-jmp .
     movq $1f, rip_save
     jmp idt_save_regs
     1:
 
-    movb $0x20, %al
-    outb %al, $0x20
 
+    call timer_handler
+
+    call apic_ack_int
 
 
     movq $2f, rip_save
     jmp idt_load_regs
     2:
-
-    jmp .
 
     iretq
 

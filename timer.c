@@ -1,6 +1,7 @@
 #include "timer.h"
 #include "io.h"
 #include "idt.h"
+#include "draw.h"
 
 void idt_timer_handler_s();
 
@@ -10,9 +11,13 @@ void timer_setup(){
 
     idt_flush();
 
-    //asm("sti");
+    asm("sti");
 }
 
 void timer_wait(){
 
+}
+
+void timer_handler(){
+    draw_string("TIMER IRQ!\n");
 }

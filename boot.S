@@ -186,8 +186,7 @@ _start:
 
 	btsl $16, %edx
 
-	//wrmsr
-
+	wrmsr
 
 
 

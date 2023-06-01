@@ -8,12 +8,12 @@ typedef struct apic_madt_ent_head{
 
 }__attribute__((packed))apic_madt_ent_head;
 
-typedef struct apic_local_ent{
+typedef struct apic_cpu_ent{
     apic_madt_ent_head head;
     unsigned char cpu_id;
     unsigned char apic_id;
     unsigned int flags;
-}__attribute__((packed))apic_local_ent;
+}__attribute__((packed))apic_cpu_ent;
 
 typedef struct apic_ioapic_ent{
     apic_madt_ent_head head;
@@ -67,8 +67,8 @@ typedef struct apic_loc_x2apic_ent{
 typedef union apic_redir_ent{
 
     struct {
-    unsigned long int_num;
-    unsigned long deliv_mode : 2;
+    unsigned long int_num : 8;
+    unsigned long deliv_mode : 3;
     unsigned long dest_mode : 1;
     unsigned long deliv_status : 1;
     unsigned long polarity : 1;
@@ -89,6 +89,12 @@ typedef union apic_redir_ent{
     unsigned long raw;
 
 }__attribute__((packed))apic_redir_ent;
+
+typedef struct apic_cpu_tab{
+    unsigned char cpu_id;
+    unsigned char apic_id;
+    unsigned int flags;
+}apic_cpu_tab;
 
 void apic_setup();
 
