@@ -9,6 +9,7 @@ acpi_madt *madt;
 
 volatile unsigned int* ioapic_addr;
 volatile unsigned int* apic_addr;
+apic_cpu_tab *cpus_tab;
 
 unsigned long cpu0_apic_id;
 
@@ -41,7 +42,19 @@ void apic_write_redir_ent(unsigned int irq, apic_redir_ent *ent){
     ioapic_write_reg(0x10 + irq*2 + 1, ent->upper_raw);
 }
 
-apic_cpu_tab *cpus_tab;
+void apic_map_irq(unsigned int irq, unsigned int idt_idx){
+        apic_redir_ent ent;
+
+        apic_get_redir_ent(irq, &ent);
+
+        ent.mask = 0;
+        ent.int_num = idt_idx;
+        ent.dest = cpus_tab[0].apic_id;
+        ent.dest_mode = 0;
+
+        apic_write_redir_ent(irq, &ent);
+}
+
 
 void apic_setup(){
 

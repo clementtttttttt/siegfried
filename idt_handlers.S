@@ -3,9 +3,10 @@
 .globl idt_timer_handler_s
 .globl idt_gpf_handler_s
 .globl idt_mce_handler_s
+.globl idt_rtc_handler_s
 
 .extern apic_addr
-.extern timer_handler
+
 
 tmp_r15: .quad 0
 
@@ -66,6 +67,20 @@ idt_timer_handler_s:
   
     iretq
 
+idt_rtc_handler_s:
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
+
+    call rtc_handler
+
+    call apic_ack_int
+
+    movq $2f, rip_save
+    jmp idt_load_regs
+    2:
+
+    iretq
 
 idt_gpf_handler_s:
 

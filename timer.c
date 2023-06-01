@@ -27,7 +27,7 @@ void timer_setup(){
 
     apic_write_reg(0x3e0, 32); //set timer divider
 
-    apic_write_reg(0x380, 100000000); //set timer init count
+    apic_write_reg(0x380, 1000); //set timer init count
 
 
     idt_flush();
@@ -40,5 +40,5 @@ void timer_wait(){
 }
 
 void timer_handler(){
-    draw_string("TIMER IRQ!\n");
+    //draw_string("TIMER IRQ!\n");
 }

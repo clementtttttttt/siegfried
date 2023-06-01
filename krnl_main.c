@@ -12,6 +12,7 @@
 #include "timer.h"
 #include "apic.h"
 #include "acpiman.h"
+#include "rtc.h"
 
 unsigned int* m_info;
 
@@ -83,6 +84,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     acpiman_setup(&acpitag->rsdp);
 
     apic_setup();
+
+    rtc_setup();
+
     timer_setup();
 
     asm("sti");

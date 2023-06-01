@@ -100,5 +100,6 @@ void apic_setup();
 
 unsigned int apic_read_reg(unsigned long off);
 void apic_write_reg(unsigned long off, unsigned int val);
+void apic_map_irq(unsigned int irq, unsigned int idt_idx);
 
 #endif
