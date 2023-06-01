@@ -99,7 +99,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
  //   char count []= " ";
     while(1){
 
-       // draw_string("memset test ");
+       draw_string("memset test ");
         //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
     }
 

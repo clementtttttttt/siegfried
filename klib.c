@@ -19,6 +19,7 @@ void mem_set(void *dest, unsigned int val, unsigned long sz){
     void* finish = (void*)(((unsigned long)dest )+ sz);
 
     if(!(sz % 16)){
+
         __uint128_t *d_128 = dest;
         unsigned char val_ext[16] = {val,val,val,val,val,val,val,val,val,val,val,val,val,val,val,val};
 

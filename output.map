@@ -53,7 +53,7 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
  .note.gnu.build-id
                 0x0000000000100000       0x24 acpiman.o
 
-.text           0x0000000000101000     0x9181
+.text           0x0000000000101000     0x918d
  *(.multiboot)
  .multiboot     0x0000000000101000       0x50 header.o
  *(.text)
@@ -105,9 +105,9 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
                 0x00000000001026c0                mem_set
                 0x0000000000102980                mem_cmp
  *fill*         0x00000000001029d1        0xf 
- .text          0x00000000001029e0      0x142 krnl_main.o
+ .text          0x00000000001029e0      0x14c krnl_main.o
                 0x00000000001029e0                krnl_main
- *fill*         0x0000000000102b22        0xe 
+ *fill*         0x0000000000102b2c        0x4 
  .text          0x0000000000102b30       0xb3 nvme.o
                 0x0000000000102b30                nvme_setup_pci_dev
                 0x0000000000102b70                nvme_setup
@@ -159,22 +159,22 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
                 0x0000000000104e30                timer_setup
                 0x0000000000104e50                timer_wait
  *fill*         0x0000000000104e56      0x1aa 
- .text          0x0000000000105000     0x50fd boot.o
+ .text          0x0000000000105000     0x5109 boot.o
                 0x000000000010a000                _start
- *fill*         0x000000000010a0fd        0x3 
- .text          0x000000000010a100        0x0 header.o
- .text          0x000000000010a100       0x81 idt_handlers.o
-                0x000000000010a12e                idt_timer_handler_s
-                0x000000000010a154                idt_pagefault_handler_s
+ *fill*         0x000000000010a109        0x3 
+ .text          0x000000000010a10c        0x0 header.o
+ .text          0x000000000010a10c       0x81 idt_handlers.o
+                0x000000000010a13a                idt_timer_handler_s
+                0x000000000010a160                idt_pagefault_handler_s
 
-.iplt           0x000000000010a181        0x0
- .iplt          0x000000000010a181        0x0 acpiman.o
+.iplt           0x000000000010a18d        0x0
+ .iplt          0x000000000010a18d        0x0 acpiman.o
 
 .rodata         0x000000000010b000      0x800
  *(.rodata)
  .rodata        0x000000000010b000      0x800 draw.o
 
-.rodata.str1.1  0x000000000010b800      0x287
+.rodata.str1.1  0x000000000010b800      0x294
  .rodata.str1.1
                 0x000000000010b800       0xdc acpiman.o
                                          0xe5 (size before relaxing)
@@ -183,44 +183,44 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
  .rodata.str1.1
                 0x000000000010b925       0x47 idt.o
  .rodata.str1.1
-                0x000000000010b96c       0x4b krnl_main.o
+                0x000000000010b96c       0x58 krnl_main.o
  .rodata.str1.1
-                0x000000000010b9b7        0xd nvme.o
+                0x000000000010b9c4        0xd nvme.o
  .rodata.str1.1
-                0x000000000010b9c4       0x2b obj_heap.o
+                0x000000000010b9d1       0x2b obj_heap.o
  .rodata.str1.1
-                0x000000000010b9ef       0x22 page.o
+                0x000000000010b9fc       0x22 page.o
  .rodata.str1.1
-                0x000000000010ba11       0x5e pageobj_heap.o
+                0x000000000010ba1e       0x5e pageobj_heap.o
  .rodata.str1.1
-                0x000000000010ba6f       0x18 pci.o
+                0x000000000010ba7c       0x18 pci.o
 
 .rodata.str1.16
-                0x000000000010ba90       0x11
+                0x000000000010baa0       0x11
  .rodata.str1.16
-                0x000000000010ba90       0x11 debug.o
+                0x000000000010baa0       0x11 debug.o
  .rodata.str1.16
-                0x000000000010baa1       0x11 draw.o
+                0x000000000010bab1       0x11 draw.o
 
-.rodata.cst16   0x000000000010bab0       0x50
- .rodata.cst16  0x000000000010bab0       0x50 pageobj_heap.o
+.rodata.cst16   0x000000000010bac0       0x50
+ .rodata.cst16  0x000000000010bac0       0x50 pageobj_heap.o
 
-.rela.dyn       0x000000000010bb00        0x0
- .rela.got      0x000000000010bb00        0x0 acpiman.o
- .rela.iplt     0x000000000010bb00        0x0 acpiman.o
- .rela.text     0x000000000010bb00        0x0 acpiman.o
+.rela.dyn       0x000000000010bb10        0x0
+ .rela.got      0x000000000010bb10        0x0 acpiman.o
+ .rela.iplt     0x000000000010bb10        0x0 acpiman.o
+ .rela.text     0x000000000010bb10        0x0 acpiman.o
 
 .data
  *(.data)
 
-.got            0x000000000010bb00        0x0
- .got           0x000000000010bb00        0x0 acpiman.o
+.got            0x000000000010bb10        0x0
+ .got           0x000000000010bb10        0x0 acpiman.o
 
-.got.plt        0x000000000010bb00        0x0
- .got.plt       0x000000000010bb00        0x0 acpiman.o
+.got.plt        0x000000000010bb10        0x0
+ .got.plt       0x000000000010bb10        0x0 acpiman.o
 
-.igot.plt       0x000000000010bb00        0x0
- .igot.plt      0x000000000010bb00        0x0 acpiman.o
+.igot.plt       0x000000000010bb10        0x0
+ .igot.plt      0x000000000010bb10        0x0 acpiman.o
 
 .bss            0x000000000010c000  0x1013420
  *(COMMON)

@@ -180,7 +180,11 @@ _start:
 	movl $0x277, %ecx
 	rdmsr
 
-	bts $24, %edx
+	btrl $16, %edx
+	btrl $17, %edx
+	btrl $18, %edx
+
+	btsl $16, %edx
 
 	//wrmsr
 

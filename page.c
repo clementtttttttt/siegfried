@@ -156,7 +156,6 @@ void page_alloc_dev(void *phy, void *vir){
     pdei_table[pdei].present = 1;
     pdei_table[pdei].rw = 1;
     pdei_table[pdei].ps = 1;
-    pdei_table[pdei].write_through = 1;
     pdei_table[pdei].rsvd8 = 0;
     pdei_table[pdei].rsvd4 = 0;
     pdei_table[pdei].attr_tab_or_rsvd = 1;
