@@ -92,12 +92,13 @@ void apic_setup(){
 
                     apic_redir_ent ent;
                     apic_get_redir_ent(0x2, &ent);
-                    draw_string("REDIR ENT 0 = ");
 
                     ent.mask = 0;
                     ent.int_num = 0x20;
+                    ent.dest = cpus_tab[0].cpu_id;
 
-                    draw_hex(ent.lower_raw);
+                    draw_string("CPU0 ID IS ");
+                    draw_hex(ent.dest);
 
                     apic_write_redir_ent(2, &ent);
 
@@ -142,6 +143,7 @@ void apic_setup(){
 
     draw_string("APIC SIVR=");
     draw_hex(apic_addr[0xf0/4]);
+    asm("sti");
 
 
 

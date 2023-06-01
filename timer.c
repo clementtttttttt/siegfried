@@ -11,7 +11,7 @@ void timer_setup(){
 
     idt_flush();
 
-    asm("sti");
+ 
 }
 
 void timer_wait(){

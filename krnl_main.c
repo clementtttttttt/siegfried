@@ -82,11 +82,8 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     }
     acpiman_setup(&acpitag->rsdp);
 
-
-    apic_setup();
     timer_setup();
-
-
+    apic_setup();
 
     pci_enum();
 

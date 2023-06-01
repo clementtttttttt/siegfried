@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "io.h"
 #include "obj_heap.h"
+#include "draw.h"
 
 pci_dev_ent *pci_root = 0;
 
@@ -20,7 +21,7 @@ pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in){
 pci_dev_ent* pci_new_dev_ent(){
     if(pci_root == 0){
         dbgconout("TESTCRASH1\n");
-        pci_root = k_obj_alloc(sizeof(pci_dev_ent));
+        pci_root = k_obj_calloc(1,sizeof(pci_dev_ent));
 
         dbgconout("TESTCRASH2\n");
         return pci_root;
@@ -31,9 +32,9 @@ pci_dev_ent* pci_new_dev_ent(){
         pci_dev_ent *i;
 
         //skip to last ent in linked list.
-        for(i = pci_root; i->next; i = i->next);
+        for(i = pci_root; i->next != 0; i = i->next);
 
-        i->next = k_obj_alloc(sizeof(pci_dev_ent));
+        i->next = k_obj_calloc(1,sizeof(pci_dev_ent));
 
         return i->next;
     }
@@ -109,7 +110,6 @@ unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned cha
     unsigned char sub;
     unsigned char secondaryBus;
 
-
     base = pci_get_cl(bus, dev, func);
 
     sub = pci_get_sub(bus, dev, func);
@@ -121,6 +121,7 @@ unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned cha
     vendor = pci_get_vendor(bus, dev, func);
 
     pci_dev_ent* e = pci_new_dev_ent();
+
 
     e -> bus = bus;
     e -> dev = dev;

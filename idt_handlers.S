@@ -24,12 +24,14 @@ idt_save_regs:
     pushq %r9
     pushq %r10
     pushq %r11
+    pushq %rbx    
 
     pushq rip_save
     ret
 
 
 idt_load_regs:
+    popq %rbx
     popq %r11
     popq %r10
     popq %r9
@@ -58,7 +60,7 @@ idt_timer_handler_s:
     movq $2f, rip_save
     jmp idt_load_regs
     2:
-
+  
     iretq
 
 
