@@ -15,9 +15,39 @@ for (unsigned long i=0; i<n; i++)
 
 void mem_set(void *dest, unsigned int val, unsigned long sz){
     char* d = dest;
-    for(unsigned long i=0;i<sz;++i){
-        d[i] = (unsigned char)val;
+
+    void* finish = (void*)(((unsigned long)dest )+ sz);
+
+    if(!(sz % 16)){
+        __uint128_t *d_128 = dest;
+        unsigned char val_ext[16] = {val,val,val,val,val,val,val,val,val,val,val,val,val,val,val,val};
+
+        while(d_128 != finish){
+            *d_128++ = *((__uint128_t*)val_ext);
+        }
+
     }
+    else
+    if(!(sz % 8 )){
+
+        unsigned long *d_64 = dest;
+        unsigned char val_ext[8] = {val,val,val,val,val,val,val,val};
+
+        while(d_64 != finish){
+            *d_64++ = *((unsigned long*)&val_ext);
+        }
+
+
+    }
+    else{
+
+        while(d != finish){
+
+            *d++ = (char) val;
+
+        }
+    }
+
 }
 
 //return 0 when not same

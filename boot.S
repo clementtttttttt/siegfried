@@ -164,11 +164,23 @@ _start:
 
 	.code64
 
+	//enable sse for fast code
+
+	movq %cr0, %rax
+	btrq $2, %rax
+	movq %rax, %cr0
+
+	movq %cr4, %rax
+	btsq $9, %rax
+	btsq $10, %rax
+	movq %rax,%cr4
+
 	//enter c code
 
 	movq eax_keep, %rdi
 
 	movq ebx_keep, %rsi
+
 
 
 	call krnl_main

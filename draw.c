@@ -13,15 +13,15 @@ unsigned long tw, th, tcurx, tcury;
 //tcurx and y points to a free char that's right after an existing char.'
 
 char *text_buf;
-
-static void draw_pixel_at(unsigned long x,unsigned long y, unsigned int color) {
+/*
+static inline void draw_pixel_at(unsigned long x,unsigned long y, unsigned int color) {
     unsigned long where = (x*bb/8 + y*p);
     draw_fb_addr[where] = color & 255;              // BLUE
     draw_fb_addr[where + 1] = (color >> 8) & 255;   // GREEN
     draw_fb_addr[where + 2] = (color >> 16) & 255;  // RED
     draw_fb_addr[where + 3] = (color >> 24) & 255;  // ALPHA
 
-}
+}*/
 
 void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
     if(in == 0 ) return;
@@ -38,14 +38,23 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
     unsigned long font_start_x = (in % 8);
     unsigned long font_start_y = (in / 8) *8;
 
+    unsigned long x_inc = bb/8;
 
     for(unsigned long y = 0; y < 8; ++y){
 
         unsigned char comp_byte = font_bits[(font_start_y + y)*font_width/8 + font_start_x];
 
+        unsigned long where = y*p + iny * p + inx * x_inc;
+
         for(unsigned long x=0; x<8; ++x){
+            where += x_inc;
             if (!(comp_byte & (1<<x))){
-                draw_pixel_at(inx + x , iny + y , 0xffffffff);
+                draw_fb_addr[where] = 0xff;              // BLUE
+                draw_fb_addr[where + 1] = 0xff;   // GREEN
+                draw_fb_addr[where + 2] = 0xff;  // RED
+                if(x_inc == 4){
+                    draw_fb_addr[where + 3] = 0xff;
+                }
             }
         }
     }

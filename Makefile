@@ -1,4 +1,4 @@
-CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra -m64  -mno-red-zone -mno-sse -mno-sse2  -fno-builtin -nostdlib -static -Werror -Wno-unused-parameter
+CFLAGS=-std=gnu99 -ffreestanding -O2 -Wall -Wextra -m64  -mno-red-zone  -fno-builtin -nostdlib -static -Werror -Wno-unused-parameter
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
