@@ -63,11 +63,6 @@ void apic_setup(){
     //parse madt and stuff
     madt = (acpi_madt *)acpiman_get_tab("APIC");
 
-    draw_string("APIC ADDR ");
-    draw_hex((unsigned long)madt->apic_addr);
-    apic_addr = page_map_paddr(madt->apic_addr, 1);
-
-
     apic_madt_ent_head *it = &madt->ents_start;
     unsigned long cpu_count = 0;;
     while((((unsigned long)it) - ((unsigned long)madt)) < madt->header.sz){
@@ -77,6 +72,7 @@ void apic_setup(){
         apic_ioapic_ent *ce = (apic_ioapic_ent*) it;
         apic_override_ent *ove = (apic_override_ent*) it;
         apic_cpu_ent *cpe = (apic_cpu_ent*) it;
+        apic_apic_addr_override_ent *aae = (apic_apic_addr_override_ent *) it;
 
         switch(it->type){
             case 1: //IO APIC ENT TYPE.
@@ -85,17 +81,14 @@ void apic_setup(){
                     //only deal with irqs
 
                     ioapic_addr = page_map_paddr((unsigned long)ce->apic_addr, 1);
-                    draw_string("IRQ IOAPIC VADDR ");
-                    draw_hex((unsigned long)ioapic_addr);
-                    draw_string("IRQ IOAPIC PADDR ");
-                    draw_hex((unsigned long)ce->apic_addr);
 
                     apic_redir_ent ent;
                     apic_get_redir_ent(0x2, &ent);
 
                     ent.mask = 0;
                     ent.int_num = 0x20;
-                    ent.dest = cpus_tab[0].cpu_id;
+                    ent.dest = cpus_tab[0].apic_id;
+                    ent.dest_mode = 0;
 
                     draw_string("CPU0 ID IS ");
                     draw_hex(ent.dest);
@@ -127,15 +120,27 @@ void apic_setup(){
 
                 draw_string("CPU_ENT FLAGS: ");
                 draw_hex(cpus_tab[cpu_count-1].flags);
+                break;
+            case 5:
+                draw_string("APIC ADDR OVERRIDE: ADDR=");
+                apic_addr = (volatile unsigned int*)aae ->apic_addr;
+                draw_hex((unsigned long)apic_addr);
 
+                break;
 
         }
 
         it = (apic_madt_ent_head *)(((unsigned long) it) + it->sz);
     }
 
+    draw_string("APIC ADDR ");
+    draw_hex((unsigned long)madt->apic_addr);
+    apic_addr = page_map_paddr(madt->apic_addr, 1);
 
     apic_addr[0x80/4] = 0;
+
+    apic_addr[0xd0/4] |= 1 << 24;
+    apic_addr[0xe0/4] = 0b1111 << 28;
 
     //enable receiving irqs on APIC not IOAPIC
     apic_addr[0xf0/4] |= 0x100;

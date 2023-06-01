@@ -48,12 +48,12 @@ typedef struct apic_loc_nmi_ent{
     unsigned char lint;
 }__attribute__((packed))apic_loc_nmi_ent;
 
-typedef struct apic_loc_override_ent{
+typedef struct apic_apic_addr_override_ent{
     apic_madt_ent_head head;
 
     unsigned short rsvd;
     unsigned long apic_addr;
-}__attribute__((packed))apic_loc_override_ent;
+}__attribute__((packed))apic_apic_addr_override_ent;
 
 typedef struct apic_loc_x2apic_ent{
     apic_madt_ent_head head;

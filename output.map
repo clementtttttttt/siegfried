@@ -53,216 +53,217 @@ LOAD /usr/lib/gcc/x86_64-pc-linux-gnu/13.1.1/libgcc.a
  .note.gnu.build-id
                 0x0000000000100000       0x24 acpiman.o
 
-.text           0x0000000000101000     0x91b0
+.text           0x0000000000101000     0xa1b0
  *(.multiboot)
  .multiboot     0x0000000000101000       0x50 header.o
  *(.text)
- .text          0x0000000000101050      0x4ee acpiman.o
+ .text          0x0000000000101050      0x4cd acpiman.o
                 0x0000000000101050                acpiman_isvalid
                 0x0000000000101100                acpiman_get_tab
                 0x0000000000101180                acpiman_setup
- *fill*         0x000000000010153e        0x2 
- .text          0x0000000000101540      0x35c apic.o
-                0x0000000000101540                apic_write_reg
-                0x0000000000101560                apic_read_reg
-                0x0000000000101580                apic_get_redir_ent
-                0x00000000001015c0                apic_write_redir_ent
-                0x00000000001015f0                apic_setup
- *fill*         0x000000000010189c        0x4 
- .text          0x00000000001018a0      0x20a debug.o
-                0x00000000001018a0                dbgconchar
-                0x00000000001018e0                dbg_crash
-                0x00000000001018f0                dbgnumout_hex
-                0x00000000001019b0                dbgnumout_bin
-                0x0000000000101a60                dbgconout
- *fill*         0x0000000000101aaa        0x6 
- .text          0x0000000000101ab0        0x6 diskman.o
-                0x0000000000101ab0                diskman_reg_disk
- *fill*         0x0000000000101ab6        0xa 
- .text          0x0000000000101ac0      0x97c draw.o
-                0x0000000000101ac0                draw_char_at
-                0x0000000000101ba0                draw_swap_textbuf
-                0x0000000000101c70                draw_setup
-                0x0000000000101e70                draw_scroll_text_buf
-                0x0000000000101fb0                draw_increment_line
-                0x0000000000101ff0                draw_append_text_buf
-                0x00000000001020b0                draw_string
-                0x0000000000102260                draw_hex
- *fill*         0x000000000010243c        0x4 
- .text          0x0000000000102440        0xc drivers.o
-                0x0000000000102440                drivers_setup
- *fill*         0x000000000010244c        0x4 
- .text          0x0000000000102450      0x1a8 idt.o
-                0x0000000000102450                idt_pagefault_handler
-                0x00000000001024f0                idt_set_addr
-                0x0000000000102510                idt_set_trap_ent
-                0x0000000000102550                idt_set_irq_ent
-                0x0000000000102590                idt_flush
-                0x00000000001025a0                idt_setup
- .text          0x00000000001025f8        0x0 io.o
- *fill*         0x00000000001025f8        0x8 
- .text          0x0000000000102600      0x4d1 klib.o
-                0x0000000000102600                mem_cpy
-                0x00000000001027c0                mem_set
-                0x0000000000102a80                mem_cmp
- *fill*         0x0000000000102ad1        0xf 
- .text          0x0000000000102ae0      0x142 krnl_main.o
-                0x0000000000102ae0                krnl_main
- *fill*         0x0000000000102c22        0xe 
- .text          0x0000000000102c30       0xb3 nvme.o
-                0x0000000000102c30                nvme_setup_pci_dev
-                0x0000000000102c70                nvme_setup
- *fill*         0x0000000000102ce3        0xd 
- .text          0x0000000000102cf0      0x9dc obj_heap.o
-                0x0000000000102cf0                liballoc_unlock
-                0x0000000000102d00                liballoc_lock
-                0x0000000000102d10                liballoc_alloc
-                0x0000000000102d20                liballoc_free
-                0x0000000000102d30                k_obj_alloc
-                0x0000000000103170                k_obj_free
-                0x00000000001032e0                k_obj_calloc
-                0x0000000000103320                k_obj_realloc
- *fill*         0x00000000001036cc        0x4 
- .text          0x00000000001036d0      0xa41 page.o
-                0x00000000001036d0                page_init_map
-                0x0000000000103770                page_lookup_paddr
-                0x0000000000103840                page_alloc
-                0x0000000000103ad0                page_alloc_dev
-                0x0000000000103cd0                page_virt_find_addr
-                0x0000000000103e40                page_map_paddr
-                0x0000000000103ec0                page_find_and_alloc
-                0x0000000000104010                page_free_found
-                0x0000000000104100                page_flush
- *fill*         0x0000000000104111        0xf 
- .text          0x0000000000104120      0x4ec pageobj_heap.o
-                0x0000000000104120                k_pageobj_init_heap
-                0x0000000000104130                k_pageobj_heap_setup
-                0x0000000000104240                k_pageobj_add_heapblk
-                0x00000000001042d0                k_pageobj_alloc
-                0x0000000000104540                k_pageobj_free
- *fill*         0x000000000010460c        0x4 
- .text          0x0000000000104610      0x928 pci.o
-                0x0000000000104610                pci_get_next_dev_ent
-                0x0000000000104630                pci_new_dev_ent
-                0x00000000001046b0                pci_write_conw
-                0x00000000001046e0                pci_read_conw
-                0x0000000000104720                pci_get_sub
-                0x0000000000104750                pci_get_sec
-                0x0000000000104780                pci_get_cl
-                0x00000000001047b0                pci_get_type
-                0x00000000001047e0                pci_get_vendor
-                0x0000000000104810                pci_enum_func
-                0x0000000000104af0                pci_enum_bus
-                0x0000000000104c80                pci_enum_dev
-                0x0000000000104e10                pci_enum
- *fill*         0x0000000000104f38        0x8 
- .text          0x0000000000104f40       0x3f timer.o
-                0x0000000000104f40                timer_setup
-                0x0000000000104f60                timer_wait
-                0x0000000000104f70                timer_handler
- *fill*         0x0000000000104f7f       0x81 
- .text          0x0000000000105000     0x510b boot.o
-                0x000000000010a000                _start
- *fill*         0x000000000010a10b        0x1 
- .text          0x000000000010a10c        0x0 header.o
- .text          0x000000000010a10c       0xa4 idt_handlers.o
-                0x000000000010a15b                idt_timer_handler_s
-                0x000000000010a183                idt_pagefault_handler_s
+ *fill*         0x000000000010151d        0x3 
+ .text          0x0000000000101520      0x357 apic.o
+                0x0000000000101520                apic_write_reg
+                0x0000000000101540                apic_read_reg
+                0x0000000000101560                apic_get_redir_ent
+                0x00000000001015a0                apic_write_redir_ent
+                0x00000000001015d0                apic_setup
+ *fill*         0x0000000000101877        0x9 
+ .text          0x0000000000101880      0x20a debug.o
+                0x0000000000101880                dbgconchar
+                0x00000000001018c0                dbg_crash
+                0x00000000001018d0                dbgnumout_hex
+                0x0000000000101990                dbgnumout_bin
+                0x0000000000101a40                dbgconout
+ *fill*         0x0000000000101a8a        0x6 
+ .text          0x0000000000101a90        0x6 diskman.o
+                0x0000000000101a90                diskman_reg_disk
+ *fill*         0x0000000000101a96        0xa 
+ .text          0x0000000000101aa0      0xaec draw.o
+                0x0000000000101aa0                draw_char_at
+                0x0000000000101c80                draw_swap_textbuf
+                0x0000000000101d50                draw_setup
+                0x0000000000101f50                draw_scroll_text_buf
+                0x0000000000102090                draw_increment_line
+                0x00000000001020d0                draw_append_text_buf
+                0x00000000001021b0                draw_string
+                0x0000000000102380                draw_hex
+ *fill*         0x000000000010258c        0x4 
+ .text          0x0000000000102590        0xc drivers.o
+                0x0000000000102590                drivers_setup
+ *fill*         0x000000000010259c        0x4 
+ .text          0x00000000001025a0      0x1a8 idt.o
+                0x00000000001025a0                idt_pagefault_handler
+                0x0000000000102640                idt_set_addr
+                0x0000000000102660                idt_set_trap_ent
+                0x00000000001026a0                idt_set_irq_ent
+                0x00000000001026e0                idt_flush
+                0x00000000001026f0                idt_setup
+ .text          0x0000000000102748        0x0 io.o
+ *fill*         0x0000000000102748        0x8 
+ .text          0x0000000000102750      0x4d1 klib.o
+                0x0000000000102750                mem_cpy
+                0x0000000000102910                mem_set
+                0x0000000000102bd0                mem_cmp
+ *fill*         0x0000000000102c21        0xf 
+ .text          0x0000000000102c30      0x142 krnl_main.o
+                0x0000000000102c30                krnl_main
+ *fill*         0x0000000000102d72        0xe 
+ .text          0x0000000000102d80       0xb3 nvme.o
+                0x0000000000102d80                nvme_setup_pci_dev
+                0x0000000000102dc0                nvme_setup
+ *fill*         0x0000000000102e33        0xd 
+ .text          0x0000000000102e40      0x9dc obj_heap.o
+                0x0000000000102e40                liballoc_unlock
+                0x0000000000102e50                liballoc_lock
+                0x0000000000102e60                liballoc_alloc
+                0x0000000000102e70                liballoc_free
+                0x0000000000102e80                k_obj_alloc
+                0x00000000001032c0                k_obj_free
+                0x0000000000103430                k_obj_calloc
+                0x0000000000103470                k_obj_realloc
+ *fill*         0x000000000010381c        0x4 
+ .text          0x0000000000103820      0xa41 page.o
+                0x0000000000103820                page_init_map
+                0x00000000001038c0                page_lookup_paddr
+                0x0000000000103990                page_alloc
+                0x0000000000103c20                page_alloc_dev
+                0x0000000000103e20                page_virt_find_addr
+                0x0000000000103f90                page_map_paddr
+                0x0000000000104010                page_find_and_alloc
+                0x0000000000104160                page_free_found
+                0x0000000000104250                page_flush
+ *fill*         0x0000000000104261        0xf 
+ .text          0x0000000000104270      0x4ec pageobj_heap.o
+                0x0000000000104270                k_pageobj_init_heap
+                0x0000000000104280                k_pageobj_heap_setup
+                0x0000000000104390                k_pageobj_add_heapblk
+                0x0000000000104420                k_pageobj_alloc
+                0x0000000000104690                k_pageobj_free
+ *fill*         0x000000000010475c        0x4 
+ .text          0x0000000000104760      0x928 pci.o
+                0x0000000000104760                pci_get_next_dev_ent
+                0x0000000000104780                pci_new_dev_ent
+                0x0000000000104800                pci_write_conw
+                0x0000000000104830                pci_read_conw
+                0x0000000000104870                pci_get_sub
+                0x00000000001048a0                pci_get_sec
+                0x00000000001048d0                pci_get_cl
+                0x0000000000104900                pci_get_type
+                0x0000000000104930                pci_get_vendor
+                0x0000000000104960                pci_enum_func
+                0x0000000000104c40                pci_enum_bus
+                0x0000000000104dd0                pci_enum_dev
+                0x0000000000104f60                pci_enum
+ *fill*         0x0000000000105088        0x8 
+ .text          0x0000000000105090       0x3f timer.o
+                0x0000000000105090                timer_setup
+                0x00000000001050b0                timer_wait
+                0x00000000001050c0                timer_handler
+ *fill*         0x00000000001050cf      0xf31 
+ .text          0x0000000000106000     0x510b boot.o
+                0x000000000010b000                _start
+ *fill*         0x000000000010b10b        0x1 
+ .text          0x000000000010b10c        0x0 header.o
+ .text          0x000000000010b10c       0xa4 idt_handlers.o
+                0x000000000010b15b                idt_timer_handler_s
+                0x000000000010b183                idt_pagefault_handler_s
 
-.iplt           0x000000000010a1b0        0x0
- .iplt          0x000000000010a1b0        0x0 acpiman.o
+.iplt           0x000000000010b1b0        0x0
+ .iplt          0x000000000010b1b0        0x0 acpiman.o
 
-.rodata         0x000000000010b000      0x800
+.rodata         0x000000000010c000      0x830
  *(.rodata)
- .rodata        0x000000000010b000      0x800 draw.o
+ .rodata        0x000000000010c000       0x30 apic.o
+ .rodata        0x000000000010c030      0x800 draw.o
 
-.rodata.str1.1  0x000000000010b800      0x2cc
+.rodata.str1.1  0x000000000010c830      0x2bc
  .rodata.str1.1
-                0x000000000010b800       0xdc acpiman.o
-                                         0xe5 (size before relaxing)
+                0x000000000010c830       0xd6 acpiman.o
+                                         0xd8 (size before relaxing)
  .rodata.str1.1
-                0x000000000010b8dc       0x82 apic.o
+                0x000000000010c906       0x78 apic.o
  .rodata.str1.1
-                0x000000000010b95e       0x47 idt.o
+                0x000000000010c97e       0x47 idt.o
  .rodata.str1.1
-                0x000000000010b9a5       0x4b krnl_main.o
+                0x000000000010c9c5       0x4b krnl_main.o
  .rodata.str1.1
-                0x000000000010b9f0        0xd nvme.o
+                0x000000000010ca10        0xd nvme.o
  .rodata.str1.1
-                0x000000000010b9fd       0x2b obj_heap.o
+                0x000000000010ca1d       0x2b obj_heap.o
  .rodata.str1.1
-                0x000000000010ba28       0x22 page.o
+                0x000000000010ca48       0x22 page.o
  .rodata.str1.1
-                0x000000000010ba4a       0x5e pageobj_heap.o
+                0x000000000010ca6a       0x5e pageobj_heap.o
  .rodata.str1.1
-                0x000000000010baa8       0x18 pci.o
+                0x000000000010cac8       0x18 pci.o
  .rodata.str1.1
-                0x000000000010bac0        0xc timer.o
+                0x000000000010cae0        0xc timer.o
 
 .rodata.str1.16
-                0x000000000010bad0       0x11
+                0x000000000010caf0       0x11
  .rodata.str1.16
-                0x000000000010bad0       0x11 debug.o
+                0x000000000010caf0       0x11 debug.o
  .rodata.str1.16
-                0x000000000010bae1       0x11 draw.o
+                0x000000000010cb01       0x11 draw.o
 
-.rodata.cst16   0x000000000010baf0       0x50
- .rodata.cst16  0x000000000010baf0       0x50 pageobj_heap.o
+.rodata.cst16   0x000000000010cb10       0x50
+ .rodata.cst16  0x000000000010cb10       0x50 pageobj_heap.o
 
-.rela.dyn       0x000000000010bb40        0x0
- .rela.got      0x000000000010bb40        0x0 acpiman.o
- .rela.iplt     0x000000000010bb40        0x0 acpiman.o
- .rela.text     0x000000000010bb40        0x0 acpiman.o
+.rela.dyn       0x000000000010cb60        0x0
+ .rela.got      0x000000000010cb60        0x0 acpiman.o
+ .rela.iplt     0x000000000010cb60        0x0 acpiman.o
+ .rela.text     0x000000000010cb60        0x0 acpiman.o
 
 .data
  *(.data)
 
-.got            0x000000000010bb40        0x0
- .got           0x000000000010bb40        0x0 acpiman.o
+.got            0x000000000010cb60        0x0
+ .got           0x000000000010cb60        0x0 acpiman.o
 
-.got.plt        0x000000000010bb40        0x0
- .got.plt       0x000000000010bb40        0x0 acpiman.o
+.got.plt        0x000000000010cb60        0x0
+ .got.plt       0x000000000010cb60        0x0 acpiman.o
 
-.igot.plt       0x000000000010bb40        0x0
- .igot.plt      0x000000000010bb40        0x0 acpiman.o
+.igot.plt       0x000000000010cb60        0x0
+ .igot.plt      0x000000000010cb60        0x0 acpiman.o
 
-.bss            0x000000000010c000  0x1013420
+.bss            0x000000000010d000  0x1013420
  *(COMMON)
  *(.bss)
- .bss           0x000000000010c000       0x2c acpiman.o
-                0x000000000010c000                sys_xsdt_addr
-                0x000000000010c008                sys_rsdp_desc
- *fill*         0x000000000010c02c        0x4 
- .bss           0x000000000010c030       0x28 apic.o
-                0x000000000010c030                ioapic_addr
-                0x000000000010c038                madt
-                0x000000000010c040                apic_addr
-                0x000000000010c048                cpus_tab
-                0x000000000010c050                cpu0_apic_id
- .bss           0x000000000010c058       0x48 draw.o
-                0x000000000010c068                th
-                0x000000000010c070                tw
-                0x000000000010c078                text_buf
-                0x000000000010c090                tcury
-                0x000000000010c098                tcurx
- .bss           0x000000000010c0a0      0xffa idt.o
-                0x000000000010c0a0                idt_table
-                0x000000000010d090                idtr
- *fill*         0x000000000010d09a        0x6 
- .bss           0x000000000010d0a0        0x8 krnl_main.o
-                0x000000000010d0a0                m_info
- .bss           0x000000000010d0a8       0x38 obj_heap.o
- *fill*         0x000000000010d0e0      0xf20 
- .bss           0x000000000010e000  0x1001000 page.o
-                0x000000000010e000                phys_mem_map
-                0x000000000110e000                pml4_table
- .bss           0x000000000110f000       0x10 pageobj_heap.o
-                0x000000000110f000                page_heap
- .bss           0x000000000110f010        0x8 pci.o
-                0x000000000110f010                pci_root
- *fill*         0x000000000110f018        0x8 
- .bss           0x000000000110f020    0x10400 boot.o
-                0x000000000111f420                _krnl_end = .
+ .bss           0x000000000010d000       0x2c acpiman.o
+                0x000000000010d000                sys_xsdt_addr
+                0x000000000010d008                sys_rsdp_desc
+ *fill*         0x000000000010d02c        0x4 
+ .bss           0x000000000010d030       0x28 apic.o
+                0x000000000010d030                ioapic_addr
+                0x000000000010d038                madt
+                0x000000000010d040                cpus_tab
+                0x000000000010d048                apic_addr
+                0x000000000010d050                cpu0_apic_id
+ .bss           0x000000000010d058       0x48 draw.o
+                0x000000000010d068                th
+                0x000000000010d070                tw
+                0x000000000010d078                text_buf
+                0x000000000010d090                tcury
+                0x000000000010d098                tcurx
+ .bss           0x000000000010d0a0      0xffa idt.o
+                0x000000000010d0a0                idt_table
+                0x000000000010e090                idtr
+ *fill*         0x000000000010e09a        0x6 
+ .bss           0x000000000010e0a0        0x8 krnl_main.o
+                0x000000000010e0a0                m_info
+ .bss           0x000000000010e0a8       0x38 obj_heap.o
+ *fill*         0x000000000010e0e0      0xf20 
+ .bss           0x000000000010f000  0x1001000 page.o
+                0x000000000010f000                phys_mem_map
+                0x000000000110f000                pml4_table
+ .bss           0x0000000001110000       0x10 pageobj_heap.o
+                0x0000000001110000                page_heap
+ .bss           0x0000000001110010        0x8 pci.o
+                0x0000000001110010                pci_root
+ *fill*         0x0000000001110018        0x8 
+ .bss           0x0000000001110020    0x10400 boot.o
+                0x0000000001120420                _krnl_end = .
 OUTPUT(sfkrnl.elf elf64-x86-64)
 
 .comment        0x0000000000000000       0x15

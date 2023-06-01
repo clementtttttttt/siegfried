@@ -59,14 +59,7 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
                     draw_fb_addr[where + 3] = 0xff;
                 }
             }
-            else{
-                draw_fb_addr[where] = 0;
-                draw_fb_addr[where+1] = 0;
-                draw_fb_addr[where+2] = 0;
-                if(x_inc == 4){
-                    draw_fb_addr[where + 3] = 0;
-                }
-            }
+
         }
         where += y_inc;
     }
@@ -116,9 +109,10 @@ void draw_scroll_text_buf(){
 }
 void draw_increment_line(){
     tcurx = 0;
-    if((tcury+1) >= th){
+    if((tcury) >= th){
 
         draw_scroll_text_buf();
+        --tcury;
     }
     else{
 

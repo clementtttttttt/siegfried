@@ -94,14 +94,11 @@ void acpiman_setup(void* rsdp){
         draw_hex((unsigned long)h);
         dbgnumout_hex((unsigned long)h);
         h = sys_xsdt_addr->tabs_ptr[i] = page_map_paddr((unsigned long) h, 1);
-        draw_string("VADDR ");
-        draw_hex((unsigned long)h);
 
         draw_string("MAGIC IS ");
         char magic[5] = {0};
         mem_cpy(magic, h->magic, 4);
         draw_string(magic);
-        draw_string("\n\xcd\xcd\xcd\n");
     }
 
 
