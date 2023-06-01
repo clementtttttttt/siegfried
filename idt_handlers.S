@@ -2,6 +2,7 @@
 .globl idt_pagefault_handler_s
 .globl idt_timer_handler_s
 .globl idt_gpf_handler_s
+.globl idt_mce_handler_s
 
 .extern apic_addr
 .extern timer_handler
@@ -48,6 +49,7 @@ idt_load_regs:
 
 
 idt_timer_handler_s:
+	
     movq $1f, rip_save
     jmp idt_save_regs
     1:
@@ -113,3 +115,7 @@ idt_pagefault_handler_s:
 
     jmp .
 
+idt_mce_handler_s:
+
+	
+	iretq

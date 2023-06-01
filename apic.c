@@ -143,7 +143,7 @@ void apic_setup(){
 
     draw_string("APIC ADDR ");
     draw_hex((unsigned long)madt->apic_addr);
-    apic_addr = page_map_paddr_dev(madt->apic_addr, 1);
+    apic_addr = page_map_paddr(madt->apic_addr, 1);
 
     apic_addr[0x80/4] = 0;
 

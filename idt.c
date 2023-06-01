@@ -24,6 +24,8 @@ void idt_pagefault_handler(unsigned long rdi, unsigned long rsi, unsigned long r
     draw_string("CR2=");
     draw_hex(cr2);
 
+
+    asm("cli;hlt;");
     while(1){
 
     };
@@ -65,6 +67,7 @@ void idt_gpf_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, un
     draw_string("CR2=");
     draw_hex(cr2);
 
+    asm("cli;hlt;");
     while(1){
 
     };
@@ -73,6 +76,8 @@ void idt_gpf_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, un
 void idt_pagefault_handler_s();
 
 void idt_gpf_handler_s();
+
+void idt_mce_handler_s();
 
 void idt_set_addr(idt_desc* desc, unsigned long addr){
 
@@ -108,6 +113,7 @@ void idt_setup(){
 
     idt_set_trap_ent(0xe, idt_pagefault_handler_s);
     idt_set_trap_ent(0xd, idt_gpf_handler_s);
+    idt_set_trap_ent(0x12, idt_mce_handler_s);
 
     idt_flush();
 

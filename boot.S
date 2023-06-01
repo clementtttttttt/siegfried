@@ -83,11 +83,6 @@ _start:
 	movl %eax, eax_keep
 	movl %ebx, ebx_keep
 
-	//disable machine check exception
-	movl %cr4, %eax
-	btr $6, %eax
- 	movl %eax, %cr4
-
 	//write msr to enable lm bit
     	movl $0xC0000080, %ecx
     	rdmsr
