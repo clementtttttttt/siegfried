@@ -24,8 +24,6 @@ static inline void draw_pixel_at(unsigned long x,unsigned long y, unsigned int c
 }*/
 
 void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
-    if(in == 0 ) return;
-
     switch(in){
         case 'y':
         case 'g':
@@ -39,16 +37,18 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
     unsigned long font_start_y = (in / 8) *8;
 
     unsigned long x_inc = bb/8;
+    unsigned long y_inc = p - x_inc*8;
+
+    unsigned long where = iny * p + inx * x_inc;
 
     for(unsigned long y = 0; y < 8; ++y){
 
         unsigned char comp_byte = font_bits[(font_start_y + y)*font_width/8 + font_start_x];
 
-        unsigned long where = y*p + iny * p + inx * x_inc;
 
         for(unsigned long x=0; x<8; ++x){
             where += x_inc;
-            if (!(comp_byte & (1<<x))){
+            if (!(comp_byte & (1<<x)) && in != 0){
                 draw_fb_addr[where] = 0xff;              // BLUE
                 draw_fb_addr[where + 1] = 0xff;   // GREEN
                 draw_fb_addr[where + 2] = 0xff;  // RED
@@ -56,7 +56,16 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
                     draw_fb_addr[where + 3] = 0xff;
                 }
             }
+            else{
+                draw_fb_addr[where] = 0;
+                draw_fb_addr[where+1] = 0;
+                draw_fb_addr[where+2] = 0;
+                if(x_inc == 4){
+                    draw_fb_addr[where + 3] = 0;
+                }
+            }
         }
+        where += y_inc;
     }
 
 }
@@ -96,8 +105,8 @@ void draw_setup(unsigned long fb_paddr,unsigned long fbw, unsigned long fbh, uns
 void draw_scroll_text_buf(){
 
     mem_cpy(text_buf, text_buf + tw, tw*(th-1));
-    mem_set(text_buf + tw * (th-1), 0, tw);
-    mem_set(draw_fb_addr, 0, w*h*bb/8);
+    mem_set(text_buf + tw * (th - 1),0, tw);
+ //   mem_set(draw_fb_addr, 0, w*h*bb/8);
     draw_swap_textbuf();
 
 
