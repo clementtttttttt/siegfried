@@ -1,2 +1,6 @@
 *.o
 *.elf
+isodir/boot/sfkrnl.elf
+*.map
+*.iso
+
