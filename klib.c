@@ -51,6 +51,7 @@ void mem_set(void *dest, unsigned int val, unsigned long sz){
 
 }
 
+
 //return 0 when not same
 
 int mem_cmp(char *l, char *r, unsigned long sz){

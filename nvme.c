@@ -7,6 +7,7 @@
 #include "rtc.h"
 #include "pageobj_heap.h"
 #include "klib.h"
+#include "diskman.h"
 
 extern KHEAPSS page_heap;
 
@@ -31,6 +32,26 @@ nvme_ctrl *nvme_new_ctrl(){
     return ret;
 }
 
+nvme_disk *nvme_new_disk(nvme_disk ** in){
+
+    if(*in == 0){
+        *in = k_obj_calloc(sizeof(nvme_disk), 1);
+    }
+    else{
+
+        nvme_disk *i = *in;
+
+        while((i) -> next){
+            i = i -> next;
+        }
+        (i) -> next = k_obj_calloc(sizeof(nvme_disk), 1);
+
+        return i->next;
+    }
+    return *in;
+
+}
+
 void nvme_send_admin_cmd(nvme_ctrl *c, nvme_sub_queue_ent *e){
     mem_cpy((void*)(c->asq_vaddr + c->a_tail_i), e, sizeof(nvme_sub_queue_ent));
 
@@ -39,16 +60,53 @@ void nvme_send_admin_cmd(nvme_ctrl *c, nvme_sub_queue_ent *e){
 
     c->bar->sub_queue_tail_doorbell = c->a_tail_i;
 
-        draw_hex((unsigned long)(&c->bar->sub_queue_tail_doorbell) - (unsigned long)(c->bar));
-
     while(c->acq_vaddr[old_atail_i].cint3_raw == 0){
 
     }
-        draw_string("CINT3_RAW=");
-        draw_hex(c->acq_vaddr[old_atail_i].cint3_raw);
+
 
     c->acq_vaddr[old_atail_i].cint3_raw = 0; //overwrite to 0
 
+}
+
+unsigned short io_cmdid_c;
+
+//sector is 512
+void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
+    nvme_sub_queue_ent cmd = {0};
+
+    mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
+
+    cmd.cint0.cid = ++io_cmdid_c;
+    cmd.cint0.opcode = opcode;
+    cmd.nsid = in->id;
+    cmd.prp1 = (unsigned long)buf;
+
+    if(num_sects >= (4096 / 512)){
+        cmd.prp2 = (unsigned long)buf + 2048;
+    }
+
+    cmd.cint10 = off_sects & 0xffffffff;
+    cmd.cint11 = off_sects >> 32;
+
+    cmd.cint12 = (num_sects & 0xffffffff) - 1;
+
+
+    mem_cpy((void*)(in->ctrl->isq_vaddr + in->ctrl->io_tail_i), &cmd, sizeof(nvme_sub_queue_ent));
+
+    unsigned short old_iotail_i = in->ctrl->io_tail_i;
+
+    in->ctrl->io_tail_i = (in->ctrl->io_tail_i + 1) & 0x3f;
+    in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
+
+    while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
+
+    }
+
+    draw_string("IOCMD CINT3: ");
+    draw_hex(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw);
+
+    in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = 0; //overwrite ent;
 
 
 }
@@ -120,7 +178,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.nsid = 0;
     nvme_send_admin_cmd(curr, &cmd);
 
-    //get active namespaces
+    //get ctrller info
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
     cmd.cint0.opcode = 0x6;
@@ -128,7 +186,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     cmd.prp1 = page_lookup_paddr((unsigned long) (curr->ctrl_info = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x00000001; //id ctrl number
-    cmd.cint11 = 0x00010001; //cmpl queue id 1 continous 1
+    cmd.cint11 = 0; //no cint11
     cmd.nsid = 0;
     nvme_send_admin_cmd(curr, &cmd);
 
@@ -144,7 +202,50 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     draw_string("==END NVME CTRL_INFO PRNT==\n");
 
+    //get active nsids
+    mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
+    cmd.cint0.opcode = 0x6;
+    cmd.cint0.cid = 0x0;
+
+    cmd.prp1 = page_lookup_paddr((unsigned long) (curr->ns_list = k_pageobj_alloc(&page_heap, 4096)));
+    cmd.cint10 = 0x00000002; //ns list number
+    cmd.cint11 = 0; //no cint11
+    cmd.nsid = 0;
+    nvme_send_admin_cmd(curr, &cmd);
+
+    draw_string("==START NAMESPACE IDS PRNT==\n");
+    int i=0;
+    while(curr->ns_list[i] != 0){
+        draw_hex(curr->ns_list[i]);
+
+        nvme_disk *curr_disk = nvme_new_disk(&curr->disks);
+
+        //get active nsids
+        mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
+
+        cmd.cint0.opcode = 0x6;
+        cmd.cint0.cid = 0x0;
+
+        cmd.prp1 = page_lookup_paddr((unsigned long) (curr_disk->info = k_pageobj_alloc(&page_heap, 4096)));
+        cmd.cint10 = 0x00000000; //disk id number
+        cmd.cint11 = 0; //no cint11
+        cmd.nsid = curr->ns_list[i]; //disk id specify
+        nvme_send_admin_cmd(curr, &cmd);
+
+        curr_disk->ctrl = curr;
+        curr_disk->id = curr->ns_list[i];
+
+        draw_string("DISK SZ_IN_SECT=");
+        draw_hex(curr_disk->info->lba_format_sz & 0x7);
+
+        draw_string("DISK LBA_SECT=");
+        curr_disk->sector_sz_in_bytes = 1 << (curr_disk->info->lba_format_supports[curr_disk->info->lba_format_sz & 0x7].lba_data_sz);
+        draw_hex(curr_disk->sector_sz_in_bytes);
+
+        ++i;
+    }
+    draw_string("==END NAMESPACE IDS PRNT==\n");
 
 
     //get msi cap
@@ -170,6 +271,16 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         draw_string("NVME MSI CAP NOT FOUND!\n");
         return;
     }
+
+    draw_string("NVME DISK CONTENT DUMP TEST:\n");
+
+    //opcodes: 0x1 = write, 0x2 = read
+    unsigned long *buff = k_pageobj_alloc(&page_heap, 4096);
+    nvme_send_io_cmd(curr->disks, 0, 2, 1, buff);
+
+    draw_string_w_sz((char*)buff, 512);
+    draw_string("\n");
+
 
     draw_string("NVME MSIX OFF0x4=");
     draw_hex(pci_read_coni(in->bus, in->dev,in->func, cap_off + 0x4));

@@ -88,6 +88,10 @@ typedef struct nvme_bar0{
     char we_dont_give_a_shit [0xFC8];
 
     unsigned int sub_queue_tail_doorbell;
+    unsigned int comp_queue_tail_doorbell;
+
+    unsigned int io_sub_queue_tail_doorbell;
+
 
 
 }__attribute__((packed)) nvme_bar0;
@@ -100,8 +104,44 @@ typedef struct nvme_ctrl_info{
     char serial[20];
     char model[40];
 
+    //fixme: complete nvme ctrl info
+
 
 }__attribute__((packed)) nvme_ctrl_info;
+
+typedef struct lba_format{
+    unsigned short meta_sz;
+    unsigned short lba_data_sz:8;
+    unsigned short rel_perf : 2;
+    unsigned short rsvd : 6;
+}__attribute__((packed))lba_format;
+
+typedef struct nvme_disk_info{
+    unsigned long sz_in_sects;
+    unsigned long cap_in_sects;
+    unsigned long used_in_sects;
+    unsigned char features;
+    unsigned char no_of_formats;
+    unsigned char lba_format_sz;
+
+    unsigned char meta_caps;
+    unsigned char prot_caps;
+    unsigned char prot_types;
+    unsigned char nmic_caps;
+    unsigned char res_caps;
+
+    char rsvd[88];
+
+    unsigned long euid;
+
+    lba_format lba_format_supports[15];
+
+    char rsvd2 [202];
+
+
+}__attribute__((packed)) nvme_disk_info;
+
+struct nvme_disk;
 
 typedef struct nvme_ctrl{
     struct nvme_ctrl *next;
@@ -113,10 +153,21 @@ typedef struct nvme_ctrl{
     volatile nvme_sub_queue_ent *isq_vaddr;
     volatile nvme_cmpl_queue_ent *icq_vaddr;
     unsigned char a_tail_i, io_tail_i;
+    unsigned int *ns_list;
 
     nvme_ctrl_info *ctrl_info; //pointer to  4096b data struct
 
+    struct nvme_disk *disks;
 }nvme_ctrl;
+
+typedef struct nvme_disk{
+    struct nvme_disk *next;
+    nvme_disk_info *info;
+    unsigned int sector_sz_in_bytes;
+    nvme_ctrl *ctrl;
+    unsigned int id;
+
+} nvme_disk;
 
 
 
