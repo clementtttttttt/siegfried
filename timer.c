@@ -54,5 +54,4 @@ void timer_wait(){
 }
 
 void timer_handler(){
-    draw_string("I");
 }

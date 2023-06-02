@@ -133,7 +133,7 @@ void page_alloc_dev(void *phy, void *vir){
     }
     pml4_table[pml4i].present = 1;
     pml4_table[pml4i].rw = 1;
-    pml4_table[pml4i].write_through = 1;
+    pml4_table[pml4i].write_through = 0;
     pml4_table[pml4i].rsvd = 0;
     pml4_table[pml4i].rsvd4 = 0;
 
@@ -145,7 +145,7 @@ void page_alloc_dev(void *phy, void *vir){
     }
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
-    pdpt_table[pdptei].write_through = 1;
+    pdpt_table[pdptei].write_through = 0;
     pdpt_table[pdptei].rsvd4 = 0;
 
 
@@ -159,6 +159,52 @@ void page_alloc_dev(void *phy, void *vir){
     pdei_table[pdei].rsvd8 = 0;
     pdei_table[pdei].rsvd4 = 0;
     pdei_table[pdei].attr_tab_or_rsvd = 1;
+    pdei_table[pdei].nocache = 1;
+
+    if(vir == 0){
+        dbgconout("ZERO ENTRY ADDR: ");
+        dbgnumout_hex((unsigned long)&pdei_table[pdei]);
+    }
+    //mark phys mem usage
+    phys_mem_map[((unsigned long)phy / 2097152 / 8)] |= (1 << ((unsigned long)phy/2097152)%8);
+
+}
+void page_alloc_mmio(void *phy, void *vir){
+    unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
+    unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+    unsigned long pdei = (unsigned long)vir >> 21 & 0x1ff;
+
+
+
+    if(pml4_table[pml4i].present == 0){
+        set_paddr(&pml4_table[pml4i], (unsigned long)k_pageobj_alloc(&page_heap, 4096));
+    }
+    pml4_table[pml4i].present = 1;
+    pml4_table[pml4i].rw = 1;
+    pml4_table[pml4i].rsvd = 0;
+    pml4_table[pml4i].rsvd4 = 0;
+
+
+    pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
+
+    if(pdpt_table[pdptei].present == 0){
+        set_paddr(&pdpt_table[pdptei],(unsigned long) k_pageobj_alloc(&page_heap, 4096));
+    }
+    pdpt_table[pdptei].present = 1;
+    pdpt_table[pdptei].rw = 1;
+    pdpt_table[pdptei].rsvd4 = 0;
+
+
+    pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
+
+    set_paddr(&pdei_table[pdei], (unsigned long) phy);
+
+    pdei_table[pdei].present = 1;
+    pdei_table[pdei].rw = 1;
+    pdei_table[pdei].ps = 1;
+    pdei_table[pdei].rsvd8 = 0;
+    pdei_table[pdei].rsvd4 = 0;
+    pdei_table[pdei].attr_tab_or_rsvd = 0;
     pdei_table[pdei].nocache = 1;
 
     if(vir == 0){
@@ -256,12 +302,12 @@ void *page_map_paddr(unsigned long paddr,unsigned long pgs){
     return (void*)(vaddr + off);
 }
 
-void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs){
+void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs){
     unsigned long off = paddr & 0x1fffff;
     paddr &= ~((unsigned long)0x1FFFFF);
     unsigned long vaddr = page_virt_find_addr(pgs);
     for(unsigned long i=0;i<pgs*2097152; i += 2097152){
-        page_alloc_dev((void*)(paddr + i),(void*) (vaddr + i));
+        page_alloc_mmio((void*)(paddr + i),(void*) (vaddr + i));
     }
     return (void*)(vaddr + off);
 }

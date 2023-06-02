@@ -20,10 +20,8 @@ pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in){
 
 pci_dev_ent* pci_new_dev_ent(){
     if(pci_root == 0){
-        dbgconout("TESTCRASH1\n");
         pci_root = k_obj_calloc(1,sizeof(pci_dev_ent));
 
-        dbgconout("TESTCRASH2\n");
         return pci_root;
 
     }
@@ -78,6 +76,44 @@ unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned cha
     // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
     tmp = (unsigned short)((io_inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
     return tmp;
+}
+
+unsigned int pci_read_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset) {
+    unsigned int address;
+    unsigned int lbus  = (unsigned int)bus;
+    unsigned int lslot = (unsigned int)slot;
+    unsigned int lfunc = (unsigned int)func;
+
+    // Create configuration address as per Figure 1
+    address = (unsigned int)((lbus << 16) | (lslot << 11) |
+              (lfunc << 8) | (offset & 0xFC) | ((unsigned int)0x80000000));
+
+    // Write out the address
+    io_outl(0xCF8, address);
+    // Read in the data
+    // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
+    return io_inl(0xcfc);
+}
+
+void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset, unsigned long in) {
+    unsigned int address;
+    unsigned int lbus  = (unsigned int)bus;
+    unsigned int lslot = (unsigned int)slot;
+    unsigned int lfunc = (unsigned int)func;
+    //unsigned short tmp = 0;
+//TODO: implement pci_write_conw
+    // Create configuration address as per Figure 1
+    address = (unsigned int)((lbus << 16) | (lslot << 11) |
+              (lfunc << 8) | (offset & 0xFC) | ((unsigned int)0x80000000));
+
+    // Write out the address
+    io_outl(0xCF8, address);
+    // Read in the data
+    // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
+    io_outl(0xcfc, in);
+
+  //  (unsigned short)((io_inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
+  //  return tmp;
 }
 
 unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
