@@ -7,7 +7,9 @@ stack_top:
 
 .section .text
 .global _start
+.global tss
 .type _start, @function
+
 
 tss: 
 	.skip 0x64
@@ -40,7 +42,7 @@ gdt_start:
 	.userT_sd:
 		.word 0xffff
 		.word 0
-		.word 0
+		.byte 0
 		.byte 0xfa
 		.byte 0xAF
 		.byte 0
@@ -48,7 +50,7 @@ gdt_start:
 	.userD_sd:
 		.word 0xffff
 		.word 0
-		.word 0
+		.byte 0
 		.byte 0xf2
 		.byte 0xcf
 		.byte 0

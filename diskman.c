@@ -1,6 +1,8 @@
 #include "diskman.h"
 #include "obj_heap.h"
 
+//handles partition schemes and disks, makes disk partition devices as well
+
 diskman_ent *disks = 0;
 
 unsigned long inode = 0;
