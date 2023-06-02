@@ -20,32 +20,6 @@ typedef struct nvme_cap_reg{
 
 }__attribute__((packed))nvme_cap_reg;
 
-typedef struct nvme_bar0{
-
-    nvme_cap_reg cap;
-    unsigned int ver;
-    unsigned int int_disable;
-    unsigned int int_enable;
-    unsigned int ctrl_conf;
-
-    unsigned int rsvd;
-
-    unsigned int ctrl_stat;
-    unsigned int nvm_reset;
-    unsigned int queue_att;
-    unsigned long sub_queue_addr;
-    unsigned long cmpl_queue_addr;
-
-}__attribute__((packed)) nvme_bar0;
-
-typedef struct nvme_ctrl{
-    struct nvme_ctrl *next;
-    volatile nvme_bar0 *bar;
-    pci_dev_ent *pci_dev;
-    unsigned long asq_vaddr, acq_vaddr;
-
-}nvme_ctrl;
-
 typedef struct cint0_t{
         unsigned char opcode;
 
@@ -72,6 +46,63 @@ typedef struct nvme_sub_queue_ent{
 
 
 }__attribute__((packed)) nvme_sub_queue_ent;
+
+typedef struct nvme_cmpl_queue_ent{
+    unsigned int cint0;
+    unsigned int rsvd;
+
+    union{
+        struct{
+            unsigned short sub_queue_idx;
+            unsigned short sub_queue_id;
+        };
+        unsigned int cint2_raw;
+    };
+
+    union{
+        struct{
+            unsigned short cmd_id;
+            unsigned short is_new : 1;
+            unsigned short stat : 15;
+        };
+        unsigned int cint3_raw;
+    };
+}__attribute__((packed)) nvme_cmpl_queue_ent;
+
+typedef struct nvme_bar0{
+
+    nvme_cap_reg cap;
+    unsigned int ver;
+    unsigned int int_disable;
+    unsigned int int_enable;
+    unsigned int ctrl_conf;
+
+    unsigned int rsvd;
+
+    unsigned int ctrl_stat;
+    unsigned int nvm_reset;
+    unsigned int queue_att;
+    nvme_sub_queue_ent * sub_queue_addr; //ZERO OUT BIT 0, queue is hard coded to 64
+    nvme_cmpl_queue_ent *cmpl_queue_addr ; //ZERO OUT BIT 0
+
+    char we_dont_give_a_shit [0xFC8];
+
+    unsigned int sub_queue_tail_doorbell;
+
+
+}__attribute__((packed)) nvme_bar0;
+
+typedef struct nvme_ctrl{
+    struct nvme_ctrl *next;
+    volatile nvme_bar0 *bar;
+    pci_dev_ent *pci_dev;
+
+    volatile nvme_sub_queue_ent *asq_vaddr;
+    volatile nvme_cmpl_queue_ent *acq_vaddr;
+    unsigned char a_tail_i, io_tail_i;
+}nvme_ctrl;
+
+
 
 void nvme_setup();
 void draw_scroll_text_buf();
