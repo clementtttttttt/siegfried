@@ -155,6 +155,15 @@ void draw_string(const char* str){
 
 }
 
+void draw_string_w_sz(const char* str, unsigned int sz){
+    while(sz--){
+        draw_append_text_buf(*str++);
+
+    }
+    draw_swap_textbuf();
+
+}
+
 void draw_hex(unsigned long in){
     char hexlookup[] = "0123456789ABCDEF";
 

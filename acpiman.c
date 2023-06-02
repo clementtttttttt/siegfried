@@ -58,9 +58,8 @@ void acpiman_setup(void* rsdp){
         return;
     }
 
-    sys_rsdp_desc.first.vendor_str[5] = 0;
     draw_string("RSDP OEM: ");
-    draw_string(sys_rsdp_desc.first.vendor_str);
+    draw_string_w_sz(sys_rsdp_desc.first.vendor_str,6);
     draw_string("\n");
 
     sys_xsdt_addr = page_map_paddr(sys_rsdp_desc.xsdt_addr, 2);

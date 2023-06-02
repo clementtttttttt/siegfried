@@ -92,6 +92,17 @@ typedef struct nvme_bar0{
 
 }__attribute__((packed)) nvme_bar0;
 
+typedef struct nvme_ctrl_info{
+
+    unsigned short vendor_id;
+    unsigned short sub_vendor_id;
+
+    char serial[20];
+    char model[40];
+
+
+}__attribute__((packed)) nvme_ctrl_info;
+
 typedef struct nvme_ctrl{
     struct nvme_ctrl *next;
     volatile nvme_bar0 *bar;
@@ -99,7 +110,12 @@ typedef struct nvme_ctrl{
 
     volatile nvme_sub_queue_ent *asq_vaddr;
     volatile nvme_cmpl_queue_ent *acq_vaddr;
+    volatile nvme_sub_queue_ent *isq_vaddr;
+    volatile nvme_cmpl_queue_ent *icq_vaddr;
     unsigned char a_tail_i, io_tail_i;
+
+    nvme_ctrl_info *ctrl_info; //pointer to  4096b data struct
+
 }nvme_ctrl;
 
 
