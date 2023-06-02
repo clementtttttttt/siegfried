@@ -7,6 +7,8 @@ CC=clang --target=x86_64-pc-none-elf -march=x86-64
 #CC=x86_64-elf-gcc
 
 SOURCES=$(wildcard *.c)
+HEADERS = $(wildcard *.h)
+
 SOURCES_S=$(wildcard *.S)
 
 OBJECTS=$(patsubst %.c, %.o, $(SOURCES)) 
@@ -18,7 +20,7 @@ $(OBJECTS): %.o : %.c
 $(OBJECTS_S): %.o : %.S
 
 sfkrnl.elf: $(OBJECTS) $(OBJECTS_S) linker.ld
-	$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O2 -nostdlib $(OBJECTS) $(OBJECTS_S) -lgcc  -Wl,-Map=output.map $(LDFLAGS)
+	$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O2 -nostdlib $(OBJECTS) $(OBJECTS_S) -lgcc  -Wl,-Map=output.map $(LDFLAGS) 
 
 sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/

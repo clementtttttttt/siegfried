@@ -1,3 +1,5 @@
+#include "pci.h"
+
 typedef struct nvme_cap_reg{
 
     unsigned long max_queue_ents : 16;
@@ -16,9 +18,7 @@ typedef struct nvme_cap_reg{
     unsigned long rsvd8 : 8;
 
 
-
-
-}nvme_cap_reg;
+}__attribute__((packed))nvme_cap_reg;
 
 typedef struct nvme_bar0{
 
@@ -38,6 +38,40 @@ typedef struct nvme_bar0{
 
 }__attribute__((packed)) nvme_bar0;
 
+typedef struct nvme_ctrl{
+    struct nvme_ctrl *next;
+    volatile nvme_bar0 *bar;
+    pci_dev_ent *pci_dev;
+    unsigned long asq_vaddr, acq_vaddr;
+
+}nvme_ctrl;
+
+typedef struct cint0_t{
+        unsigned char opcode;
+
+        unsigned char fuse_op : 2;
+        unsigned char rsvd : 5;
+        unsigned char use_sgl : 1;
+
+        unsigned short cid;
+}cint0_t;
+
+typedef struct nvme_sub_queue_ent{
+
+    cint0_t cint0;
+
+    unsigned int nsid;
+
+    unsigned long rsvd_l;
+
+    unsigned long metadata_addr;
+    unsigned long prp1;
+    unsigned long prp2;
+
+    unsigned int cint10, cint11, cint12, cint13, cint14, cint15;
+
+
+}__attribute__((packed)) nvme_sub_queue_ent;
 
 void nvme_setup();
 void draw_scroll_text_buf();

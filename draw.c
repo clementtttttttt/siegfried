@@ -141,7 +141,6 @@ void draw_append_text_buf(const char c){
 
     text_buf[where] = c;
     ++tcurx;
-    draw_swap_textbuf();
 
 
 }
@@ -152,6 +151,7 @@ void draw_string(const char* str){
     while(*(++str)){
         draw_append_text_buf(*str);
     }
+    draw_swap_textbuf();
 
 }
 

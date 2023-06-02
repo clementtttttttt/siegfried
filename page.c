@@ -56,7 +56,7 @@ void page_init_map(){
 
 unsigned long page_lookup_paddr(unsigned long vir){
 
-    unsigned long off = vir % 2097152;
+    unsigned long off = vir & 0x1fffff;
 
     unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
     unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
@@ -80,7 +80,6 @@ unsigned long page_lookup_paddr(unsigned long vir){
     }
 
     return get_paddr(&pdei_table[pdei]) + off;
-
 }
 
 void page_alloc(void *phy, void *vir){

@@ -8,6 +8,7 @@ void idt_rtc_handler_s();
 volatile unsigned long rtc_count = 0;
 
 void rtc_setup(){
+    asm("cli");
 
     idt_set_irq_ent(0x28, idt_rtc_handler_s);
 
@@ -23,6 +24,8 @@ void rtc_setup(){
     io_outb(0x70, 0x8A);		// reset index to A
     io_outb(0x71, (old_a & 0xF0) | 5); //write only our rate to A. Note, rate is the bottom 4 bits.
     //2048hz
+
+    asm("sti");
 }
 
 void rtc_handler(){

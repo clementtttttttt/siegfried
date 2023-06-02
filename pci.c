@@ -49,14 +49,15 @@ void pci_write_conw(unsigned char bus, unsigned char slot, unsigned char func, u
     address = (unsigned int)((lbus << 16) | (lslot << 11) |
               (lfunc << 8) | (offset & 0xFC) | ((unsigned int)0x80000000));
 
+    unsigned int old = pci_read_coni(bus, slot, func, offset & 0xfc) & (0xffff >> ((2-(offset & 2)) * 8));
+
+    old |= in << ((offset&2)*8);
     // Write out the address
     io_outl(0xCF8, address);
     // Read in the data
     // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
-    io_outl(0xcfc, in);
+    io_outl(0xcfc, old);
 
-  //  (unsigned short)((io_inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
-  //  return tmp;
 }
 
 unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset) {
