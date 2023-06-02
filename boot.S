@@ -63,6 +63,7 @@ gdt_start:
 		.byte 0x00
 		.tss_addr_b32: .byte 0 //($tss >> 24) & 0xff
 		.tss_addr_i64: .int 0 //($tss >> 32) & 0xffff
+		.rsvd: .quad 0x0
 	
 
 gdt_end:
