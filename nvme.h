@@ -166,6 +166,7 @@ typedef struct nvme_disk{
     unsigned int sector_sz_in_bytes;
     nvme_ctrl *ctrl;
     unsigned int id;
+    unsigned long inode;
 
 } nvme_disk;
 

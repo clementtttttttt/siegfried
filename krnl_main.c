@@ -13,6 +13,7 @@
 #include "apic.h"
 #include "acpiman.h"
 #include "rtc.h"
+#include "diskman.h"
 
 unsigned int* m_info;
 
@@ -90,7 +91,6 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     timer_setup();
 
     asm("sti");
-
 
     pci_enum();
 

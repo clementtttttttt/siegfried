@@ -111,6 +111,53 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
 }
 
+nvme_disk *nvme_find_disk_from_inode(unsigned long inode){
+
+    nvme_ctrl *ctrl = nvme_ctrl_list;
+
+    nvme_disk *ret = 0;
+
+    while(ctrl){
+
+        nvme_disk *disk = ctrl->disks;
+
+        while(disk){
+
+            if(disk->inode == inode){
+                ret = disk;
+                goto breakout;
+            }
+            disk=disk->next;
+        }
+
+        ctrl=ctrl->next;
+    }
+    breakout:
+
+    return ret;
+}
+
+DISKMAN_WRITE_FUNC(nvme_write_disk){
+
+    nvme_disk *disk = nvme_find_disk_from_inode(id);
+    nvme_send_io_cmd(disk, off_sects, /*opcode*/1, num_sects, buf);
+
+    //supposed to return write sects, not fucntional for now
+    return num_sects;
+}
+
+DISKMAN_READ_FUNC(nvme_read_disk){
+
+    nvme_disk *disk = nvme_find_disk_from_inode(id);
+
+    nvme_send_io_cmd(disk, off_sects, /*opcode*/2, num_sects, buf);
+
+
+    //supposed to return read sects, not fucntional for now
+    return num_sects;
+}
+char buff [512]= "THIS IS A TEST. THIS IS A TEST. THIS IS A TEST. THIS IS A TEST.";
+
 void nvme_setup_pci_dev(pci_dev_ent *in){
 
 
@@ -142,7 +189,6 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     bar0->int_disable = 0xffffffff;
     bar0->ctrl_conf = 0x460001;
-    draw_hex((unsigned long)bar0->sub_queue_addr);
 
     //wiat for csts.rdy
     while(!(bar0->ctrl_stat & 1)){
@@ -151,6 +197,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
             return;
         }
     }
+    draw_hex((unsigned long)pci_read_conw(in->bus,in->dev,in->func,0x3c));
 
     draw_string("NVME CTRL REENABLED\n");
 
@@ -236,6 +283,14 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         curr_disk->ctrl = curr;
         curr_disk->id = curr->ns_list[i];
 
+
+        //register disk in diskman
+        diskman_ent *ent = diskman_new_ent();
+        curr_disk -> inode = ent->inode;
+        ent->read_func = nvme_read_disk;
+        ent->write_func = nvme_write_disk;
+
+
         draw_string("DISK SZ_IN_SECT=");
         draw_hex(curr_disk->info->lba_format_sz & 0x7);
 
@@ -272,15 +327,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         return;
     }
 
-    draw_string("NVME DISK CONTENT DUMP TEST:\n");
-
     //opcodes: 0x1 = write, 0x2 = read
-    unsigned long *buff = k_pageobj_alloc(&page_heap, 4096);
-    nvme_send_io_cmd(curr->disks, 0, 2, 1, buff);
-
-    draw_string_w_sz((char*)buff, 512);
-    draw_string("\n");
-
 
     draw_string("NVME MSIX OFF0x4=");
     draw_hex(pci_read_coni(in->bus, in->dev,in->func, cap_off + 0x4));
