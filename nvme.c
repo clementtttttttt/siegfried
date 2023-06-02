@@ -2,6 +2,7 @@
 #include "draw.h"
 #include "page.h"
 #include "nvme.h"
+#include "rtc.h"
 
 void nvme_setup_pci_dev(pci_dev_ent *in){
 
@@ -20,6 +21,28 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     unsigned short cmd = pci_read_conw(in->bus, in->dev, in->func, 0x4); //get status + cmd
     cmd &= 1<<2;
     pci_write_conw(in->bus, in->dev, in->func, 0x4, cmd);
+
+    //get msi cap
+    unsigned char cap_off = pci_read_conw(in->bus, in->dev, in->func, 0x34) & 0xfc;
+
+    unsigned char cap_id = (pci_read_conw(in->bus, in->dev, in->func, cap_off));
+
+    while(cap_id != 0xc5){
+        draw_string("==START CAP_OFF PRNT==\n");
+        draw_hex(cap_off);
+        draw_hex(cap_id);
+        draw_string("==END CAP_ID PRNT==\n");
+
+        cap_off = (pci_read_conw(in->bus, in->dev, in->func, cap_off) >> 8);
+        cap_id = (pci_read_conw(in->bus, in->dev, in->func, cap_off));
+
+    }
+
+    draw_string("NVME MSI=");
+    draw_hex(pci_read_coni(in->bus, in->dev,in->func, cap_off));
+
+
+
 
 
 

@@ -109,10 +109,8 @@ void draw_scroll_text_buf(){
 }
 void draw_increment_line(){
     tcurx = 0;
-    if((tcury) >= th){
-
+    if((tcury+1) >= th){
         draw_scroll_text_buf();
-        --tcury;
     }
     else{
 
@@ -143,6 +141,7 @@ void draw_append_text_buf(const char c){
 
     text_buf[where] = c;
     ++tcurx;
+    draw_swap_textbuf();
 
 
 }
@@ -154,7 +153,6 @@ void draw_string(const char* str){
         draw_append_text_buf(*str);
     }
 
-    draw_swap_textbuf();
 }
 
 void draw_hex(unsigned long in){

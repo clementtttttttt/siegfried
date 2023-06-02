@@ -40,3 +40,4 @@ typedef struct nvme_bar0{
 
 
 void nvme_setup();
+void draw_scroll_text_buf();
