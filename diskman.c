@@ -1,5 +1,8 @@
 #include "diskman.h"
 #include "obj_heap.h"
+#include "draw.h"
+#include "pageobj_heap.h"
+#include "klib.h"
 
 //handles partition schemes and disks, makes disk partition devices as well
 
@@ -25,10 +28,32 @@ diskman_ent *diskman_new_ent(){
     }
 
     ret->inode = ++inode;
+    ret->next = 0;
 
     return ret;
 }
 
+char detect_sect[1024];
+
 void diskman_setup(){
 
+    diskman_ent *i = disks;
+
+    while(i){
+
+        extern KHEAPSS page_heap;
+        char *detect_sect=k_pageobj_alloc(&page_heap, 4096);
+        mem_set(detect_sect, 0, 1024);
+
+        i->read_func(i->inode, 0, 2, detect_sect);
+
+
+        if(mem_cmp(&detect_sect[512], "EFI PART", 8)){
+            draw_string("FOUND GPT TAB AT DRIVE ");
+            draw_hex(i->inode);
+        }
+        //draw_string_w_sz(detect_sect, 1024);
+
+        i = i->next;
+    }
 }

@@ -73,6 +73,10 @@ unsigned short io_cmdid_c;
 
 //sector is 512
 void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
+
+        draw_string("IOCMD NSID=");
+        draw_hex(in->id);
+
     nvme_sub_queue_ent cmd = {0};
 
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
@@ -99,6 +103,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     in->ctrl->io_tail_i = (in->ctrl->io_tail_i + 1) & 0x3f;
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
 
+    draw_string("NVME WAITING");
     while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
 
     }
@@ -170,7 +175,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     bar0_p &= 0xFFFFFFFFFFFFFFF0;
 
-    volatile nvme_bar0 *bar0 = page_map_paddr_mmio(bar0_p, 1);
+    volatile nvme_bar0 *bar0 = page_map_paddr(bar0_p, 1);
 
 
     nvme_ctrl *curr = nvme_new_ctrl();
@@ -179,6 +184,9 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     curr -> pci_dev = in;
     curr -> acq_vaddr = (nvme_cmpl_queue_ent *)k_pageobj_alloc(&page_heap, 4096);
     curr -> asq_vaddr = (nvme_sub_queue_ent*)k_pageobj_alloc(&page_heap, 4096);
+//    curr -> acq_vaddr = (nvme_cmpl_queue_ent *) page_find_and_alloc(1);
+ //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
+
 
     unsigned int bar0_anded = (bar0->ctrl_conf & 0xfffffffe); //nvme disable
     bar0->ctrl_conf = bar0_anded;
@@ -189,6 +197,11 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     bar0->int_disable = 0xffffffff;
     bar0->ctrl_conf = 0x460001;
+
+    //FIXME: removing this line causes the driver to hang in real hw. i dont focking know why.
+    draw_hex((unsigned long)bar0->sub_queue_addr);
+ 
+
 
     //wiat for csts.rdy
     while(!(bar0->ctrl_stat & 1)){
@@ -328,11 +341,14 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     }
 
     //opcodes: 0x1 = write, 0x2 = read
+    draw_string("NVME DISK CONTENT DUMP TEST:\n");
 
-    draw_string("NVME MSIX OFF0x4=");
-    draw_hex(pci_read_coni(in->bus, in->dev,in->func, cap_off + 0x4));
+    //opcodes: 0x1 = write, 0x2 = read
+    unsigned long *buff = k_pageobj_alloc(&page_heap, 4096);
+    nvme_send_io_cmd(curr->disks, 0, 2, 1, buff);
 
-
+    draw_string_w_sz((char*)buff, 512);
+    draw_string("\n");
 
 
 

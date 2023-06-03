@@ -82,8 +82,9 @@ typedef struct nvme_bar0{
     unsigned int ctrl_stat;
     unsigned int nvm_reset;
     unsigned int queue_att;
-    nvme_sub_queue_ent * sub_queue_addr; //ZERO OUT BIT 0, queue is hard coded to 64
-    nvme_cmpl_queue_ent *cmpl_queue_addr ; //ZERO OUT BIT 0
+    nvme_sub_queue_ent * volatile sub_queue_addr; //ZERO OUT BIT 0, queue is hard coded to 64
+					 //
+    nvme_cmpl_queue_ent * volatile cmpl_queue_addr ; //ZERO OUT BIT 0
 
     char we_dont_give_a_shit [0xFC8];
 
