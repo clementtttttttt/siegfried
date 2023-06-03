@@ -58,6 +58,8 @@ idt_timer_handler_s:
 
     call timer_handler
 
+    call task_next_task
+
     call apic_ack_int
 
 

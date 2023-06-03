@@ -12,7 +12,7 @@ stack_top:
 
 
 tss: 
-	.skip 0x64
+	.skip 0x68
 
 gdtr:
 	.word gdt_end - gdt_start - 1
@@ -56,7 +56,7 @@ gdt_start:
 		.byte 0
 
 	.tss_sd:
-		.word 0x64
+		.word 0x68
 		.tss_addr_w16: .word 0 //$tss & 0xffff
 		.tss_addr_b24: .byte 0 //($tss >> 16) & 0xff
 		.byte 0x89
