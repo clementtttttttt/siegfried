@@ -65,7 +65,7 @@ idt_timer_handler_s:
     1:
 
     movq %rsp, %rdi // save trap frame.
-    call task_next_task
+    call task_scheduler
 
     call timer_handler
 

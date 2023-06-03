@@ -21,19 +21,21 @@ unsigned int* m_info;
 
 extern int _krnl_end;
 
-unsigned long old_stack_ptr, new_stack_ptr;
+krnl_state *old_krnl_state, *new_krnl_state;
 
 void test_fun2();
 
 void test_fun(){
         draw_string("test_fun \n");
-    task_switch(test_fun2, &new_stack_ptr, &old_stack_ptr);
+    old_krnl_state->rip = (unsigned long)test_fun2;
+    task_save_and_change_krnl_state(&new_krnl_state, &old_krnl_state);
 
 }
 
 void test_fun2(){
     draw_string("test_fun 2\n");
-    task_switch(test_fun, &old_stack_ptr, &new_stack_ptr);
+    new_krnl_state->rip = (unsigned long)test_fun;
+    task_save_and_change_krnl_state( &old_krnl_state, &new_krnl_state);
 }
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
@@ -142,12 +144,17 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 */
 
  //   char count []= " ";
+
+
+        draw_hex((unsigned long)test_fun);
+        new_krnl_state = (krnl_state*)(((unsigned long)k_obj_alloc(4096)) + 4096 - sizeof(krnl_state));
+        new_krnl_state->rip = (unsigned long)test_fun;
+        task_save_and_change_krnl_state (&old_krnl_state, &new_krnl_state);
+        //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
+
     while(1){
  //       syscall0(0);
-        draw_hex((unsigned long)test_fun);
-        new_stack_ptr = (unsigned long) k_obj_alloc(4096) + 2048;
-        task_switch(test_fun, &old_stack_ptr, &new_stack_ptr);
-        //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
+
     }
 
 
