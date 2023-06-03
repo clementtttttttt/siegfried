@@ -15,6 +15,7 @@
 #include "rtc.h"
 #include "diskman.h"
 #include "tasks.h"
+#include "syscall.h"
 
 unsigned int* m_info;
 
@@ -87,6 +88,8 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     apic_setup();
 
+    syscall_setup();
+
     rtc_setup();
 
     timer_setup();
@@ -100,12 +103,29 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     asm("sti");
 
 
-    draw_string("REACHED END OF KRNL MAIN\r\n");
+    draw_string("STARTING INIT\r\n");
+
+    //move to user mode
+    asm volatile("movw $0x23, %ax;\n\
+                movw %ax, %ds;\n\
+                movw %ax, %es;\n\
+                movw %ax, %fs;\n\
+                movw %ax, %gs;\n\
+                            \n\
+                movq %rsp, %rax;\n\
+                pushq $0x23;\n\
+                pushq %rax;\n\
+                pushfq;\n\
+                pushq $0x1b;\n\
+                pushq $1f;\n\
+                iretq;\n\
+                1:");
 
 
 
  //   char count []= " ";
     while(1){
+        syscall0(0);
 
         //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
     }

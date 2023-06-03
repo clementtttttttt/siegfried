@@ -78,6 +78,7 @@ typedef union pde{
     unsigned long long raw;
 } pde;
 
+void page_alloc_tab(pml4e *tab, void *phy, void *vir);
 
 void page_alloc(void* phy, void* vir);
 void page_alloc_dev(void *phy, void *vir);
@@ -88,4 +89,4 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs);
 void *page_map_paddr(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs);
-unsigned long page_lookup_paddr(unsigned long vir);
+unsigned long page_lookup_paddr(void* vir);

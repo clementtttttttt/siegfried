@@ -54,8 +54,9 @@ void page_init_map(){
     }
 }
 
-unsigned long page_lookup_paddr(unsigned long vir){
+unsigned long page_lookup_paddr(void* in){
 
+    unsigned long vir = (unsigned long) in;
     unsigned long off = vir & 0x1fffff;
 
     unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
@@ -94,15 +95,17 @@ void page_alloc(void *phy, void *vir){
     }
     pml4_table[pml4i].present = 1;
     pml4_table[pml4i].rw = 1;
+    pml4_table[pml4i].isuser = 1;
 
 
     pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
 
     if(get_paddr(&pdpt_table[pdptei]) == 0 || pdpt_table[pdptei].present == 0){
-        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr((unsigned long)k_pageobj_alloc(&page_heap, 4096)));
+        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096)));
     }
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
+    pdpt_table[pdptei].isuser = 1;
 
 
     pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
@@ -113,6 +116,48 @@ void page_alloc(void *phy, void *vir){
     pdei_table[pdei].rw = 1;
     pdei_table[pdei].ps = 1;
     pdei_table[pdei].attr_tab_or_rsvd = 0;
+    pdei_table[pdei].isuser = 1;
+
+    //mark phys mem usage
+    phys_mem_map[(unsigned long)phy / 2097152 / 8] |= (1 << (((unsigned long)phy/2097152)%8));
+
+
+}
+
+void page_alloc_tab(pml4e *tab, void *phy, void *vir){
+    unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
+    unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+    unsigned long pdei = (unsigned long)vir >> 21 & 0x1ff;
+
+
+
+    if(tab[pml4i].present == 0){
+        set_paddr(&tab[pml4i], (unsigned long)k_pageobj_alloc(&page_heap, 4096));
+    }
+    tab[pml4i].present = 1;
+    tab[pml4i].rw = 1;
+    tab[pml4i].isuser = 1;
+
+
+    pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
+
+    if(get_paddr(&pdpt_table[pdptei]) == 0 || pdpt_table[pdptei].present == 0){
+        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096)));
+    }
+    pdpt_table[pdptei].present = 1;
+    pdpt_table[pdptei].rw = 1;
+    pdpt_table[pdptei].isuser = 1;
+
+
+    pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
+
+    set_paddr_pde(&pdei_table[pdei], (unsigned long) phy);
+
+    pdei_table[pdei].present = 1;
+    pdei_table[pdei].rw = 1;
+    pdei_table[pdei].ps = 1;
+    pdei_table[pdei].attr_tab_or_rsvd = 0;
+    pdei_table[pdei].isuser = 1;
 
     //mark phys mem usage
     phys_mem_map[(unsigned long)phy / 2097152 / 8] |= (1 << (((unsigned long)phy/2097152)%8));

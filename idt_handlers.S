@@ -4,6 +4,7 @@
 .globl idt_gpf_handler_s
 .globl idt_mce_handler_s
 .globl idt_rtc_handler_s
+.globl idt_syscall_handler_s
 
 .extern apic_addr
 
@@ -83,6 +84,20 @@ idt_rtc_handler_s:
     2:
 
     iretq
+
+idt_syscall_handler_s:
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
+
+    call syscall_main
+
+    movq $2f, rip_save
+    jmp idt_load_regs
+    2:
+
+    iretq
+
 
 idt_gpf_handler_s:
 

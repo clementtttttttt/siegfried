@@ -91,10 +91,9 @@ void idt_set_trap_ent(unsigned long no, void* addr){
 }
 
 void idt_set_irq_ent(unsigned long no, void* addr){
-    idt_table[no].type_attr.raw = 0x8e;
+    idt_table[no].type_attr.raw = 0x8e | 0b01100000;
     idt_table[no].code_seg = 0x8;
     idt_set_addr(&idt_table[no], (unsigned long)addr);
-
 }
 
 void idt_flush(){
