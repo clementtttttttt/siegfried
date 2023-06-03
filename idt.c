@@ -2,7 +2,7 @@
 #include "debug.h"
 #include "draw.h"
 
-idt_desc idt_table[255];
+idt_desc idt_table[256];
 
 idt_tab_desc idtr;
 
@@ -76,6 +76,8 @@ void idt_gpf_handler_s();
 
 void idt_mce_handler_s();
 
+void idt_spurious_handler_s();
+
 void idt_set_addr(idt_desc* desc, unsigned long addr){
 
     desc->offset_l16 = addr & 0xffff;
@@ -110,6 +112,7 @@ void idt_setup(){
     idt_set_trap_ent(0xe, idt_pagefault_handler_s);
     idt_set_trap_ent(0xd, idt_gpf_handler_s);
     idt_set_trap_ent(0x12, idt_mce_handler_s);
+    idt_set_trap_ent(0xff, idt_spurious_handler_s);
 
     idt_flush();
 

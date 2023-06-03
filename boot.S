@@ -1,5 +1,8 @@
 .section .bss
 .align 16
+
+.globl stack_top
+
 stack_bottom:
 .skip 65536
 stack_top:

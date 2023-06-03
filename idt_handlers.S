@@ -5,6 +5,10 @@
 .globl idt_mce_handler_s
 .globl idt_rtc_handler_s
 .globl idt_syscall_handler_s
+.globl idt_spurious_handler_s
+
+.globl idt_load_regs
+.globl rip_save
 
 .extern apic_addr
 
@@ -34,11 +38,19 @@ idt_save_regs:
     pushq %rbx    
     pushq %rax
 
+    xorq %rax, %rax
+    movw %ds, %ax
+    pushq %rax
+
     pushq rip_save
     ret
 
 
 idt_load_regs:
+
+    popq %rax
+    movw %ax, %ds
+
     popq %rax
     popq %rbx
     popq %r15
@@ -64,13 +76,11 @@ idt_timer_handler_s:
     jmp idt_save_regs
     1:
 
-    movq %rsp, %rdi // save trap frame.
-    call task_yield
-
-    call timer_handler
-
     call apic_ack_int
 
+        call timer_handler
+
+    call task_yield
 
     movq $2f, rip_save
     jmp idt_load_regs
@@ -106,8 +116,17 @@ idt_syscall_handler_s:
 
     iretq
 
+idt_spurious_handler_s:
+    iretq
 
 idt_gpf_handler_s:
+
+    cmpq $0, %rsp
+    jnz 1f
+
+    movq stack_top, %rsp
+
+    1:
 
     movq %r15, tmp_r15
     movq %cr2, %r15
