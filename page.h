@@ -6,7 +6,7 @@ typedef union pml4e{
         unsigned char write_through : 1;
         unsigned char nocache : 1;
         unsigned char isaccessed : 1;
-        unsigned char custom1 : 1;
+        unsigned char is_krnl_pg : 1;
         unsigned char rsvd : 1;
 
         unsigned int custom4 : 4;
@@ -31,7 +31,7 @@ typedef union pdpte{
         unsigned char write_through : 1;
         unsigned char nocache : 1;
         unsigned char isaccessed : 1;
-        unsigned char custom1 : 1;
+        unsigned char is_krnl_pg : 1;
         unsigned char ps : 1;
 
         unsigned int custom4 : 4;
@@ -68,7 +68,8 @@ typedef union pde{
         unsigned char paddrU;
 
         unsigned short rsvd4 : 4;
-        unsigned short avl7 : 7;
+        unsigned short is_krnl_pg : 1;
+        unsigned short avl6 : 6;
         unsigned short pkey : 4;
         unsigned short noexec : 1;
 
@@ -77,6 +78,9 @@ typedef union pde{
 
     unsigned long long raw;
 } pde;
+
+void page_clone_krnl_tab(pml4e *dest);
+void page_clone_page_tab(pml4e *dest, pml4e *src);
 
 void page_alloc_tab(pml4e *tab, void *phy, void *vir);
 
@@ -89,4 +93,4 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs);
 void *page_map_paddr(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs);
-unsigned long page_lookup_paddr(void* vir);
+void *page_lookup_paddr(void* vir);

@@ -19,7 +19,6 @@ apic_ack_int:
     ret
 
 idt_save_regs:
-    pushq %rax
     pushq %rdi
     pushq %rsi
     pushq %rdx
@@ -28,14 +27,24 @@ idt_save_regs:
     pushq %r9
     pushq %r10
     pushq %r11
+    pushq %r12
+    pushq %r13
+    pushq %r14
+    pushq %r15
     pushq %rbx    
+    pushq %rax
 
     pushq rip_save
     ret
 
 
 idt_load_regs:
+    popq %rax
     popq %rbx
+    popq %r15
+    popq %r14
+    popq %r13
+    popq %r12
     popq %r11
     popq %r10
     popq %r9
@@ -44,7 +53,6 @@ idt_load_regs:
     popq %rdx
     popq %rsi
     popq %rdi
-    popq %rax
 
     pushq rip_save
     ret
@@ -56,10 +64,10 @@ idt_timer_handler_s:
     jmp idt_save_regs
     1:
 
+    movq %rsp, %rdi // save trap frame.
+    call task_next_task
 
     call timer_handler
-
-    call task_next_task
 
     call apic_ack_int
 

@@ -21,6 +21,21 @@ unsigned int* m_info;
 
 extern int _krnl_end;
 
+unsigned long old_stack_ptr, new_stack_ptr;
+
+void test_fun2();
+
+void test_fun(){
+        draw_string("test_fun \n");
+    task_switch(test_fun2, &new_stack_ptr, &old_stack_ptr);
+
+}
+
+void test_fun2(){
+    draw_string("test_fun 2\n");
+    task_switch(test_fun, &old_stack_ptr, &new_stack_ptr);
+}
+
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     if(bootmagic == MULTIBOOT2_BOOTLOADER_MAGIC){
@@ -100,10 +115,13 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     tasks_setup();
 
-    asm("sti");
 
 
     draw_string("STARTING INIT\r\n");
+
+    asm("sti");
+
+    /*
 
     //move to user mode
     asm volatile("movw $0x23, %ax;\n\
@@ -121,12 +139,14 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
                 iretq;\n\
                 1:");
 
-
+*/
 
  //   char count []= " ";
     while(1){
-        syscall0(0);
-
+ //       syscall0(0);
+        draw_hex((unsigned long)test_fun);
+        new_stack_ptr = (unsigned long) k_obj_alloc(4096) + 2048;
+        task_switch(test_fun, &old_stack_ptr, &new_stack_ptr);
         //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
     }
 

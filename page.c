@@ -33,14 +33,55 @@ inline void set_paddr_pde(void* in, unsigned long inaddr){
     return;
 }
 
-inline unsigned long get_paddr(void* in){
+inline void* get_paddr(void* in){
     pml4e *t = in;
 
-    return ((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12;
+    return (void*)( ((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12);
 }
 
 unsigned char phys_mem_map[16777216];
     extern KHEAPSS page_heap;
+
+void page_clone_page_tab(pml4e *dest, pml4e *src){
+
+    //each pml4i ent represents 512gib
+    for(unsigned long pml4i = 0; pml4i < 512; ++pml4i){
+        dest[pml4i].raw = src[pml4i].raw;
+        dest[pml4i].isuser = 1; //just in case
+
+        if(dest[pml4i].present){
+
+            pdpte *pdpt_table_dest = k_pageobj_alloc(&page_heap, 4096);
+            set_paddr(&dest[pml4i],(unsigned long) pdpt_table_dest);
+
+            pdpte *pdpt_table_src = (pdpte*)get_paddr(&src[pml4i]);
+
+            for(unsigned long pdpti = 0; pdpti < 512; ++pdpti){
+                pdpt_table_dest[pdpti] = pdpt_table_src[pdpti];
+                pdpt_table_dest[pdpti].isuser = 1;
+
+                if(pdpt_table_dest[pdpti].present){
+                    pde *pdei_table_src = get_paddr(&pdpt_table_src[pdpti]);
+                    pde *pdei_table_dest = k_pageobj_alloc(&page_heap, 4096);
+                    set_paddr(&pdpt_table_dest[pdpti], (unsigned long)pdei_table_dest);
+                    for(unsigned long pdei = 0; pdei < 512; ++pdei){
+                        pdei_table_dest[pdei] = pdei_table_src[pdei];
+                        if(pdei_table_dest[pdei].is_krnl_pg){
+                            pdei_table_dest[pdei].isuser = 0;
+
+                        }
+                        else pdei_table_dest[pdei].isuser = 1;
+
+                    }
+
+                }
+            }
+
+        }
+
+    }
+
+}
 
 
 void page_init_map(){
@@ -54,7 +95,7 @@ void page_init_map(){
     }
 }
 
-unsigned long page_lookup_paddr(void* in){
+void* page_lookup_paddr(void* in){
 
     unsigned long vir = (unsigned long) in;
     unsigned long off = vir & 0x1fffff;
@@ -67,7 +108,7 @@ unsigned long page_lookup_paddr(void* in){
 
     if(pdpt_table == 0){
         dbgconout("pdpt_table is 0");
-        return vir;
+        return (void*)vir;
 
 
     }
@@ -77,7 +118,7 @@ unsigned long page_lookup_paddr(void* in){
     if(pdei_table == 0){
             dbgconout("pdpt_table is 0");
 
-        return vir;
+        return (void*)vir;
     }
 
     return get_paddr(&pdei_table[pdei]) + off;
@@ -96,6 +137,8 @@ void page_alloc(void *phy, void *vir){
     pml4_table[pml4i].present = 1;
     pml4_table[pml4i].rw = 1;
     pml4_table[pml4i].isuser = 1;
+    pml4_table[pml4i].is_krnl_pg = 1;
+
 
 
     pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
@@ -106,6 +149,7 @@ void page_alloc(void *phy, void *vir){
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
     pdpt_table[pdptei].isuser = 1;
+    pdpt_table[pdptei].is_krnl_pg = 1;
 
 
     pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
@@ -117,6 +161,7 @@ void page_alloc(void *phy, void *vir){
     pdei_table[pdei].ps = 1;
     pdei_table[pdei].attr_tab_or_rsvd = 0;
     pdei_table[pdei].isuser = 1;
+    pdei_table[pdei].is_krnl_pg = 1;
 
     //mark phys mem usage
     phys_mem_map[(unsigned long)phy / 2097152 / 8] |= (1 << (((unsigned long)phy/2097152)%8));
@@ -400,7 +445,7 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs){
 
         pde *pdei_table = (pde*) get_paddr(&(((pdpte*)get_paddr(&pml4_table[pml4i]))[pdptei]));
 
-        unsigned long pa = get_paddr(&pdei_table[pdei]);
+        unsigned long pa =(unsigned long) get_paddr(&pdei_table[pdei]);
 
 
         //FIXME: remove 48bit hard limit.
