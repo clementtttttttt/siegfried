@@ -23,20 +23,6 @@ extern int _krnl_end;
 
 krnl_state *old_krnl_state, *new_krnl_state;
 
-void test_fun2();
-
-void test_fun(){
-        draw_string("test_fun \n");
-    old_krnl_state->rip = (unsigned long)test_fun2;
-    task_save_and_change_krnl_state(&new_krnl_state, &old_krnl_state);
-
-}
-
-void test_fun2(){
-    draw_string("test_fun 2\n");
-    new_krnl_state->rip = (unsigned long)test_fun;
-    task_save_and_change_krnl_state( &old_krnl_state, &new_krnl_state);
-}
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
@@ -119,38 +105,13 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
 
 
-    draw_string("STARTING INIT\r\n");
+    draw_string("STARTING SCHEDULER\r\n");
 
     asm("sti");
 
-    /*
+    //kernel enters scheduler at this point.
 
-    //move to user mode
-    asm volatile("movw $0x23, %ax;\n\
-                movw %ax, %ds;\n\
-                movw %ax, %es;\n\
-                movw %ax, %fs;\n\
-                movw %ax, %gs;\n\
-                            \n\
-                movq %rsp, %rax;\n\
-                pushq $0x23;\n\
-                pushq %rax;\n\
-                pushfq;\n\
-                pushq $0x1b;\n\
-                pushq $1f;\n\
-                iretq;\n\
-                1:");
-
-*/
-
- //   char count []= " ";
-
-
-        draw_hex((unsigned long)test_fun);
-        new_krnl_state = (krnl_state*)(((unsigned long)k_obj_alloc(4096)) + 4096 - sizeof(krnl_state));
-        new_krnl_state->rip = (unsigned long)test_fun;
-        task_save_and_change_krnl_state (&old_krnl_state, &new_krnl_state);
-        //draw_string("THE QUICK BROWN FOX JUMPS OVER THE LAZY DOG. \n the quick brown fox jumps over the lazy dog. \n");
+    task_scheduler();
 
     while(1){
  //       syscall0(0);

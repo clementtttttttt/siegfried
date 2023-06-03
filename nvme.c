@@ -184,8 +184,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     bar0->ctrl_conf = bar0_anded;
 
     bar0->queue_att = 0x003f003f; //64 ents for both queues
-    bar0->sub_queue_addr = (nvme_sub_queue_ent *)page_lookup_paddr((unsigned long)curr->asq_vaddr); //pointer to an array of sz 64
-    bar0->cmpl_queue_addr = (nvme_cmpl_queue_ent*) page_lookup_paddr((unsigned long)curr->acq_vaddr);
+    bar0->sub_queue_addr = (nvme_sub_queue_ent *)page_lookup_paddr((void*)curr->asq_vaddr); //pointer to an array of sz 64
+    bar0->cmpl_queue_addr = (nvme_cmpl_queue_ent*) page_lookup_paddr((void*)curr->acq_vaddr);
 
     bar0->int_disable = 0xffffffff;
     bar0->ctrl_conf = 0x460001;
@@ -207,7 +207,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint0.opcode = 5;
     cmd.cint0.cid = 1;
 
-    cmd.prp1 = page_lookup_paddr((unsigned long) (curr->icq_vaddr = k_pageobj_alloc(&page_heap, 4096)));
+    cmd.prp1 = (unsigned long) page_lookup_paddr((void*)(curr->icq_vaddr = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint11 = 0x00000001; //pc enabled
     cmd.cint10 = 0x003f0001; //queue id 1, 64 ents//
     cmd.nsid = 0;
@@ -219,7 +219,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint0.opcode = 0x1;
     cmd.cint0.cid = 0x1;
 
-    cmd.prp1 = page_lookup_paddr((unsigned long) (curr->isq_vaddr = k_pageobj_alloc(&page_heap, 4096)));
+    cmd.prp1 = (unsigned long) page_lookup_paddr( (void*)(curr->isq_vaddr = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x003f0001; //64 ents sz and queue id 1
     cmd.cint11 = 0x00010001; //cmpl queue id 1 continous 1
     cmd.nsid = 0;
@@ -231,7 +231,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint0.opcode = 0x6;
     cmd.cint0.cid = 0x0;
 
-    cmd.prp1 = page_lookup_paddr((unsigned long) (curr->ctrl_info = k_pageobj_alloc(&page_heap, 4096)));
+    cmd.prp1 = (unsigned long) page_lookup_paddr((void*) (curr->ctrl_info = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x00000001; //id ctrl number
     cmd.cint11 = 0; //no cint11
     cmd.nsid = 0;
@@ -255,7 +255,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint0.opcode = 0x6;
     cmd.cint0.cid = 0x0;
 
-    cmd.prp1 = page_lookup_paddr((unsigned long) (curr->ns_list = k_pageobj_alloc(&page_heap, 4096)));
+    cmd.prp1 = (unsigned long) page_lookup_paddr((void*) (curr->ns_list = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x00000002; //ns list number
     cmd.cint11 = 0; //no cint11
     cmd.nsid = 0;
@@ -274,7 +274,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         cmd.cint0.opcode = 0x6;
         cmd.cint0.cid = 0x0;
 
-        cmd.prp1 = page_lookup_paddr((unsigned long) (curr_disk->info = k_pageobj_alloc(&page_heap, 4096)));
+        cmd.prp1 = (unsigned long)page_lookup_paddr((void*) (curr_disk->info = k_pageobj_alloc(&page_heap, 4096)));
         cmd.cint10 = 0x00000000; //disk id number
         cmd.cint11 = 0; //no cint11
         cmd.nsid = curr->ns_list[i]; //disk id specify
