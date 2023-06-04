@@ -18,8 +18,22 @@ void idt_pagefault_handler(unsigned long rdi, unsigned long rsi, unsigned long r
     dbgconout("CR2: ");
     dbgnumout_hex(cr2);
 
-    draw_string("\xcd\xcd\xcd\xcdPAGE FAULT\xcd\xcd\xcd\xcd\nERRCODE=");
+    draw_string("\n\xcd\xcd\xcd\xcdPAGE FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
     draw_hex(errcode);
+    draw_string("ERRBITS: ");
+
+    if(errcode & 0b1) draw_string("PRSNT ");
+    if(errcode & 0b10) draw_string("WRITE ");
+    if(errcode & 0b100) draw_string("USR ");
+    if(errcode & 0b1000) draw_string("RSVDWRITE ");
+    if(errcode & 0b10000) draw_string("INSTRGET ");
+    if(errcode & 0b100000) draw_string("PROTKEY ");
+    if(errcode & 0b1000000) draw_string("SHADOWSTK ");
+    if(errcode & 0b10000000) draw_string("SGXEX ");
+
+    draw_string("\n");
+
+
     draw_string("RIP=");
     draw_hex(rip);
     draw_string("CR2=");
