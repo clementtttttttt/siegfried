@@ -1,3 +1,5 @@
+union pml4e;
+
 typedef struct tss_t{
 
     unsigned int rsvd;
@@ -96,6 +98,7 @@ typedef struct task{
     void* krnl_stack_base;
     task_int_sframe *tf;
     char *name;
+    union pml4e *page_tab;
     struct task *next;
     unsigned long tid;
 
@@ -111,3 +114,6 @@ void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_st
 
 void task_enter_krnl();
 void task_exit_krnl();
+
+void init_loader_end();
+__attribute__((noinline, section(".init_loader"))) void init_loader();

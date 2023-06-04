@@ -12,6 +12,8 @@ SECTIONS
 	{
 		*(.multiboot)
 		*(.text)
+		*(.init_loader)
+		init_loader_end = .;
 	}
 
 		/* Read-only data. */

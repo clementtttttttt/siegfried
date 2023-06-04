@@ -1,6 +1,8 @@
 #include "page.h"
 #include "pageobj_heap.h"
 #include "debug.h"
+#include "draw.h"
+#include "klib.h"
 
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
 
@@ -81,6 +83,10 @@ void page_clone_page_tab(pml4e *dest, pml4e *src){
 
     }
 
+}
+
+void page_clone_krnl_tab(pml4e *dest){
+    page_clone_page_tab(dest, pml4_table);
 }
 
 
@@ -183,7 +189,6 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     tab[pml4i].rw = 1;
     tab[pml4i].isuser = 1;
 
-
     pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
 
     if(get_paddr(&pdpt_table[pdptei]) == 0 || pdpt_table[pdptei].present == 0){
@@ -192,6 +197,7 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
     pdpt_table[pdptei].isuser = 1;
+    pdpt_table[pdptei].is_krnl_pg = 0;
 
 
     pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
@@ -203,6 +209,7 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     pdei_table[pdei].ps = 1;
     pdei_table[pdei].attr_tab_or_rsvd = 0;
     pdei_table[pdei].isuser = 1;
+    pdei_table[pdei].is_krnl_pg = 0;
 
     //mark phys mem usage
     phys_mem_map[(unsigned long)phy / 2097152 / 8] |= (1 << (((unsigned long)phy/2097152)%8));
@@ -309,7 +316,77 @@ void page_alloc_mmio(void *phy, void *vir){
 
 inline unsigned char page_physmemmap_is_used(unsigned long paddr){
     return phys_mem_map[paddr/2097152/8] & (1<<((paddr/2097152)%8));
+
 }
+
+unsigned long page_virt_find_addr_tab(pml4e *tab, unsigned long pgs){
+
+        for(unsigned long addr = 0; addr < 0xFFFFFFFFFFFF; addr += 2097152){
+
+            int mem_not_found = 0;
+
+            unsigned long targ2;
+
+            for(unsigned long addr2 = 0; addr2 < pgs*2097152; addr2 += 2097152){
+
+                targ2 = addr + addr2;
+
+                unsigned long pml4i = targ2 >> 39 & 0x1ff;
+                unsigned long pdptei = targ2 >> 30 & 0x1ff;
+                unsigned long pdei = targ2 >> 21 & 0x1ff;
+
+                if(tab[pml4i].present == 0){
+                    if(pgs < 512*512){
+                        return addr;
+                    }
+                    else{
+                    //  addr += 549755813888 - addr% (549755813888);
+                        addr2 += 549755813888 - addr2 % (549755813888) - 2097152;
+                        continue;
+                    }
+                }
+
+                pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
+
+                if(pdpt_table[pdptei].present == 0){
+                    if(pgs < 512){
+
+                        return addr;
+                    }
+                    else{
+                        addr2 += 1073741824 - addr2%1073741824 - 2097152;
+                        continue;
+                    }
+                }
+
+                //skip to next pdpt
+                if(pdpt_table[pdptei].ps == 1){
+                    addr += 1073741824 - addr%1073741824 ;
+                    continue;
+                }
+
+
+
+                pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
+
+
+
+                if(pdei_table[pdei].present == 1){
+                    mem_not_found = 1;
+                    break;
+                }
+
+            }
+
+            if(mem_not_found == 0){
+
+                return addr;
+            }
+
+        }
+        return 0xDEAD;
+}
+
 
 unsigned long page_virt_find_addr(unsigned long pgs){
 
@@ -399,6 +476,48 @@ void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs){
         page_alloc_mmio((void*)(paddr + i),(void*) (vaddr + i));
     }
     return (void*)(vaddr + off);
+}
+
+void page_switch_tab(pml4e *tab);
+asm("page_switch_tab:\
+        movq %rdi, %cr3;\
+        ret;");
+
+void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs){
+
+    for(unsigned long i=0;i < 16777216*8 - pgs; ++i){
+
+        if(page_physmemmap_is_used(i * 2097152)){
+
+            continue;
+        }
+
+
+        unsigned long addr = page_virt_find_addr_tab(tab, pgs);
+
+
+        for(unsigned long pi = 0; pi < pgs; ++pi){
+            unsigned long off = i + pi;
+
+            while(page_physmemmap_is_used(off*2097152)){
+                ++i;
+                off = i + pi;
+            }
+
+
+            page_alloc_tab(tab, (void*)(pi * 2097152 + i*2097152),(void*) (addr + pi*2097152));
+        }
+
+        page_switch_tab(tab);
+
+       // mem_set((void*)addr, 0, pgs * 2097152 - 1);
+
+        page_switch_tab(pml4_table);
+
+        return (void*)addr;
+    }
+    return (void*)0xDEAD;
+
 }
 
 void *page_find_and_alloc(unsigned long pgs){

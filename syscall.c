@@ -3,6 +3,7 @@
 #include "rtc.h"
 #include "timer.h"
 #include "tasks.h"
+#include "diskman.h"
 
 void idt_syscall_handler_s();
 
@@ -14,29 +15,30 @@ void syscall_setup(){
 }
 
 
-void syscall_sleep(){
-    task_enter_krnl();
+void syscall_sleep(unsigned long in1){
 
     asm("sti");
 
 
-    unsigned long count = rtc_get_count() + 10;
+    unsigned long count = rtc_get_count() + in1;
 
     while(count >= rtc_get_count()){
-    //    task_yield();
     }
 
     asm("cli");
 
-    task_exit_krnl();
 }
 
-void (*syscall_table[200])() = {syscall_sleep};
+void syscall_diskman_read(){
 
-void syscall_main(int func){
+}
+
+void (*syscall_table[200])() = {syscall_sleep, syscall_diskman_read};
+
+void syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4){
 
     if(syscall_table[func]){
-        syscall_table[func]();
+        asm("callq *%0"::"r"(syscall_table[func]), "D"(i1), "S"(i2), "d"(i3), "c"(i4) : "rbx");
     }
     else{
         draw_string("UNKNOWN SYSCALL ");

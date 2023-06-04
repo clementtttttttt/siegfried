@@ -32,13 +32,40 @@ asm("task_load_task_regs_and_spawn:;\
                                 ;\
         iretq");
 
+void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_state *new_ptr_to_stack_addr);
+asm(".globl task_save_and_change_krnl_state;\
+    task_save_and_change_krnl_state:;\
+        cli;\
+        pushq %rbx;\
+        pushq %rbp;\
+        pushq %r11;\
+        pushq %r12;\
+        pushq %r13;\
+        pushq %r14;\
+        pushq %r15;\
+                ;\
+        movq %rsp, (%rdi);\
+        movq %rsi, %rsp;\
+;\
+        popq %r15;\
+        popq %r14;\
+        popq %r13;\
+        popq %r12;\
+        popq %r11;\
+        popq %rbp;\
+        popq %rbx;\
+        movl $0, sched_lock;\
+        retq;\
+        ");
+
+void task_switch_tab(pml4e *tab);
+asm("task_switch_tab:\
+        movq %rdi, %cr3;\
+        ret;");
+
 
 void task_pre_init(){
 
-}
-
-void task_use_krnl_tab(){
-        //asm("movq $pml4_table,%%rax; movq %%rax, %%cr3":::"rax");
 }
 
 void task_exit(){
@@ -94,17 +121,8 @@ task *task_new(){
     return curr;
 }
 
-void init_loader(){
 
-
-        while(1){
-        }
-
-}
-
-
-
-void task_start_func(void *func){
+task *task_start_func(void *func){ //note: requires func mapped to user space
         task *new = task_new();
 
         new -> tf -> cs = 0x18 | 3;
@@ -113,9 +131,17 @@ void task_start_func(void *func){
         new -> tf -> flags = 0x200;
         new -> tf -> rip = (unsigned long) func;
 
-        new -> tf -> rsp = (unsigned long) k_obj_alloc(TASK_STACK_SZ);
+        new->page_tab = k_pageobj_alloc(&page_heap, 4096 );
+        page_clone_krnl_tab(new->page_tab);
+
+        new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, 1)) + TASK_STACK_SZ;
+
+
+        return new;
+        //new -> page_tab
 }
 
+extern pml4e pml4_table[];
 
 void tasks_setup(){
 
@@ -128,44 +154,22 @@ void tasks_setup(){
     tasking_enabled = 1;
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
-    task_start_func(init_loader);
+    task* t=task_start_func(init_loader);
+    void* new = page_find_and_alloc_user(t->page_tab, 1);
 
+    task_switch_tab(t->page_tab);
+    //init_loader_end defined in linker.ld
+    mem_cpy(new, init_loader, (unsigned long)&init_loader_end - (unsigned long)&init_loader);
+
+    task_switch_tab(pml4_table);
+
+    t -> tf -> rip = (unsigned long) new;
 
     curr_task = tasks;
 
 }
 
 
-
-
-void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_state *new_ptr_to_stack_addr);
-
-
-asm(".globl task_save_and_change_krnl_state;\
-    task_save_and_change_krnl_state:;\
-        cli;\
-        pushq %rbx;\
-        pushq %rbp;\
-        pushq %r11;\
-        pushq %r12;\
-        pushq %r13;\
-        pushq %r14;\
-        pushq %r15;\
-                ;\
-        movq %rsp, (%rdi);\
-        movq %rsi, %rsp;\
-;\
-        popq %r15;\
-        popq %r14;\
-        popq %r13;\
-        popq %r12;\
-        popq %r11;\
-        popq %rbp;\
-        popq %rbx;\
-        movl $0, sched_lock;\
-        xchg %bx,%bx;\
-        retq;\
-        ");
 
 krnl_state *scheduler_state;
 
@@ -187,6 +191,7 @@ void task_scheduler(){
                         curr_task = curr_task->next;
                 }
 
+                task_switch_tab(curr_task->page_tab);
 
                 task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ);
 
@@ -196,6 +201,7 @@ void task_scheduler(){
 }
 
 void task_yield(){
+
 
         if(atomic_load(&sched_lock)){
                 return;
@@ -209,7 +215,6 @@ void task_yield(){
 
         atomic_store(&sched_lock, 1);
 
-        task_use_krnl_tab();
         task_save_and_change_krnl_state(&curr_task->krnl_state, scheduler_state);
 
 
