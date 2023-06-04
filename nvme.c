@@ -302,7 +302,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         curr_disk -> inode = ent->inode;
         ent->read_func = nvme_read_disk;
         ent->write_func = nvme_write_disk;
-
+        ent->uuid = 0;
+        ent->uuid_len = 0;
 
         draw_string("DISK SZ_IN_SECT=");
         draw_hex(curr_disk->info->lba_format_sz & 0x7);

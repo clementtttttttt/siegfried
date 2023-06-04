@@ -1,6 +1,7 @@
 #include "diskman.h"
 #include "draw.h"
 #include "klib.h"
+#include "obj_heap.h"
 
 void diskman_gpt_enum(diskman_ent *in){
 
@@ -13,5 +14,8 @@ void diskman_gpt_enum(diskman_ent *in){
 
     gpt_header *head = (gpt_header*) buf;
 
-    draw_string(head->magic);
+    in->uuid = k_obj_alloc(17);
+    mem_cpy(in->uuid, head->guid, 16);
+    in->uuid_len = 16;
+    draw_string(in->uuid);
 }

@@ -16,3 +16,10 @@ inline void syscall4(unsigned long func,unsigned long in1, unsigned long in2, un
     register unsigned long in4_r8 __asm__("r8") = in4;
     asm("int $0xf0"::"D"(func), "S"(in1), "d"(in2), "c"(in3), "r"(in4_r8));
 }
+
+typedef struct syscall_disk_ent{
+    char uuid[16];
+    int uuid_len;
+    unsigned long inode;
+    void* diskman_ent;
+}syscall_disk_ent;

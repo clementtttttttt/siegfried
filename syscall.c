@@ -6,6 +6,8 @@
 #include "diskman.h"
 #include "draw.h"
 #include "page.h"
+#include "klib.h"
+#include "syscall.h"
 
 void idt_syscall_handler_s();
 
@@ -31,10 +33,31 @@ void syscall_sleep(unsigned long in1){
 
 }
 
+extern diskman_ent *disks;
+
 void syscall_diskman_read(unsigned long disk_inode, unsigned long off_sects, unsigned long num_sects, void* buf){
 
     diskman_ent *e = diskman_find_ent(disk_inode);
     e -> read_func(disk_inode, off_sects, num_sects, page_lookup_paddr_tab(curr_task -> page_tab, buf));
+}
+
+void syscall_diskman_get_next_ent(syscall_disk_ent *e){
+    if(e == 0){
+        return;
+    }
+    diskman_ent *d = e -> diskman_ent;
+
+    if(d == 0) d = disks;
+    else d = d->next;
+
+    //check after getting next
+    if(d != 0){
+        e -> inode = d -> inode;
+
+        e -> uuid_len = d -> uuid_len;
+
+        mem_cpy(e -> uuid, d -> uuid, d -> uuid_len);
+    }
 }
 
 void (*syscall_table[200])() = {syscall_sleep, syscall_diskman_read, draw_string_w_sz};

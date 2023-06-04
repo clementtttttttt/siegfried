@@ -8,6 +8,8 @@ typedef struct diskman_ent{
     struct diskman_ent *next;
 
     char *uuid; //MBR/GPT IDENTIFIER
+    int uuid_len;
+
     unsigned long inode;
 
     diskman_read_func_t read_func;
