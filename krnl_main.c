@@ -103,11 +103,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     tasks_setup();
 
-
+    asm("cli");
 
     draw_string("STARTING SCHEDULER\r\n");
-
-    asm("sti");
 
     //kernel enters scheduler at this point.
 

@@ -18,3 +18,9 @@ typedef struct diskman_ent{
 
 diskman_ent *diskman_new_ent();
 void diskman_setup();
+
+void diskman_gpt_enum(diskman_ent *in);
+
+
+
+#include "diskman_gpt.h"

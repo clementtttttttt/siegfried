@@ -37,6 +37,10 @@ void rtc_handler(){
 
 }
 
+unsigned long rtc_get_count(){
+    return rtc_count;
+}
+
 //TTEth = 2048th
 
 void rtc_sleep_for_TTEth_sec(unsigned int TTEths){

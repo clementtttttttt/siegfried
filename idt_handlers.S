@@ -78,13 +78,25 @@ idt_timer_handler_s:
 
     call apic_ack_int
 
-        call timer_handler
+    call timer_handler
+
+    cmpl $1, task_in_krnl
+    jz 3f
 
     call task_yield
+
+    3:
 
     movq $2f, rip_save
     jmp idt_load_regs
     2:
+
+    pushq %rdi
+
+    movq 8(%rsp), %rdi
+    call draw_hex
+
+    popq %rdi
   
     iretq
 
@@ -121,30 +133,11 @@ idt_spurious_handler_s:
 
 idt_gpf_handler_s:
 
-    cmpq $0, %rsp
-    jnz 1f
-
-    movq stack_top, %rsp
-
+    movq $1f, rip_save
+    jmp idt_save_regs
     1:
 
-    movq %r15, tmp_r15
-    movq %cr2, %r15
-
-    pushq %r15
-
-    movq tmp_r15, %r15
-
-    pushq %r15
-    pushq %r14
-    pushq %r13
-    pushq %r12
-    pushq %r11
-    pushq %r10
-    pushq %rbp
-    pushq %rsp
-    pushq %rbx
-    pushq %rax
+    movq %rsp, %rdi
 
     call idt_gpf_handler
 

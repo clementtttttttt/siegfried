@@ -36,7 +36,7 @@ inline void set_paddr_pde(void* in, unsigned long inaddr){
 inline void* get_paddr(void* in){
     pml4e *t = in;
 
-    return (void*)( ((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12);
+    return (void*)(((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12);
 }
 
 unsigned char phys_mem_map[16777216];

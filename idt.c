@@ -1,6 +1,7 @@
 #include "idt.h"
 #include "debug.h"
 #include "draw.h"
+#include "tasks.h"
 
 idt_desc idt_table[256];
 
@@ -38,19 +39,26 @@ struct gpf_err{
     unsigned int rsvd : 16;
 };
 
-void idt_gpf_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, unsigned long rcx, unsigned long r8, unsigned long r9, unsigned long rax, unsigned long rbx, unsigned long rsp, unsigned long rbp, unsigned long r10, unsigned long r11, unsigned long r12, unsigned long r13, unsigned long r14, unsigned long r15, unsigned long cr2, unsigned int errcode, unsigned long rip, unsigned long seg){
+void idt_gpf_handler(task_trap_sframe *frame){
+
+    if(curr_task){
+     //   if(curr_task -> tid != 1){return;}
+    }
+    draw_hex(curr_task->tid);
+
+    draw_string("FAULT TASK TID IS 1: PANICKING!!!\n");
 
     dbgconout("GENERAL PROPTECTION FAULT: ERRCODE=");
-    dbgnumout_bin(errcode);
+    dbgnumout_bin(frame->errcode);
 
     dbgconout("RIP: ");
-    dbgnumout_hex(rip);
+    dbgnumout_hex(frame->rip);
 
     draw_string("\xcd\xcd\xcd\xcdGENERAL PROTECTION FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
-    draw_hex(errcode);
+    draw_hex(frame->errcode);
     struct gpf_err err;
 
-    *(unsigned int*)(&err) = errcode;
+    *(unsigned int*)(&err) = frame->errcode;
 
     draw_string("IS_EXTERNAL=");
     draw_hex(err.e);
@@ -60,9 +68,7 @@ void idt_gpf_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, un
     draw_hex(err.idx);
 
     draw_string("RIP=");
-    draw_hex(rip);
-    draw_string("CR2=");
-    draw_hex(cr2);
+    draw_hex(frame->rip);
 
     asm("cli;hlt;");
     while(1){

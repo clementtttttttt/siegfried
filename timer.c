@@ -7,7 +7,9 @@
 
 void idt_timer_handler_s();
 
-
+unsigned int timer_read_count(){
+    return apic_read_reg(0x390);
+}
 
 void timer_setup(){
 
@@ -28,12 +30,12 @@ void timer_setup(){
     apic_write_reg(0x320, lvt_tmr.raw);
 
     //measure timer speed
-    apic_write_reg(0x3e0, 32); //set timer divider
+    apic_write_reg(0x3e0, 8); //set timer divider
 
     apic_write_reg(0x380, 0xffffffff);
 
     asm("sti");
-    rtc_sleep_for_TTEth_sec(100);
+    rtc_sleep_for_TTEth_sec(1000);
     asm("cli");
 
     unsigned int cnts_in_TTEth = 0xffffffff - apic_read_reg(0x390);

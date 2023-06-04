@@ -14,3 +14,5 @@ typedef union lvt_tmr_reg{
     }__attribute__((packed));
     unsigned int raw;
 }__attribute__((packed))lvt_tmr_reg;
+
+unsigned int timer_read_count();

@@ -48,9 +48,10 @@ void diskman_setup(){
         i->read_func(i->inode, 0, 2, detect_sect);
 
 
+        //create partition drives
+
         if(mem_cmp(&detect_sect[512], "EFI PART", 8)){
-            draw_string("FOUND GPT TAB AT DRIVE ");
-            draw_hex(i->inode);
+            diskman_gpt_enum(i);
         }
         //draw_string_w_sz(detect_sect, 1024);
 
