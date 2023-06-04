@@ -35,7 +35,7 @@ void timer_setup(){
     apic_write_reg(0x380, 0xffffffff);
 
     asm("sti");
-    rtc_sleep_for_TTEth_sec(1000);
+    rtc_sleep_for_TTEth_sec(1);
     asm("cli");
 
     unsigned int cnts_in_TTEth = 0xffffffff - apic_read_reg(0x390);

@@ -91,13 +91,7 @@ idt_timer_handler_s:
     jmp idt_load_regs
     2:
 
-    pushq %rdi
 
-    movq 8(%rsp), %rdi
-    call draw_hex
-
-    popq %rdi
-  
     iretq
 
 idt_rtc_handler_s:
