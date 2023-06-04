@@ -98,20 +98,11 @@ void init_loader(){
 
 
         while(1){
-              // syscall0(0);
-               syscall0(3);
         }
 
 }
 
-void second(){
-        while(1){
-              // syscall0(0);
-                        syscall0(5);
-             //   syscall0(1);
 
-        }
-}
 
 void task_start_func(void *func){
         task *new = task_new();
@@ -138,7 +129,7 @@ void tasks_setup(){
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
     task_start_func(init_loader);
-    task_start_func(second);
+
 
     curr_task = tasks;
 
