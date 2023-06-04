@@ -21,6 +21,6 @@ void diskman_setup();
 
 void diskman_gpt_enum(diskman_ent *in);
 
-
+diskman_ent *diskman_find_ent(unsigned long inode);
 
 #include "diskman_gpt.h"

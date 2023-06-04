@@ -68,11 +68,8 @@ void page_clone_page_tab(pml4e *dest, pml4e *src){
                     set_paddr(&pdpt_table_dest[pdpti], (unsigned long)pdei_table_dest);
                     for(unsigned long pdei = 0; pdei < 512; ++pdei){
                         pdei_table_dest[pdei] = pdei_table_src[pdei];
-                        if(pdei_table_dest[pdei].is_krnl_pg){
                             pdei_table_dest[pdei].isuser = 0;
 
-                        }
-                        else pdei_table_dest[pdei].isuser = 1;
 
                     }
 
@@ -99,6 +96,35 @@ void page_init_map(){
     for(int i=0;i<512;++i){
         pml4_table[i].raw = 0;
     }
+}
+
+void* page_lookup_paddr_tab(pml4e *tab, void* in){
+
+    unsigned long vir = (unsigned long) in;
+    unsigned long off = vir & 0x1fffff;
+
+    unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
+    unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+    unsigned long pdei = (unsigned long)vir >> 21 & 0x1ff;
+
+    pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
+
+    if(pdpt_table == 0){
+        dbgconout("pdpt_table is 0");
+        return (void*)vir;
+
+
+    }
+
+    pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
+
+    if(pdei_table == 0){
+            dbgconout("pdpt_table is 0");
+
+        return (void*)vir;
+    }
+
+    return get_paddr(&pdei_table[pdei]) + off;
 }
 
 void* page_lookup_paddr(void* in){
@@ -319,7 +345,15 @@ inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 
 }
 
-unsigned long page_virt_find_addr_tab(pml4e *tab, unsigned long pgs){
+pml4e *page_get_curr_tab();
+asm("page_get_curr_tab:;\
+        movq %cr3, %rax;\
+        ret;");
+
+
+unsigned long page_virt_find_addr(unsigned long pgs){
+
+        pml4e *tab = page_get_curr_tab();
 
         for(unsigned long addr = 0; addr < 0xFFFFFFFFFFFF; addr += 2097152){
 
@@ -347,75 +381,6 @@ unsigned long page_virt_find_addr_tab(pml4e *tab, unsigned long pgs){
                 }
 
                 pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
-
-                if(pdpt_table[pdptei].present == 0){
-                    if(pgs < 512){
-
-                        return addr;
-                    }
-                    else{
-                        addr2 += 1073741824 - addr2%1073741824 - 2097152;
-                        continue;
-                    }
-                }
-
-                //skip to next pdpt
-                if(pdpt_table[pdptei].ps == 1){
-                    addr += 1073741824 - addr%1073741824 ;
-                    continue;
-                }
-
-
-
-                pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
-
-
-
-                if(pdei_table[pdei].present == 1){
-                    mem_not_found = 1;
-                    break;
-                }
-
-            }
-
-            if(mem_not_found == 0){
-
-                return addr;
-            }
-
-        }
-        return 0xDEAD;
-}
-
-
-unsigned long page_virt_find_addr(unsigned long pgs){
-
-        for(unsigned long addr = 0; addr < 0xFFFFFFFFFFFF; addr += 2097152){
-
-            int mem_not_found = 0;
-
-            unsigned long targ2;
-
-            for(unsigned long addr2 = 0; addr2 < pgs*2097152; addr2 += 2097152){
-
-                targ2 = addr + addr2;
-
-                unsigned long pml4i = targ2 >> 39 & 0x1ff;
-                unsigned long pdptei = targ2 >> 30 & 0x1ff;
-                unsigned long pdei = targ2 >> 21 & 0x1ff;
-
-                if(pml4_table[pml4i].present == 0){
-                    if(pgs < 512*512){
-                        return addr;
-                    }
-                    else{
-                    //  addr += 549755813888 - addr% (549755813888);
-                        addr2 += 549755813888 - addr2 % (549755813888) - 2097152;
-                        continue;
-                    }
-                }
-
-                pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
 
                 if(pdpt_table[pdptei].present == 0){
                     if(pgs < 512){
@@ -484,6 +449,7 @@ asm("page_switch_tab:\
         ret;");
 
 void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs){
+        page_switch_tab(tab);
 
     for(unsigned long i=0;i < 16777216*8 - pgs; ++i){
 
@@ -493,7 +459,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs){
         }
 
 
-        unsigned long addr = page_virt_find_addr_tab(tab, pgs);
+        unsigned long addr = page_virt_find_addr(pgs);
 
 
         for(unsigned long pi = 0; pi < pgs; ++pi){
@@ -508,7 +474,6 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs){
             page_alloc_tab(tab, (void*)(pi * 2097152 + i*2097152),(void*) (addr + pi*2097152));
         }
 
-        page_switch_tab(tab);
 
        // mem_set((void*)addr, 0, pgs * 2097152 - 1);
 
@@ -516,6 +481,9 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs){
 
         return (void*)addr;
     }
+
+        page_switch_tab(pml4_table);
+
     return (void*)0xDEAD;
 
 }

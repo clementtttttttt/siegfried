@@ -83,6 +83,7 @@ void page_clone_krnl_tab(pml4e *dest);
 void page_clone_page_tab(pml4e *dest, pml4e *src);
 
 void page_alloc_tab(pml4e *tab, void *phy, void *vir);
+void* page_lookup_paddr_tab(pml4e *tab, void* in);
 
 void page_alloc(void* phy, void* vir);
 void page_alloc_dev(void *phy, void *vir);

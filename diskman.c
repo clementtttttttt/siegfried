@@ -33,6 +33,17 @@ diskman_ent *diskman_new_ent(){
     return ret;
 }
 
+diskman_ent *diskman_find_ent(unsigned long inode){
+    diskman_ent *it = disks;
+    while(it){
+
+        if(it->inode == inode) return it;
+
+        it = it->next;
+    }
+    return (diskman_ent*)0xdead;
+}
+
 char detect_sect[1024];
 
 void diskman_setup(){

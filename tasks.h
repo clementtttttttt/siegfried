@@ -101,6 +101,7 @@ typedef struct task{
     union pml4e *page_tab;
     struct task *next;
     unsigned long tid;
+    unsigned long errno;
 
 }task;
 
