@@ -60,8 +60,20 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         struct multiboot_tag_framebuffer *fbtag = (struct multiboot_tag_framebuffer *) tag_ptr;
 
         switch(tag_ptr->type){
-            case MULTIBOOT_TAG_TYPE_CMDLINE:
+            case MULTIBOOT_TAG_TYPE_CMDLINE:{
+                struct multiboot_tag_string *cmdline = (struct multiboot_tag_string*) tag_ptr;
+                dbgconout(cmdline->string);
 
+            }
+            break;
+
+            case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:{
+
+                struct multiboot_tag_elf_sections *elfptr = (void* ) tag_ptr;
+
+                dbgnumout_hex(*(unsigned short*)(&elfptr->sections[0]));
+
+            }
             break;
 
             case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:

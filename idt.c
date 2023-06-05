@@ -7,38 +7,63 @@ idt_desc idt_table[256];
 
 idt_tab_desc idtr;
 
-void idt_pagefault_handler(unsigned long rdi, unsigned long rsi, unsigned long rdx, unsigned long rcx, unsigned long r8, unsigned long r9, unsigned long rax, unsigned long rbx, unsigned long rsp, unsigned long rbp, unsigned long r10, unsigned long r11, unsigned long r12, unsigned long r13, unsigned long r14, unsigned long r15, unsigned long cr2, unsigned int errcode, unsigned long rip, unsigned long seg){
+struct stackframe {
+  struct stackframe* ebp;
+  unsigned long eip;
+};
+
+void idt_print_stacktrace(unsigned long *stack){
+    draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315BEGIN STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
+
+    draw_string("STACK=");
+    draw_hex((unsigned long)stack);
+
+    stack = __builtin_frame_address(0);
+
+    while(stack != 0){
+            draw_hex(stack[1]);
+            stack = (unsigned long*) stack[0];
+    }
+
+    draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315END STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
+}
+
+unsigned long idt_dump_cr2();
+asm("idt_dump_cr2: movq %cr2, %rax; retq");
+
+void idt_pagefault_handler(task_trap_sframe *fr){
 
     dbgconout("PAGE FAULT: ERRCODE=");
-    dbgnumout_bin(errcode);
+    dbgnumout_bin(fr->errcode);
 
     dbgconout("RIP: ");
-    dbgnumout_hex(rip);
+    dbgnumout_hex(fr->rip);
 
     dbgconout("CR2: ");
-    dbgnumout_hex(cr2);
+    dbgnumout_hex(idt_dump_cr2());
 
     draw_string("\n\xcd\xcd\xcd\xcdPAGE FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
-    draw_hex(errcode);
+    draw_hex(fr -> errcode);
     draw_string("ERRBITS: ");
 
-    if(errcode & 0b1) draw_string("PRSNT ");
-    if(errcode & 0b10) draw_string("WRITE ");
-    if(errcode & 0b100) draw_string("USR ");
-    if(errcode & 0b1000) draw_string("RSVDWRITE ");
-    if(errcode & 0b10000) draw_string("INSTRGET ");
-    if(errcode & 0b100000) draw_string("PROTKEY ");
-    if(errcode & 0b1000000) draw_string("SHADOWSTK ");
-    if(errcode & 0b10000000) draw_string("SGXEX ");
+    if(fr->errcode & 0b1) draw_string("PRSNT ");
+    if(fr->errcode & 0b10) draw_string("WRITE ");
+    if(fr->errcode & 0b100) draw_string("USR ");
+    if(fr->errcode & 0b1000) draw_string("RSVDWRITE ");
+    if(fr->errcode & 0b10000) draw_string("INSTRGET ");
+    if(fr->errcode & 0b100000) draw_string("PROTKEY ");
+    if(fr->errcode & 0b1000000) draw_string("SHADOWSTK ");
+    if(fr->errcode & 0b10000000) draw_string("SGXEX ");
 
     draw_string("\n");
 
 
     draw_string("RIP=");
-    draw_hex(rip);
+    draw_hex(fr->rip);
     draw_string("CR2=");
-    draw_hex(cr2);
+    draw_hex(idt_dump_cr2());
 
+    idt_print_stacktrace((unsigned long*)fr->rbp);
 
     asm("cli;hlt;");
     while(1){
@@ -84,6 +109,8 @@ void idt_gpf_handler(task_trap_sframe *frame){
     draw_string("RIP=");
     draw_hex(frame->rip);
 
+    idt_print_stacktrace((unsigned long*)frame->rsp);
+
     asm("cli;hlt;");
     while(1){
 
@@ -106,7 +133,7 @@ void idt_set_addr(idt_desc* desc, unsigned long addr){
 }
 
 void idt_set_trap_ent(unsigned long no, void* addr){
-    idt_table[no].type_attr.raw = 0x8f;
+    idt_table[no].type_attr.raw = 0x8e;
     idt_table[no].code_seg = 0x8;
     idt_set_addr(&idt_table[no], (unsigned long)addr);
 

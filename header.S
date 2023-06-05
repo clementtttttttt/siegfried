@@ -36,6 +36,8 @@ info_tag_start:
 
 .int MULTIBOOT_TAG_TYPE_FRAMEBUFFER
 
+.int MULTIBOOT_TAG_TYPE_ELF_SECTIONS
+
 info_tag_end:
 
 .align 8

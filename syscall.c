@@ -38,7 +38,11 @@ extern diskman_ent *disks;
 void syscall_diskman_read(unsigned long disk_inode, unsigned long off_sects, unsigned long num_sects, void* buf){
 
     diskman_ent *e = diskman_find_ent(disk_inode);
+
+    if(e != 0){
     e -> read_func(disk_inode, off_sects, num_sects, page_lookup_paddr_tab(curr_task -> page_tab, buf));
+    }
+
 }
 
 void syscall_diskman_get_next_ent(syscall_disk_ent *e){
@@ -58,9 +62,11 @@ void syscall_diskman_get_next_ent(syscall_disk_ent *e){
 
         mem_cpy(e -> uuid, d -> uuid, d -> uuid_len);
     }
+
+     e -> diskman_ent = d;
 }
 
-void (*syscall_table[200])() = {syscall_sleep, syscall_diskman_read, draw_string_w_sz};
+void (*syscall_table[200])() = {syscall_sleep, syscall_diskman_get_next_ent, syscall_diskman_read, draw_string_w_sz};
 
 void syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4){
 

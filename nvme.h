@@ -92,6 +92,7 @@ typedef struct nvme_bar0{
     unsigned int comp_queue_tail_doorbell;
 
     unsigned int io_sub_queue_tail_doorbell;
+    unsigned int io_cmpl_queue_tail_doorbell;
 
 
 

@@ -36,6 +36,7 @@ idt_save_regs:
     pushq %r14
     pushq %r15
     pushq %rbx    
+    pushq %rbp
     pushq %rax
 
     xorq %rax, %rax
@@ -52,6 +53,7 @@ idt_load_regs:
     movw %ax, %ds
 
     popq %rax
+    popq %rbp
     popq %rbx
     popq %r15
     popq %r14
@@ -139,23 +141,11 @@ idt_gpf_handler_s:
 
 idt_pagefault_handler_s:
 
-    movq %r15, tmp_r15
-    movq %cr2, %r15
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
 
-    pushq %r15
-
-    movq tmp_r15, %r15
-
-    pushq %r15
-    pushq %r14
-    pushq %r13
-    pushq %r12
-    pushq %r11
-    pushq %r10
-    pushq %rbp
-    pushq %rsp
-    pushq %rbx
-    pushq %rax
+    movq %rsp, %rdi
 
     call idt_pagefault_handler
 

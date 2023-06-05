@@ -206,7 +206,7 @@ _start:
 
 	movq ebx_keep, %rsi
 
-
+	xorq %rbp, %rbp
 
 	call krnl_main
 

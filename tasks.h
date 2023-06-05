@@ -26,7 +26,9 @@ typedef struct tss_t{
 
 typedef struct task_sframe{
 
+    unsigned long ds;
     unsigned long rax;
+    unsigned long rbp;
     unsigned long rbx;
     unsigned long r15;
     unsigned long r14;
@@ -40,7 +42,6 @@ typedef struct task_sframe{
     unsigned long rdx;
     unsigned long rsi;
     unsigned long rdi;
-    unsigned long ds;
 
     unsigned long rip;
     unsigned long cs;
@@ -54,6 +55,7 @@ typedef struct task_trap_sframe{
 
     unsigned long ds;
     unsigned long rax;
+    unsigned long rbp;
     unsigned long rbx;
     unsigned long r15;
     unsigned long r14;
@@ -68,7 +70,7 @@ typedef struct task_trap_sframe{
     unsigned long rsi;
     unsigned long rdi;
 
-    unsigned int errcode;
+    unsigned long errcode;
 
     unsigned long rip;
     unsigned long cs;

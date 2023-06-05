@@ -41,7 +41,9 @@ diskman_ent *diskman_find_ent(unsigned long inode){
 
         it = it->next;
     }
-    return (diskman_ent*)0xdead;
+
+
+    return (diskman_ent*)0;
 }
 
 char detect_sect[1024];

@@ -74,12 +74,12 @@ unsigned short io_cmdid_c;
 //sector is 512
 void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
 
-        draw_string("O=");
-        draw_hex(off_sects);
-        draw_string("N=");
-        draw_hex(num_sects);
+//        draw_string("O=");
+//        draw_hex(off_sects);
+//        draw_string("N=");
+//        draw_hex(num_sects);
 
-    nvme_sub_queue_ent cmd = {0};
+    nvme_sub_queue_ent cmd;
 
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
@@ -103,9 +103,13 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     unsigned short old_iotail_i = in->ctrl->io_tail_i;
 
     in->ctrl->io_tail_i = (in->ctrl->io_tail_i + 1) & 0x3f;
+    in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
-
-    draw_string("NVME WAITING\n");
+ //       draw_string("IO_TAIL_I=");
+ //       draw_hex(in->ctrl->io_tail_i);
+ //           draw_string("OLD_TAIL_I=");
+  //      draw_hex(old_iotail_i);
+  //  draw_string("NVME WAITING\n");
     while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
 
     }
@@ -152,10 +156,12 @@ DISKMAN_WRITE_FUNC(nvme_write_disk){
 }
 
 DISKMAN_READ_FUNC(nvme_read_disk){
-
     nvme_disk *disk = nvme_find_disk_from_inode(id);
-    draw_string("BUF ADDR=");
-    draw_hex((unsigned long)buf);
+
+    if(disk == 0) return 0;
+
+    //draw_string("BUF ADDR=");
+    //draw_hex((unsigned long)buf);
     nvme_send_io_cmd(disk, off_sects, /*opcode*/2, num_sects, buf);
 
 
