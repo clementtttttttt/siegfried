@@ -109,6 +109,9 @@ void idt_gpf_handler(task_trap_sframe *frame){
     draw_string("RIP=");
     draw_hex(frame->rip);
 
+    draw_string("RCX=");
+    draw_hex(frame->rcx);    
+
     idt_print_stacktrace((unsigned long*)frame->rsp);
 
     asm("cli;hlt;");

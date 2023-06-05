@@ -475,7 +475,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs){
         }
 
 
-       // mem_set((void*)addr, 0, pgs * 2097152 - 1);
+        mem_set((void*)addr, 0, pgs * 2097152);
 
         page_switch_tab(pml4_table);
 

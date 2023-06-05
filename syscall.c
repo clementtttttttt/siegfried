@@ -49,7 +49,7 @@ void syscall_diskman_get_next_ent(syscall_disk_ent *e){
     if(e == 0){
         return;
     }
-    diskman_ent *d = e -> diskman_ent;
+    register diskman_ent *d = e -> diskman_ent;
 
     if(d == 0) d = disks;
     else d = d->next;
