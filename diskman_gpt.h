@@ -19,3 +19,24 @@ typedef struct gpt_header{ //LBA 1 of gpt
     unsigned int parts_ents_crc32;
 
 }__attribute__((packed))gpt_header;
+
+typedef struct gpt_partent{
+
+    char type_guid[16];
+    __int128 part_guid;
+    unsigned long lba_start;
+    unsigned long lba_end;
+    unsigned long attr;
+    char partname[72];
+
+}__attribute__((packed))gpt_partent;
+
+typedef struct gpt_partlist_ent{
+
+    diskman_ent *disk;
+    unsigned long lba_start, lba_end;
+    unsigned long attr;
+    unsigned long inode;
+    struct gpt_partlist_ent *next;
+
+}gpt_partlist_ent;

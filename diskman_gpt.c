@@ -4,6 +4,51 @@
 #include "obj_heap.h"
 
 char buf[512];
+gpt_partlist_ent *gparts = 0;
+
+gpt_partlist_ent *diskman_gpt_new_ent(){
+
+    gpt_partlist_ent *ret;
+
+    if(gparts == 0){
+        ret = gparts = k_obj_alloc(sizeof(gpt_partlist_ent));
+    }
+    else{
+        while(gparts->next) gparts=gparts->next;
+        ret =
+        gparts->next = k_obj_alloc(sizeof(gpt_partlist_ent));
+
+    }
+
+    return ret;
+}
+
+gpt_partlist_ent *gpt_find_ent(unsigned long inode){
+
+    gpt_partlist_ent *e = gparts;
+
+    while(e){
+
+        if(e -> inode == inode){
+            return e;
+        }
+
+        e = e ->next;
+    }
+
+    return 0;
+
+}
+
+unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned long num, void *buf){
+
+    gpt_partlist_ent *e = gpt_find_ent(inode);
+
+    e->disk->read_func(e->disk->inode, e->lba_start + off, num, buf);
+
+
+    return off;
+}
 
 void diskman_gpt_enum(diskman_ent *in){
 
@@ -28,7 +73,50 @@ void diskman_gpt_enum(diskman_ent *in){
     draw_string("GPT NUMPART=");
     draw_hex(head->num_parts);
 
+    draw_string("PARTENT SZ=");
+    draw_hex(head->parts_ent_sz);
+
+    char *esect = k_obj_alloc(512);
+
     for(unsigned long i=0; i < head->num_parts; ++i){
-        in->read_func(in->inode, head->lba_part_ent+i, 1, buf);
+
+        //draw_hex(head->lba_part_ent+((i*head->parts_ent_sz)/512));
+        in->read_func(in->inode, head->lba_part_ent+((i*head->parts_ent_sz)/512), 1, esect);
+
+
+        gpt_partent *ent = (gpt_partent*)&esect[(i*head->parts_ent_sz)%512];
+
+        __int128 cmp_z = 0;
+        if(mem_cmp(ent->type_guid, (char*)&cmp_z, 16)){
+            continue;
+        }
+        draw_string("FOUND PART: PART_UUID=");
+        draw_string_w_sz((char*)&ent->part_guid, 16);
+        draw_string("\n");
+        draw_string("PARTNAME=");
+        draw_string_w_sz(ent->partname, 72);
+        draw_string("\n");
+
+        diskman_ent *dev = diskman_new_ent();
+
+        dev->uuid = k_obj_alloc(16);
+        mem_cpy(dev->uuid, &ent->part_guid, 16);
+
+        dev->uuid_len = 16;
+        dev->ispart = 1;
+
+        dev->read_func  = (void*) diskman_gpt_read;
+
+        gpt_partlist_ent *e = diskman_gpt_new_ent();
+
+        e->inode = dev->inode;
+        e->lba_start = ent->lba_start;
+        e->lba_end = ent->lba_end;
+        e->attr = ent->attr;
+        e->disk = in;
+
     }
+
+    k_obj_free(head);
+    k_obj_free(esect);
 }

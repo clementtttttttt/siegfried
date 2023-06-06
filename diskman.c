@@ -9,6 +9,9 @@
 diskman_ent *disks = 0;
 
 unsigned long inode = 0;
+
+
+
 diskman_ent *diskman_new_ent(){
 
     diskman_ent *ret;
@@ -53,6 +56,10 @@ void diskman_setup(){
     diskman_ent *i = disks;
 
     while(i){
+        if(i->ispart){
+            i=i->next;
+            continue;
+        }
 
         extern KHEAPSS page_heap;
         char *detect_sect=k_pageobj_alloc(&page_heap, 4096);

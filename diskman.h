@@ -15,6 +15,7 @@ typedef struct diskman_ent{
     diskman_read_func_t read_func;
     diskman_write_func_t write_func;
 
+    char ispart;
 
 }diskman_ent;
 

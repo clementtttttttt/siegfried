@@ -8,13 +8,15 @@ __attribute__((noinline, section(".init_loader"))) void init_loader(){
 
         char buf[512];
 
-        syscall4(2, 1, 1, 1, (unsigned long)buf);
+        syscall4(2, 2, 2, 1, (unsigned long)buf);
    
-	syscall2(3,(unsigned long)buf, 512);
+        char *stuf = "BUF CONTENTS:";
+        syscall2(3, (unsigned long)stuf, 14);
+        syscall2(3,(unsigned long)buf, 512);
 
         syscall_disk_ent information;
 
-	information.diskman_ent = 0;
+        information.diskman_ent = 0;
 
         syscall1(1, (unsigned long) &information);
 
