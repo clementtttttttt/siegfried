@@ -6,21 +6,9 @@
 void init_loader_end();
 __attribute__((noinline, section(".init_loader"))) void init_loader(){
 
-        char buf[512];
+//        char buf[512];
 
-        syscall4(2, 2, 2, 1, (unsigned long)buf);
-   
-        char *stuf = "BUF CONTENTS:";
-        syscall2(3, (unsigned long)stuf, 14);
-        syscall2(3,(unsigned long)buf, 512);
 
-        syscall_disk_ent information;
-
-        information.diskman_ent = 0;
-
-        syscall1(1, (unsigned long) &information);
-
-        syscall2(3, (unsigned long)information.uuid, information.uuid_len);
 
         syscall2(3, (unsigned long)"\nREACHED END OF INIT\r", 21);
 

@@ -50,6 +50,16 @@ unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned 
     return off;
 }
 
+unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned long num, void *buf){
+
+    gpt_partlist_ent *e = gpt_find_ent(inode);
+
+    e->disk->write_func(e->disk->inode, e->lba_start + off, num, buf);
+
+
+    return off;
+}
+
 void diskman_gpt_enum(diskman_ent *in){
 
     mem_set(buf, 0, 512);
@@ -90,12 +100,6 @@ void diskman_gpt_enum(diskman_ent *in){
         if(mem_cmp(ent->type_guid, (char*)&cmp_z, 16)){
             continue;
         }
-        draw_string("FOUND PART: PART_UUID=");
-        draw_string_w_sz((char*)&ent->part_guid, 16);
-        draw_string("\n");
-        draw_string("PARTNAME=");
-        draw_string_w_sz(ent->partname, 72);
-        draw_string("\n");
 
         diskman_ent *dev = diskman_new_ent();
 
@@ -115,6 +119,14 @@ void diskman_gpt_enum(diskman_ent *in){
         e->attr = ent->attr;
         e->disk = in;
 
+        draw_string("FOUND PART: PART_UUID=");
+        draw_string_w_sz((char*)&ent->part_guid, 16);
+        draw_string("\n");
+        draw_string("PARTNAME=");
+        draw_string_w_sz(ent->partname, 72);
+        draw_string("\n");
+        draw_string("PART INODE=");
+        draw_hex(e->inode);
     }
 
     k_obj_free(head);
