@@ -77,8 +77,13 @@ void extfs_enum(diskman_ent *d){
             d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab + sb->inode_struct_sz_b))->blk_data_ptrs[0]*(inf->blksz_bytes/512), 2, root_dirents);
         }
         else{
-            extfs_extent_head *chk2 = k_obj_alloc(1024);
-            d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab + sb->inode_struct_sz_b))->blk_data_ptrs[0]*(inf->blksz_bytes/512), 2, chk2);
+            extfs_extent_head *chk2 =  (extfs_extent_head*)((extfs_inode*)((unsigned long)inode_tab + sb->inode_struct_sz_b))->blk_data_ptrs;
+
+            extfs_extent *ex =(extfs_extent*)( (unsigned long)chk2 + sizeof(extfs_extent_head));
+
+            draw_hex(ex->blk_dat);
+
+            d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes/512), 2, root_dirents);
 
             draw_hex(chk2->magic);
 
