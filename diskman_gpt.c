@@ -14,10 +14,12 @@ gpt_partlist_ent *diskman_gpt_new_ent(){
         ret = gparts = k_obj_alloc(sizeof(gpt_partlist_ent));
     }
     else{
-        while(gparts->next) gparts=gparts->next;
-        ret =
-        gparts->next = k_obj_alloc(sizeof(gpt_partlist_ent));
+        ret = gparts;
+        while(ret->next) ret=ret->next;
 
+        ret->next = k_obj_alloc(sizeof(gpt_partlist_ent));
+
+        ret = ret->next;
     }
 
     return ret;
@@ -36,13 +38,14 @@ gpt_partlist_ent *gpt_find_ent(unsigned long inode){
         e = e ->next;
     }
 
-    return 0;
+    return (void*)0;
 
 }
 
 unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned long num, void *buf){
 
     gpt_partlist_ent *e = gpt_find_ent(inode);
+
 
     e->disk->read_func(e->disk->inode, e->lba_start + off, num, buf);
 
@@ -110,8 +113,10 @@ void diskman_gpt_enum(diskman_ent *in){
         dev->ispart = 1;
 
         dev->read_func  = (void*) diskman_gpt_read;
+        dev->write_func = (void*) diskman_gpt_write;
 
         gpt_partlist_ent *e = diskman_gpt_new_ent();
+
 
         e->inode = dev->inode;
         e->lba_start = ent->lba_start;

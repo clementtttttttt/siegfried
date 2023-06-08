@@ -53,7 +53,10 @@ char detect_sect[1024];
 
 void diskman_setup(){
 
+
     diskman_ent *i = disks;
+
+    char *detect_sect=k_obj_alloc( 1024);
 
     while(i){
         if(i->ispart){
@@ -61,8 +64,6 @@ void diskman_setup(){
             continue;
         }
 
-        extern KHEAPSS page_heap;
-        char *detect_sect=k_pageobj_alloc(&page_heap, 4096);
         mem_set(detect_sect, 0, 1024);
 
         i->read_func(i->inode, 0, 2, detect_sect);
@@ -74,6 +75,16 @@ void diskman_setup(){
             diskman_gpt_enum(i);
         }
         //draw_string_w_sz(detect_sect, 1024);
+
+        i = i->next;
+    }
+
+    i=disks;
+
+    //fs detection
+    while(i){
+
+        extfs_enum(i);
 
         i = i->next;
     }
