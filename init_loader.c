@@ -10,7 +10,7 @@ __attribute__((noinline, section(".init_loader"))) void init_loader(){
 
 
 
-        syscall2(3, (unsigned long)"\nREACHED END OF INIT\r", 21);
+        syscall2(3, (unsigned long)"\nREACHED END OF INIT! reaching end of init! \r", 21);
 
     //    __builtin_trap();
 
