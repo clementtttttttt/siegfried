@@ -32,7 +32,7 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
         case 'g':
         case 'p':
         case 'q':
-            iny += 3;
+            iny += 2;
             break;
     }
 
