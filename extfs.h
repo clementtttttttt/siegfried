@@ -184,3 +184,5 @@ typedef struct extfs_extent{
 }__attribute__((packed))extfs_extent;
 
 void extfs_enum(diskman_ent *d);
+
+void extfs_read_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x);
