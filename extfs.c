@@ -2,11 +2,13 @@
 #include "draw.h"
 #include "obj_heap.h"
 
-void extfs_read_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x){
+extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x){
 
     extfs_disk_info *inf = d->fs_disk_info;
 
     d->read_func(d->inode, ((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp) / (512/sizeof(extfs_bgrp_desc)) + ((extfs_disk_info*)d->fs_disk_info)->blk_start * inf->blksz_bytes / 512 + inf->blksz_bytes / 512, 1, descs_16x);
+
+    return &(descs_16x[(inode-1)%16]);
 }
 
 void extfs_enum(diskman_ent *d){
@@ -39,10 +41,10 @@ void extfs_enum(diskman_ent *d){
 
         extfs_bgrp_desc * bd = k_obj_alloc(512);
 
-        extfs_read_blk_desc(d, 2, bd);
+        extfs_bgrp_desc * bdi = extfs_read_inodes_blk_desc(d, EXTFS_ROOTDIR_INODE, bd); //root inode = 2
 
-            draw_string("INODE TAB PTR=");
-        draw_hex( bd[0].blk_inode_tab*inf->blksz_bytes/512);
+        draw_string("INODE TAB PTR=");
+        draw_hex( bdi->blk_inode_tab*inf->blksz_bytes/512);
 
         extfs_inode *inode_tab = k_obj_alloc(1024);
 

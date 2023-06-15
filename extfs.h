@@ -165,13 +165,13 @@ typedef struct extfs_extent_head{
 
 }__attribute__((packed))extfs_extent_head;
 
-typedef struct extfs_extent_id{
+typedef struct extfs_extent_cld{
 
     unsigned int blk_f_off;
     unsigned int blk_child_low;
     unsigned short blk_child_h;
     unsigned short rsvd;
-}__attribute__((packed))extfs_extent_id;
+}__attribute__((packed))extfs_extent_cld;
 
 typedef struct extfs_extent{
 
@@ -185,4 +185,6 @@ typedef struct extfs_extent{
 
 void extfs_enum(diskman_ent *d);
 
-void extfs_read_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x);
+extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x);
+
+#define EXTFS_ROOTDIR_INODE 2
