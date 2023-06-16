@@ -101,6 +101,7 @@ typedef struct extfs_disk_info{
     unsigned long blk_start;
     unsigned long bgdt_sz_b;
 
+    unsigned long inode_struct_sz_b;
 
 }extfs_disk_info;
 
@@ -165,15 +166,15 @@ typedef struct extfs_extent_head{
 
 }__attribute__((packed))extfs_extent_head;
 
-typedef struct extfs_extent_cld{
+typedef struct extfs_extent_int{
 
     unsigned int blk_f_off;
     unsigned int blk_child_low;
     unsigned short blk_child_h;
     unsigned short rsvd;
-}__attribute__((packed))extfs_extent_cld;
+}__attribute__((packed))extfs_extent_int;
 
-typedef struct extfs_extent{
+typedef struct extfs_extent_end{
 
     unsigned int blk_f_off;
 
@@ -181,7 +182,7 @@ typedef struct extfs_extent{
     unsigned short blk_dat_h;
     unsigned short blk_dat;
 
-}__attribute__((packed))extfs_extent;
+}__attribute__((packed))extfs_extent_end;
 
 void extfs_enum(diskman_ent *d);
 
