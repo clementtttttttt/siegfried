@@ -1,6 +1,7 @@
 #include "diskman.h"
 #include "draw.h"
 #include "obj_heap.h"
+#include "klib.h"
 
 extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x){
 
@@ -29,10 +30,7 @@ extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode){
 
         unsigned long sz_s = inf -> blksz_bytes / 512;
 
-        draw_string("INODE TAB PTR=");
-
-        draw_hex(  bd->blk_inode_tab*sz_s
-        + ((((inode-1) % inf->inodes_per_grp) * inf->inode_struct_sz_b) / 512));
+        //reads INODE ENTRY in INODE TABLE not BLOCK GROUP DESC
 
         d->read_func(d->inode,
 
@@ -41,12 +39,70 @@ extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode){
 
         ,1, inode_tab);
 
+        k_obj_free(bd16x);
 
-        return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % inf->inodes_per_grp)));
+        return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % (512/inf->inode_struct_sz_b))));
 
 }
 
-void extfs_read_inode_contents(diskman_ent *d, unsigned long inode, void* buf){}
+extfs_blk_list *extfs_new_pair(extfs_blk_list **root, unsigned long num, unsigned long off, unsigned long blks_f_off){
+
+    extfs_blk_list *in = *root;
+
+    if(in == 0){
+
+        in = *root = k_obj_alloc(sizeof(extfs_blk_list));
+
+    }
+    else{
+        while(in->next){
+            in = in->next;
+        }
+        in->next = k_obj_alloc(sizeof(extfs_blk_list));
+        in=in->next;
+    }
+
+    in -> blks_off = off;
+    in -> blks_f_off = blks_f_off;
+    in -> num_blks = num;
+
+
+    return in;
+
+}
+
+extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head){
+
+
+    extfs_blk_list *root = 0;
+
+    draw_string("DEPTH=");
+    draw_hex(head->depth);
+
+    if(head->depth == 0){
+
+
+        extfs_extent_end *end = (extfs_extent_end*)((unsigned long)head + sizeof(extfs_extent_head));
+
+        for(unsigned long i=0; i<head->ents; ++i){
+
+            extfs_new_pair(&root, end->num_blks, (unsigned long)end->blk_dat | ((unsigned long)end->blk_dat_h << 32), end->blk_f_off);
+
+            end = (extfs_extent_end*)((unsigned long)end + sizeof(extfs_extent_end));
+        }
+
+
+
+
+
+    }else{
+
+
+    }
+
+    return root;
+
+}
 
 void extfs_enum(diskman_ent *d){
 
@@ -114,11 +170,6 @@ void extfs_enum(diskman_ent *d){
 
         draw_string("\n");
 
-
-        draw_string("INODE SZ=");
-        draw_hex(sb->inode_struct_sz_b);
-
-
         extfs_dirent * root_dirents = k_obj_alloc(1024);
 
         if(!(sb->req_flags & 0x40)){
@@ -141,15 +192,43 @@ void extfs_enum(diskman_ent *d){
 
         draw_string("====EXTFS DIRLIST TEST====\n");
 
-        while(root_dirents->ent_sz){
+        while(root_dirents->inode){
 
             draw_string("FNAME=");
 
             draw_string_w_sz(root_dirents->name, root_dirents->namelen_l);
-            //  draw_string_w_sz(root_dirents->name,root_dirents->ent_sz);
-                        root_dirents = (void*)(((unsigned long)root_dirents) + root_dirents->ent_sz);
 
-            draw_string("\n");
+            draw_string(" INODE=");
+
+            draw_hex(root_dirents->inode);
+
+            draw_string(" SZ=");
+
+            draw_hex(root_dirents->ent_sz);
+
+            if(mem_cmp("words.txt", root_dirents->name, str_len("words.txt"))){
+                    extfs_inode *inode_tab2 = extfs_read_inode_struct(d, 0xd);
+
+                    if(sb->req_flags & 0x40){
+                        extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)inode_tab2->blk_data_ptrs);
+
+
+
+                            char *buf = k_obj_alloc(0x2000);
+
+
+                            d->read_func(d->inode, blks->blks_off * inf->blksz_bytes / 512,0x10,buf);
+
+                           draw_string_w_sz(buf,0x2000);
+
+                    }
+
+            }
+
+            //  draw_string_w_sz(root_dirents->name,root_dirents->ent_sz);
+            root_dirents = (void*)(((unsigned long)root_dirents) + root_dirents->ent_sz);
+
+
         }
 
     }

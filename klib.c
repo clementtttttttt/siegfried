@@ -2,6 +2,16 @@
 #include "klib.h"
 #include "debug.h"
 
+unsigned long str_len(char *in){
+    char *old=in;
+    while(*in){
+        ++in;
+    }
+
+    return in - old;
+
+}
+
 void mem_cpy(void *dest, void *src, unsigned long n)
 {
 // Typecast src and dest addresses to (char *)

@@ -90,9 +90,14 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     cmd.nsid = in->id;
     cmd.prp1 = (unsigned long)buf_io;
 
+    void* prp2_vm = k_pageobj_alloc(&page_heap, 4096);
+
+    void* prp2 = page_lookup_paddr(prp2_vm);
+
     if(num_sects >= (4096 / 512)){
-        cmd.prp2 = (unsigned long)buf + 2048;
+        cmd.prp2 = (unsigned long)prp2;
     }
+    else cmd.prp2 = 0;
 
     cmd.cint10 = off_sects & 0xffffffff;
     cmd.cint11 = off_sects >> 32;
@@ -120,8 +125,16 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
     //FIXME!!!!!: proper handling of ios with more than 4 sects or smth
 
-    mem_cpy(buf, buf_io, num_sects * 512);
+    if(num_sects >= (4096 / 512)){
+        mem_cpy((void*)((unsigned long)buf), buf_io, 4096 );
+        mem_cpy((void*)((unsigned long)buf + 4096), prp2_vm, num_sects * 512 - 4096);
+    }else{
+                mem_cpy((void*)((unsigned long)buf), buf_io, num_sects*512 );
 
+    }
+
+    k_pageobj_free(&page_heap, prp2_vm);
+    k_pageobj_free(&page_heap, buf_io);
 
 }
 
@@ -200,18 +213,21 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
  //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
 
 
-    unsigned int bar0_anded = (bar0->ctrl_conf & 0xfffffffe); //nvme disable
-    bar0->ctrl_conf = bar0_anded;
+    bar0->ctrl_conf.enable = 0;;
 
     bar0->queue_att = 0x003f003f; //64 ents for both queues
     bar0->sub_queue_addr = (nvme_sub_queue_ent *)page_lookup_paddr((void*)curr->asq_vaddr); //pointer to an array of sz 64
     bar0->cmpl_queue_addr = (nvme_cmpl_queue_ent*) page_lookup_paddr((void*)curr->acq_vaddr);
 
     bar0->int_disable = 0xffffffff;
-    bar0->ctrl_conf = 0x460001;
+    *(unsigned int*)&bar0->ctrl_conf = 0x460001;
+    bar0->ctrl_conf.pgsz = 0;
 
     //FIXME: removing this line causes the driver to hang in real hw. i dont focking know why.
     draw_hex((unsigned long)bar0->sub_queue_addr);
+
+    draw_string("PGSZ=");
+    draw_hex(1 << (12+bar0->ctrl_conf.pgsz));
  
 
 
@@ -323,6 +339,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         draw_string("DISK LBA_SECT=");
         curr_disk->sector_sz_in_bytes = 1 << (curr_disk->info->lba_format_supports[curr_disk->info->lba_format_sz & 0x7].lba_data_sz);
         draw_hex(curr_disk->sector_sz_in_bytes);
+
+        draw_string("DISK PGSZ=");
 
         ++i;
     }

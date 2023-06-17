@@ -181,9 +181,19 @@ typedef struct extfs_extent_end{
 
     unsigned short num_blks;
     unsigned short blk_dat_h;
-    unsigned short blk_dat;
+    unsigned int blk_dat;
 
 }__attribute__((packed))extfs_extent_end;
+
+typedef struct extfs_blk_list{
+
+    struct extfs_blk_list *next;
+    unsigned long num_blks;
+    unsigned long blks_off;
+    unsigned long blks_f_off;
+
+}extfs_blk_list;
+
 
 void extfs_enum(diskman_ent *d);
 

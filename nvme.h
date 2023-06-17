@@ -69,13 +69,27 @@ typedef struct nvme_cmpl_queue_ent{
     };
 }__attribute__((packed)) nvme_cmpl_queue_ent;
 
+typedef struct nvme_ctrl_conf_reg{
+
+    unsigned int enable : 1;
+    unsigned int rsvd : 3;
+    unsigned int sel : 3;
+    unsigned int pgsz : 4;
+    unsigned int ams : 3;
+    unsigned int shn : 2;
+    unsigned int iocsqes : 4;
+    unsigned int iocqes : 4;
+    unsigned int rsvd2 : 8;
+
+}__attribute__((packed))nvme_ctrl_conf_reg;
+
 typedef struct nvme_bar0{
 
     nvme_cap_reg cap;
     unsigned int ver;
     unsigned int int_disable;
     unsigned int int_enable;
-    unsigned int ctrl_conf;
+    nvme_ctrl_conf_reg ctrl_conf;
 
     unsigned int rsvd;
 
