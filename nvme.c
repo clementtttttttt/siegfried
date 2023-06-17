@@ -79,6 +79,8 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 //        draw_string("N=");
 //        draw_hex(num_sects);
 
+    void *buf_io = k_pageobj_alloc(&page_heap, 4096);
+
     nvme_sub_queue_ent cmd;
 
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
@@ -86,7 +88,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     cmd.cint0.cid = ++io_cmdid_c;
     cmd.cint0.opcode = opcode;
     cmd.nsid = in->id;
-    cmd.prp1 = (unsigned long)buf;
+    cmd.prp1 = (unsigned long)buf_io;
 
     if(num_sects >= (4096 / 512)){
         cmd.prp2 = (unsigned long)buf + 2048;
@@ -115,6 +117,10 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     }
 
     in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = 0; //overwrite ent;
+
+    //FIXME!!!!!: proper handling of ios with more than 4 sects or smth
+
+    mem_cpy(buf, buf_io, num_sects * 512);
 
 
 }

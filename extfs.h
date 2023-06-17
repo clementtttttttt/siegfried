@@ -77,7 +77,7 @@ typedef struct extfs_superblock{
     unsigned int num_blks_h;
     unsigned int num_rsvd_blks_h;
     unsigned int num_free_blks_h;
-}extfs_superblock;
+}__attribute__((packed))extfs_superblock;
 
 typedef struct extfs_bgrp_desc{
 
@@ -102,6 +102,7 @@ typedef struct extfs_disk_info{
     unsigned long bgdt_sz_b;
 
     unsigned long inode_struct_sz_b;
+
 
 }extfs_disk_info;
 
