@@ -23,6 +23,8 @@ extern int _krnl_end;
 
 krnl_state *old_krnl_state, *new_krnl_state;
 
+char krnl_cmdline[4096];
+
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
@@ -62,7 +64,15 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         switch(tag_ptr->type){
             case MULTIBOOT_TAG_TYPE_CMDLINE:{
                 struct multiboot_tag_string *cmdline = (struct multiboot_tag_string*) tag_ptr;
-                dbgconout(cmdline->string);
+
+                unsigned long cmdline_strlen = cmdline->size - 4 - 4;
+
+                if(cmdline_strlen > 4096){
+                    cmdline_strlen = 4096;
+                }
+
+                mem_cpy(krnl_cmdline, cmdline->string, cmdline_strlen);
+
 
             }
             break;

@@ -305,8 +305,6 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     draw_string("==START NAMESPACE IDS PRNT==\n");
     int i=0;
     while(curr->ns_list[i] != 0){
-        draw_hex(curr->ns_list[i]);
-
         nvme_disk *curr_disk = nvme_new_disk(&curr->disks);
 
         //get active nsids
@@ -340,7 +338,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         curr_disk->sector_sz_in_bytes = 1 << (curr_disk->info->lba_format_supports[curr_disk->info->lba_format_sz & 0x7].lba_data_sz);
         draw_hex(curr_disk->sector_sz_in_bytes);
 
-        draw_string("DISK PGSZ=");
+        draw_string("DISK INODE=");
+        draw_hex(curr_disk->inode);
 
         ++i;
     }

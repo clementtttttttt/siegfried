@@ -103,6 +103,8 @@ typedef struct extfs_disk_info{
 
     unsigned long inode_struct_sz_b;
 
+    unsigned int req_flags, opt_flags;
+
 
 }extfs_disk_info;
 
@@ -194,6 +196,7 @@ typedef struct extfs_blk_list{
 
 }extfs_blk_list;
 
+#define EXTFS_REQF_EXTENT 0x40
 
 void extfs_enum(diskman_ent *d);
 

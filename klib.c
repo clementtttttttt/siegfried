@@ -1,4 +1,4 @@
-
+#include "draw.h"
 #include "klib.h"
 #include "debug.h"
 
@@ -8,7 +8,7 @@ unsigned long str_len(char *in){
         ++in;
     }
 
-    return in - old;
+    return in - 1 - old;
 
 }
 
@@ -77,4 +77,47 @@ int mem_cmp(char *l, char *r, unsigned long sz){
         ++r;
     }
     return 1;
+}
+
+void str_tok(char *str, char delim, str_tok_result *off){
+
+
+    draw_hex(off->off);
+
+    if(off->off > str_len(str)){off->off = 0; off->sz = 0; return;}
+
+    if(off->sz != 0){
+        do{
+            ++off->off;
+        }
+        while(str[off->off] && str[off->off]!= delim);
+        ++off->off;
+
+    }
+
+    unsigned long i;
+
+    if(str[off->off] == delim || str[off->off] == '\0')
+    {
+
+        off->off = 0;
+        off->sz = 1;
+
+        return;
+
+    }
+
+    for(i=off->off+1;i < str_len(str);++i){
+
+        if(str[i] == delim)break;
+
+
+    }
+    if(i > str_len(str)){off->off = 0; off->sz = 0; return;}
+
+    off->sz = i - off->off+1;
+
+
+
+
 }
