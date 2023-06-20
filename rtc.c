@@ -28,7 +28,7 @@ void rtc_setup(){
     asm("sti");
 
 
-    io_outb(0x70, 0);
+    io_outb(0x70, 0xc);
     io_inb(0x71);  //clear pending rtc interrupts
 
 }

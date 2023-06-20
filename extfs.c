@@ -122,9 +122,6 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
 
             unsigned long sects_sz = (sizeof(extfs_extent_int) * subh->ents + sizeof(extfs_extent_head)) / 512 + 1;
 
-            draw_string("SECTS SZ");
-            draw_hex(sects_sz * 512);
-
             k_obj_free(subh);
             subh=k_obj_alloc(sects_sz * 512);
 
@@ -142,6 +139,8 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
             ++start;
 
         }
+
+        k_obj_free(subh);
 
 
 

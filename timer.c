@@ -29,6 +29,10 @@ void timer_setup(){
     //enable timer irq
     apic_write_reg(0x320, lvt_tmr.raw);
 
+    asm("sti");
+    rtc_sleep_for_TTEth_sec(1);
+    asm("cli");
+
     //measure timer speed
     apic_write_reg(0x3e0, 8); //set timer divider
 
