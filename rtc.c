@@ -26,6 +26,11 @@ void rtc_setup(){
     //2048hz
 
     asm("sti");
+
+
+    io_outb(0x70, 0);
+    io_inb(0x71);  //clear pending rtc interrupts
+
 }
 
 void rtc_handler(){
@@ -45,6 +50,8 @@ unsigned long rtc_get_count(){
 
 void rtc_sleep_for_TTEth_sec(unsigned int TTEths){
     unsigned long dest_rtc_count = rtc_count + TTEths;
+    asm("sti");
     while(rtc_count <= dest_rtc_count){}
 
+    asm("cli");
 }

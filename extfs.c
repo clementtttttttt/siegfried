@@ -2,6 +2,7 @@
 #include "draw.h"
 #include "obj_heap.h"
 #include "klib.h"
+#include "rtc.h"
 
 extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x){
 
@@ -103,7 +104,13 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
         extfs_extent_int *start = (extfs_extent_int*)(head + 1);
         extfs_extent_int *end = start + head->ents;
 
-        extfs_extent_head *subh = k_obj_alloc(2048);
+
+
+
+        extfs_extent_head *subh = k_obj_alloc(512);
+
+        extfs_disk_info *inf = d->fs_disk_info;
+
 
 
         while(start < end){
@@ -111,12 +118,25 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
         draw_string("INT_NODE ADDR=");
         draw_hex((unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32));
 
-            d->read_func(d->inode, (unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32), 4, subh);
-    if(subh->magic != 0xf30a){
-        draw_string("HEAD INVALID MAGIC! SKIPPING\n");
-        ++start;
-        continue;
-    }
+            d->read_func(d->inode, ((unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32)) * inf->blksz_bytes / 512 , 1, subh);
+
+            unsigned long sects_sz = (sizeof(extfs_extent_int) * subh->ents + sizeof(extfs_extent_head)) / 512 + 1;
+
+            draw_string("SECTS SZ");
+            draw_hex(sects_sz * 512);
+
+            k_obj_free(subh);
+            subh=k_obj_alloc(sects_sz * 512);
+
+            d->read_func(d->inode, ((unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32)) * inf->blksz_bytes / 512 , sects_sz, subh);
+
+
+            if(subh->magic != 0xf30a){
+                draw_string("HEAD INVALID MAGIC! IS ");
+                draw_hex(subh->magic);
+                ++start;
+                continue;
+            }
             extfs_parse_extent_tree(d, subh, root);
 
             ++start;
@@ -126,9 +146,7 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
 
 
     }
-        draw_string("DROPPING");
 
-    draw_hex((unsigned long)*root);
     return *root;
 
 }
@@ -268,7 +286,7 @@ void extfs_enum(diskman_ent *d){
 
             draw_hex(root_dirents->ent_sz);
 
-            if(mem_cmp("swapfile", root_dirents->name, str_len("swapfile"))){
+            if(mem_cmp("words.txt", root_dirents->name, str_len("words.txt"))){
                     extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode);
 
                     if(sb->req_flags & 0x40){

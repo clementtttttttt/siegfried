@@ -105,13 +105,19 @@ static long long l_possibleOverruns = 0;	///< Number of possible overruns
 int liballoc_unlock() {return 1;};
 int liballoc_lock() {return 1;};
 
+unsigned long blks;
+
+unsigned long getblks(){return blks;}
+
 void* liballoc_alloc(int sz){
+	++blks;
 	return page_find_and_alloc(sz);
 
 }
 
 
 int liballoc_free(void* in,int sz){
+	--blks;
 	page_free_found((unsigned long)in, sz);
 	return 0;
 }
