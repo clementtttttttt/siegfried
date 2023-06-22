@@ -54,5 +54,36 @@ typedef struct acpi_madt{
 
 }acpi_madt;
 
+typedef struct acpi_fadt{
+    acpi_sdt_header header;
+
+    unsigned int firmtrl;
+    unsigned int dsdt;
+
+    unsigned char rsvd;
+
+    unsigned char power_prof;
+
+    unsigned short sci_int;
+    unsigned int smi_cmd;
+    unsigned char acpi_enable;
+
+    unsigned char acpi_disable;
+
+    unsigned  char s4bios_req;
+    unsigned char pstat_ctlr;
+
+    unsigned int pm1a_evblk;
+    unsigned int pm1b_evblk;
+    unsigned int pm1a_ctrlblk;
+    unsigned int pm1b_ctrlblk;
+    unsigned int pm2_ctrlblk;
+    unsigned int pm_timerblk;
+    unsigned int gpe0_blk;
+    unsigned int gpe1_blk;
+
+
+}acpi_fadt;
+
 void acpiman_setup(void*);
 acpi_sdt_header *acpiman_get_tab(char* magic);

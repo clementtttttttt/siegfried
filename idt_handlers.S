@@ -6,6 +6,7 @@
 .globl idt_rtc_handler_s
 .globl idt_syscall_handler_s
 .globl idt_spurious_handler_s
+.globl idt_kb_handler_s
 
 .globl idt_load_regs
 .globl rip_save
@@ -95,6 +96,22 @@ idt_timer_handler_s:
 
 
     iretq
+
+idt_kb_handler_s:
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
+
+    call kb_handler
+
+    call apic_ack_int
+
+    movq $2f, rip_save
+    jmp idt_load_regs
+    2:
+
+    iretq
+
 
 idt_rtc_handler_s:
     movq $1f, rip_save
