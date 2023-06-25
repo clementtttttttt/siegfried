@@ -89,7 +89,7 @@ void draw_setup(unsigned long fb_paddr,unsigned long fbw, unsigned long fbh, uns
     page_flush();
 
     dbgnumout_hex(w*h/8);
-    text_buf = k_obj_alloc(w*h/8);
+    text_buf = k_obj_alloc(w*h/10);
 
     tcurx = tcury = 0;
 
