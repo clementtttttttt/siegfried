@@ -97,6 +97,8 @@ typedef struct extfs_bgrp_desc{
 typedef struct extfs_disk_info{
 
     unsigned int blksz_bytes;
+    unsigned long blksz_sects;
+
     unsigned long inodes_per_grp;
     unsigned long blk_start;
     unsigned long bgdt_sz_b;
@@ -114,7 +116,7 @@ typedef struct extfs_inode{
 
     unsigned short uid;
 
-    unsigned int sz_in_b_l;
+    unsigned int sz_in_bytes_l;
     unsigned int time_access;
     unsigned int time_create;
     unsigned int time_mod;
@@ -136,7 +138,8 @@ typedef struct extfs_inode{
     unsigned int gen_num;
 
     unsigned int blk_att;
-    unsigned int sz_in_b_h;
+
+    unsigned int sz_in_bytes_h;
 
     unsigned int blk_frag;
 
@@ -197,9 +200,11 @@ typedef struct extfs_blk_list{
 }extfs_blk_list;
 
 #define EXTFS_REQF_EXTENT 0x40
+#define EXTFS_REQF_64BIT 0x80
 
 void extfs_enum(diskman_ent *d);
 
 extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x);
+unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode,char *name);
 
 #define EXTFS_ROOTDIR_INODE 2

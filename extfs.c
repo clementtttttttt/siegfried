@@ -166,19 +166,60 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
     extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_inode);
 
-    if(((extfs_disk_info*)d->fs_disk_info)->req_flags & EXTFS_REQF_EXTENT){
+    extfs_dirent* dir_buf; //remove pointer arithmatic
+
+    extfs_disk_info *inf = ((extfs_disk_info*)d->fs_disk_info);
+    unsigned int flags = inf->req_flags;
+
+
+    if(flags & EXTFS_REQF_EXTENT){
             extfs_extent_head *head =  (extfs_extent_head*)((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs;
 
             extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)head,0 );
 
-            while(blks){
-                blks = blks->next;
+            unsigned long sz;
+
+            if(flags & EXTFS_REQF_64BIT){
+                sz = inode_tab->sz_in_bytes_l | ((unsigned long)(inode_tab->sz_in_bytes_h) << 32);
             }
+            else{
+                sz = inode_tab->sz_in_bytes_l;
+            }
+
+            dir_buf = k_obj_alloc(sz);
+
+            while(blks){
+
+                d->read_func(d->inode, blks->blks_off * inf->blksz_sects, blks->num_blks*inf->blksz_sects, ((char*)dir_buf) + blks->blks_f_off*inf->blksz_bytes);
+
+                blks = blks->next;
+
+
+            }
+
+
+
+
 
     }
     else{
-
+        dir_buf = 0;
     }
+
+      while(dir_buf->inode){
+
+
+            if(mem_cmp(name, dir_buf->name, str_len(name))){
+                      k_obj_free(dir_buf);
+
+                return dir_buf->inode;
+            }
+
+            dir_buf = (extfs_dirent*)((unsigned long) dir_buf + dir_buf->ent_sz);
+
+      }
+
+      k_obj_free(dir_buf);
 
     return 0;
 }
@@ -210,8 +251,10 @@ void extfs_enum(diskman_ent *d){
         inf -> blk_start = sb -> sb_blknum;
 
         inf -> blksz_bytes = 1024 << sb->blksz;
+        inf -> blksz_sects = inf->blksz_bytes / 512;
         inf -> inode_struct_sz_b = sb->inode_struct_sz_b;
 
+        inf->req_flags = sb->req_flags;
 
         if(sb->req_flags & 0x80){
             inf->bgdt_sz_b = sb->bgd_sz_b;
@@ -312,7 +355,7 @@ void extfs_enum(diskman_ent *d){
 
     }
 
-    char test[] = "/bla/bla1/bla2/bla3/bla4";
+    char test[] = "dd/bla/bla1/bla2/bla3/bla4";
 
     str_tok_result res = {0};
 

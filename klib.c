@@ -79,14 +79,21 @@ int mem_cmp(char *l, char *r, unsigned long sz){
     return 1;
 }
 
+unsigned long atoi_w_sz(char *str, unsigned long sz){
+    unsigned long tot = 0;
+
+    for(unsigned long i=0;i<sz;++i){
+        tot = tot * 10 + str[i] - '0';
+    }
+
+    return tot;
+}
+
 void str_tok(char *str, char delim, str_tok_result *off){
-
-
-    draw_hex(off->off);
 
     if(off->off > str_len(str)){off->off = 0; off->sz = 0; return;}
 
-    if(off->sz != 0){
+    if(off->sz != 0){ //non-first search
         do{
             ++off->off;
         }
@@ -97,7 +104,7 @@ void str_tok(char *str, char delim, str_tok_result *off){
 
     unsigned long i;
 
-    if(str[off->off] == delim || str[off->off] == '\0')
+    if(off->off == 0 && (str[off->off] == delim || str[off->off] == '\0'))
     {
 
         off->off = 0;
@@ -110,6 +117,7 @@ void str_tok(char *str, char delim, str_tok_result *off){
     for(i=off->off+1;i < str_len(str);++i){
 
         if(str[i] == delim)break;
+        if(str[i] == 0) break;
 
 
     }

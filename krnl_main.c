@@ -24,6 +24,7 @@ extern int _krnl_end;
 krnl_state *old_krnl_state, *new_krnl_state;
 
 char krnl_cmdline[4096];
+unsigned long krnl_init_inode;
 
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
@@ -71,6 +72,8 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
                     cmdline_strlen = 4096;
                 }
 
+                mem_set(krnl_cmdline, 0, 4096);
+
                 mem_cpy(krnl_cmdline, cmdline->string, cmdline_strlen);
 
 
@@ -79,9 +82,8 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
             case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:{
 
-                struct multiboot_tag_elf_sections *elfptr = (void* ) tag_ptr;
+          //      struct multiboot_tag_elf_sections *elfptr = (void* ) tag_ptr;
 
-                dbgnumout_hex(*(unsigned short*)(&elfptr->sections[0]));
 
             }
             break;
@@ -122,6 +124,42 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     pci_enum();
 
     drivers_setup();
+
+
+    draw_string("CMDLINE=\"");
+    draw_string(krnl_cmdline);
+    draw_string("\"\n");
+
+    str_tok_result res={0};
+    str_tok(krnl_cmdline, ' ', &res);
+
+    do{
+
+        if(mem_cmp(&krnl_cmdline[res.off], "bla=", str_len("bla="))){
+            unsigned long i=0;
+            for(i=0; krnl_cmdline[res.off+i] != '=' && krnl_cmdline[res.off+i] != 0; ++i);
+            ++i;
+
+            unsigned long l = 0;
+
+            for(l = 0; krnl_cmdline[res.off+i+l] != 0 && krnl_cmdline[res.off+i+l] != ' '; ++l);
+
+            unsigned long in = atoi_w_sz(&krnl_cmdline[res.off + i],l);
+
+            krnl_init_inode = in;
+
+        }
+
+        str_tok(krnl_cmdline, ' ', &res);
+
+    }
+    while(res.sz != 0);
+
+    unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(2),EXTFS_ROOTDIR_INODE, "init.sfe");
+
+    draw_hex(in);
+
+    //load tasks and init loader
 
     tasks_setup();
 

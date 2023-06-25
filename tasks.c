@@ -6,6 +6,7 @@
 #include "pageobj_heap.h"
 #include "syscall.h"
 #include <stdatomic.h>
+#include "runner.h"
 
 unsigned char tasking_enabled = 0;
 
@@ -143,6 +144,9 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
 
 extern pml4e pml4_table[];
 
+extern unsigned long krnl_init_inode;
+
+
 void tasks_setup(){
 
     asm("cli");
@@ -153,6 +157,9 @@ void tasks_setup(){
     tss.iopb = 0xffff;
     tasking_enabled = 1;
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
+
+    runner_spawn_from_file_at_root(krnl_init_inode, "init.sfe");
+
 
     task* t=task_start_func(init_loader);
     void* new = page_find_and_alloc_user(t->page_tab, 1);

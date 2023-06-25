@@ -23,19 +23,25 @@ sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
 	@echo $(OBJECTS2_S)
 	$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O2 -nostdlib $(OBJECTS2) $(OBJECTS2_S) -lgcc  -Wl,-Map=output.map $(LDFLAGS)
 
-obj/%.o : %.c
+obj/%.o : %.c | obj
 	$(CC) $(CFLAGS) -c $< -o $@
 
-obj/%.o : %.S
+obj/%.o : %.S | obj
 	$(CC) $(ASFLAGS) -c $< -o $@
 
-
+obj :
+	mkdir obj
 
 sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
 	qemu-system-x86_64 -cdrom sf.iso -d cpu_reset,int -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G  -L /usr/share/ovmf/x64 -bios OVMF.fd -smp 3  -cpu host,+x2apic  -enable-kvm
+
+clean:
+	rm obj -rf -
+	rm sfkrnl.elf -rf - 
+
 install: sfkrnl.elf
 	cp sfkrnl.elf /boot
 

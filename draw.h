@@ -3,3 +3,4 @@ void draw_string(const char* str);
 void draw_hex(unsigned long in);
 void draw_scroll_text_buf();
 void draw_string_w_sz(const char* str, unsigned int sz);
+void draw_swap_textbuf();

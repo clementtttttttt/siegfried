@@ -156,6 +156,7 @@ void draw_string(const char* str){
 }
 
 void draw_string_w_sz(const char* str, unsigned int sz){
+
     while(sz--){
         if(*str == 0){draw_append_text_buf(' ');++str;}
         else
