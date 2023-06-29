@@ -61,6 +61,8 @@ typedef struct diskman_ent{
 
     void *fs_disk_info;
 
+    unsigned long fs_type;
+
     char ispart;
 
 }diskman_ent;
@@ -71,6 +73,12 @@ void diskman_setup();
 void diskman_gpt_enum(diskman_ent *in);
 
 diskman_ent *diskman_find_ent(unsigned long inode);
+
+
+enum fs_types{
+    DISKMAN_FS_NULL, DISKMAN_FS_EXTFS, DISKMAN_FS_FAT
+};
+
 
 #include "diskman_gpt.h"
 

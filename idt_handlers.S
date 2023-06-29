@@ -4,9 +4,11 @@
 .globl idt_gpf_handler_s
 .globl idt_mce_handler_s
 .globl idt_rtc_handler_s
+.globl idt_df_handler_s
 .globl idt_syscall_handler_s
 .globl idt_spurious_handler_s
 .globl idt_kb_handler_s
+.globl idt_div0_handler_s
 
 .globl idt_load_regs
 .globl rip_save
@@ -144,6 +146,18 @@ idt_syscall_handler_s:
 idt_spurious_handler_s:
     iretq
 
+idt_div0_handler_s:
+
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
+
+    movq %rsp, %rdi
+
+    call idt_div0_handler
+
+    jmp .
+
 idt_gpf_handler_s:
 
     movq $1f, rip_save
@@ -153,6 +167,18 @@ idt_gpf_handler_s:
     movq %rsp, %rdi
 
     call idt_gpf_handler
+
+    jmp .
+
+idt_df_handler_s:
+
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
+
+    movq %rsp, %rdi
+
+    call idt_df_handler
 
     jmp .
 

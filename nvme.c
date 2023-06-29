@@ -118,7 +118,8 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
   //      draw_hex(old_iotail_i);
   //  draw_string("NVME WAITING\n");
     while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
-
+            //this is fucking bullshit
+        klib_clear_var_cache((void*)&in->ctrl->icq_vaddr[old_iotail_i].cint3_raw);
     }
 
     in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = 0; //overwrite ent;
@@ -200,7 +201,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     bar0_p &= 0xFFFFFFFFFFFFFFF0;
 
-    volatile nvme_bar0 *bar0 = page_map_paddr(bar0_p, 1);
+    volatile nvme_bar0 *bar0 = page_map_paddr_mmio(bar0_p, 1);
 
 
     nvme_ctrl *curr = nvme_new_ctrl();
@@ -220,11 +221,14 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     bar0->cmpl_queue_addr = (nvme_cmpl_queue_ent*) page_lookup_paddr((void*)curr->acq_vaddr);
 
     bar0->int_disable = 0xffffffff;
-    *(unsigned int*)&bar0->ctrl_conf = 0x460001;
+    bar0->ctrl_conf_raw = 0x460001;
+
     bar0->ctrl_conf.pgsz = 0;
 
     //FIXME: removing this line causes the driver to hang in real hw. i dont focking know why.
-    draw_hex((unsigned long)bar0->sub_queue_addr);
+//    draw_hex((unsigned long)bar0->sub_queue_addr);
+    klib_clear_var_cache((void*)&bar0->sub_queue_addr);
+
 
     draw_string("PGSZ=");
     draw_hex(1 << (12+bar0->ctrl_conf.pgsz));

@@ -66,6 +66,7 @@ extfs_blk_list *extfs_new_pair(extfs_blk_list **root, unsigned long num, unsigne
     in -> blks_off = off;
     in -> blks_f_off = blks_f_off;
     in -> num_blks = num;
+    in -> next = 0;
 
 
     return in;
@@ -73,10 +74,6 @@ extfs_blk_list *extfs_new_pair(extfs_blk_list **root, unsigned long num, unsigne
 }
 
 extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head, extfs_blk_list **ptr_root){
-
-
-    draw_string("DEPTH=");
-    draw_hex(head->depth);
 
     extfs_blk_list *new_ptr = 0;
 
@@ -164,6 +161,11 @@ void extfs_free_blk_list(extfs_blk_list *l){
 
 unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode,char *name){
 
+    draw_hex(d->fs_type);
+    if(d->fs_type != DISKMAN_FS_EXTFS){
+        return 0;
+    }
+
     extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_inode);
 
     extfs_dirent* dir_buf; //remove pointer arithmatic
@@ -218,8 +220,8 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
             dir_buf = (extfs_dirent*)((unsigned long) dir_buf + dir_buf->ent_sz);
 
       }
-
       k_obj_free(dir_buf);
+
 
     return 0;
 }
@@ -235,7 +237,11 @@ void extfs_enum(diskman_ent *d){
     //draw_hex(sb->gid_of_rsvd_blk );
 
     if(sb->magic == 0xef53){
+
         draw_string("FOUND EXTFS\n");
+
+        draw_string("DM_INODE=");
+        draw_hex(d->inode);
 
         draw_string("MAJ_VER=");
         draw_hex(sb->ver_major);
@@ -245,6 +251,9 @@ void extfs_enum(diskman_ent *d){
 
         draw_string("START BLK=");
         draw_hex(sb->sb_blknum);
+
+        d->fs_type = DISKMAN_FS_EXTFS;
+
 
         extfs_disk_info *inf = d->fs_disk_info = k_obj_alloc(sizeof(extfs_disk_info));
         inf -> inodes_per_grp = sb->num_inodes_grp;
@@ -312,10 +321,8 @@ void extfs_enum(diskman_ent *d){
 
         }
 
-        draw_string("====EXTFS DIRLIST TEST====\n");
-
         while(root_dirents->inode){
-
+/*
             draw_string("FNAME=");
 
             draw_string_w_sz(root_dirents->name, root_dirents->namelen_l);
@@ -327,7 +334,7 @@ void extfs_enum(diskman_ent *d){
             draw_string(" SZ=");
 
             draw_hex(root_dirents->ent_sz);
-
+*/
             if(mem_cmp("words.txt", root_dirents->name, str_len("words.txt"))){
                     extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode);
 
@@ -355,18 +362,6 @@ void extfs_enum(diskman_ent *d){
 
     }
 
-    char test[] = "dd/bla/bla1/bla2/bla3/bla4";
-
-    str_tok_result res = {0};
-
-    do{
-        draw_string("TOK TEST:");
-        str_tok(test, '/', &res);
-        draw_string_w_sz(test + res.off, res.sz);
-
-        draw_string("\n");
-    }
-    while(res.sz );
 
     k_obj_free(chkbuf);
 

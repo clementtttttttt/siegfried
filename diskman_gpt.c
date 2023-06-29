@@ -124,7 +124,7 @@ void diskman_gpt_enum(diskman_ent *in){
         e->attr = ent->attr;
         e->disk = in;
 
-        draw_string("FOUND PART: PART_UUID=");
+        draw_string("\nFOUND PART: PART_UUID=");
         draw_string_w_sz((char*)&ent->part_guid, 16);
         draw_string("\n");
         draw_string("PARTNAME=");

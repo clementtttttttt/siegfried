@@ -96,6 +96,16 @@ _start:
     	wrmsr
 
 
+	//set *0x0 to jmp .s for better debugging
+
+	movw $0xebfe, %ax
+	movl $0, %edi
+	movl $10, %ecx
+	cld
+
+	rep stosw
+
+
 	//fix pages
 
 	//pml4

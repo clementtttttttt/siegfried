@@ -8,7 +8,7 @@ unsigned long str_len(char *in){
         ++in;
     }
 
-    return in - 1 - old;
+    return in - old;
 
 }
 
@@ -62,6 +62,10 @@ void mem_set(void *dest, unsigned int val, unsigned long sz){
 }
 
 
+void klib_clear_var_cache(void *v){
+
+    asm("clflush %0"::"m"(v));
+}
 //return 0 when not same
 
 int mem_cmp(char *l, char *r, unsigned long sz){
@@ -91,7 +95,9 @@ unsigned long atoi_w_sz(char *str, unsigned long sz){
 
 void str_tok(char *str, char delim, str_tok_result *off){
 
-    if(off->off > str_len(str)){off->off = 0; off->sz = 0; return;}
+    if(off->off > str_len(str) || str_len(str) == 0){off->off = 0; off->sz = 0; return;}
+
+    draw_hex(str_len(str));
 
     if(off->sz != 0){ //non-first search
         do{

@@ -54,7 +54,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     unsigned long long fbaddr, fbw, fbh, fbb, fbp;
 
-        struct multiboot_tag_new_acpi *acpitag;
+        struct multiboot_tag_new_acpi *acpitag = 0;
+
+        krnl_init_inode = 5;
 
 
     struct multiboot_tag *tag_ptr = (struct multiboot_tag *)&(m_info[2]);
@@ -111,7 +113,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         tag_ptr = (struct multiboot_tag*) ((unsigned long long)tag_ptr +  ((tag_ptr->size + 7) & ~7));
 
     }
-    acpiman_setup(&acpitag->rsdp);
+
+    if(acpitag != 0)
+        acpiman_setup(&acpitag->rsdp);
 
     apic_setup();
 
@@ -135,7 +139,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     do{
 
-        if(mem_cmp(&krnl_cmdline[res.off], "bla=", str_len("bla="))){
+        if(mem_cmp(&krnl_cmdline[res.off], "root=", str_len("root="))){
             unsigned long i=0;
             for(i=0; krnl_cmdline[res.off+i] != '=' && krnl_cmdline[res.off+i] != 0; ++i);
             ++i;
@@ -155,9 +159,6 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     }
     while(res.sz != 0);
 
-    unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(2),EXTFS_ROOTDIR_INODE, "init.sfe");
-
-    draw_hex(in);
 
     //load tasks and init loader
 

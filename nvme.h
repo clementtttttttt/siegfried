@@ -59,7 +59,7 @@ typedef struct nvme_cmpl_queue_ent{
         unsigned int cint2_raw;
     };
 
-    union{
+    volatile union{
         struct{
             unsigned short cmd_id;
             unsigned short is_new : 1;
@@ -89,7 +89,11 @@ typedef struct nvme_bar0{
     unsigned int ver;
     unsigned int int_disable;
     unsigned int int_enable;
-    nvme_ctrl_conf_reg ctrl_conf;
+
+    union{
+        nvme_ctrl_conf_reg ctrl_conf;
+        unsigned int ctrl_conf_raw;
+    };
 
     unsigned int rsvd;
 

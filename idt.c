@@ -2,6 +2,7 @@
 #include "debug.h"
 #include "draw.h"
 #include "tasks.h"
+#include "klib.h"
 
 idt_desc idt_table[256];
 
@@ -78,6 +79,65 @@ struct gpf_err{
     unsigned int rsvd : 16;
 };
 
+void idt_df_handler(task_trap_sframe *frame){
+
+    if(curr_task){
+     //   if(curr_task -> tid != 1){return;}
+    }
+    draw_hex(curr_task->tid);
+
+    draw_string("FAULT TASK TID IS 1: PANICKING!!!\n");
+
+    dbgconout("DOUBLE FAULT: ERRCODE=");
+    dbgnumout_bin(frame->errcode);
+
+    dbgconout("RIP: ");
+    dbgnumout_hex(frame->rip);
+
+    draw_string("\xcd\xcd\xcd\xcd DOUBLE FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
+    draw_hex(frame->errcode);
+
+    draw_string("RIP=");
+    draw_hex(frame->rip);
+
+    draw_string("RCX=");
+    draw_hex(frame->rcx);
+
+    idt_print_stacktrace((unsigned long*)frame->rsp);
+
+    asm("cli;hlt;");
+    while(1){
+
+    };
+}
+
+
+void idt_div0_handler(task_trap_sframe *frame){
+
+    if(curr_task){
+     //   if(curr_task -> tid != 1){return;}
+    }
+    draw_hex(curr_task->tid);
+
+    draw_string("FAULT TASK TID IS 1: PANICKING!!!\n");
+
+    draw_string("DIVISION ERROR: ");
+
+
+    draw_string("RIP=");
+    draw_hex(frame->rip);
+
+    draw_string("RCX=");
+    draw_hex(frame->rcx);
+
+    idt_print_stacktrace((unsigned long*)frame->rsp);
+
+    asm("cli;hlt;");
+    while(1){
+
+    };
+}
+
 void idt_gpf_handler(task_trap_sframe *frame){
 
     if(curr_task){
@@ -97,7 +157,7 @@ void idt_gpf_handler(task_trap_sframe *frame){
     draw_hex(frame->errcode);
     struct gpf_err err;
 
-    *(unsigned int*)(&err) = frame->errcode;
+    mem_cpy(&err, &frame->errcode, 4);
 
     draw_string("IS_EXTERNAL=");
     draw_hex(err.e);
@@ -121,12 +181,11 @@ void idt_gpf_handler(task_trap_sframe *frame){
 }
 
 void idt_pagefault_handler_s();
-
 void idt_gpf_handler_s();
-
 void idt_mce_handler_s();
-
 void idt_spurious_handler_s();
+void idt_df_handler_s();
+void idt_div0_handler_s();
 
 void idt_set_addr(idt_desc* desc, unsigned long addr){
 
@@ -163,6 +222,8 @@ void idt_setup(){
     idt_set_trap_ent(0xd, idt_gpf_handler_s);
     idt_set_trap_ent(0x12, idt_mce_handler_s);
     idt_set_trap_ent(0xff, idt_spurious_handler_s);
+    idt_set_trap_ent(0x8, idt_df_handler_s);
+    idt_set_trap_ent(0x0, idt_div0_handler_s);
 
     idt_flush();
 
