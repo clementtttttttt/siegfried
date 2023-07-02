@@ -72,7 +72,7 @@ void syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigne
 
 
     if(syscall_table[func]){
-        asm("callq *%0"::"r"(syscall_table[func]), "D"(i1), "S"(i2), "d"(i3), "c"(i4) : "rbx");
+        asm("cli; callq *%0; "::"r"(syscall_table[func]), "D"(i1), "S"(i2), "d"(i3), "c"(i4) : "rbx");
     }
     else{
         draw_string("UNKNOWN SYSCALL ");

@@ -49,7 +49,9 @@ void apic_map_irq(unsigned int irq, unsigned int idt_idx){
 
         ent.mask = 0;
         ent.int_num = idt_idx;
-        ent.dest = cpus_tab[0].apic_id;
+        //ent.dest = cpus_tab[0].apic_id;
+        ent.dest = apic_read_reg(0x20);
+
         ent.dest_mode = 0;
 
         apic_write_redir_ent(irq, &ent);
