@@ -2,6 +2,7 @@
 #include "apic.h"
 #include "io.h"
 #include "draw.h"
+#include "klib.h"
 
 void idt_rtc_handler_s();
 
@@ -35,7 +36,6 @@ void rtc_setup(){
 
 void rtc_handler(){
     ++rtc_count;
-
     //rtc EOI
     io_outb(0x70, 0xc);
     io_inb(0x71);

@@ -79,6 +79,8 @@ ebx_keep: .quad 0
 dummy_page:
 	.skip 0x4000
 
+fcw: .short 0x037f
+
 _start:
 
 	.code32
@@ -180,6 +182,9 @@ _start:
 	.code64
 
 	//enable sse for fast code
+
+	fninit
+	fldcw (fcw)
 
 	movq %cr0, %rax
 	btrq $2, %rax
