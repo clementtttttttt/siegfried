@@ -106,19 +106,6 @@ void apic_setup(){
 
                     ioapic_addr = page_map_paddr((unsigned long)ce->apic_addr, 1);
 
-                    apic_redir_ent ent;
-
-                    apic_get_redir_ent(0x1, &ent);
-
-                    ent.mask = 0;
-                    ent.int_num = 0x21;
-                    ent.dest = cpus_tab[0].apic_id;
-                    ent.dest_mode = 0;
-
-                    draw_string("CPU0 ID IS ");
-                    draw_hex(ent.dest);
-
-                    apic_write_redir_ent(1, &ent);
 
                 }
 

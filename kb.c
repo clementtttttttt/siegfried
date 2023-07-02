@@ -110,6 +110,8 @@ void idt_kb_handler_s();
 
 void kb_setup(){
 
+    apic_map_irq(0x1, 0x21);
+
     kb_send_cmd_port1(0xf0, 2);
 
     idt_set_irq_ent(0x21, idt_kb_handler_s);
