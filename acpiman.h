@@ -62,16 +62,16 @@ typedef struct acpi_fadt{
 
     unsigned char rsvd;
 
-    unsigned char power_prof;
+    unsigned char power_profil;
 
     unsigned short sci_int;
     unsigned int smi_cmd;
-    unsigned char acpi_enable;
 
+    unsigned char acpi_enable;
     unsigned char acpi_disable;
 
     unsigned  char s4bios_req;
-    unsigned char pstat_ctlr;
+    unsigned char pstat_ctrl;
 
     unsigned int pm1a_evblk;
     unsigned int pm1b_evblk;
@@ -84,6 +84,36 @@ typedef struct acpi_fadt{
 
 
 }acpi_fadt;
+
+typedef struct acpi_hpet{
+    acpi_sdt_header header;
+
+
+    unsigned char hw_rev;
+
+    unsigned char num_comp: 5;
+    unsigned char sz_cnt : 1;
+    unsigned char rsvd : 1;
+    unsigned char has_leg_map : 1;
+
+    unsigned short pci_vendor;
+
+
+    unsigned char is_io;
+    unsigned char width;
+    unsigned char off;
+    unsigned char rsvd8;
+    unsigned long addr;
+
+
+    unsigned char num;
+
+
+    unsigned short min_cnt_val;
+
+
+    unsigned short page_prot;
+} acpi_hpet;
 
 void acpiman_setup(void*);
 acpi_sdt_header *acpiman_get_tab(char* magic);
