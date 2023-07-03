@@ -18,8 +18,7 @@ void apic_write_reg(unsigned long off, unsigned int val){
 }
 
 unsigned int apic_read_reg(unsigned long off){
-    volatile unsigned int ret = apic_addr[off/4];
-    return ret;
+    return apic_addr[off/4];
 }
 
 void ioapic_write_reg(unsigned char idx, unsigned int val){
@@ -50,6 +49,7 @@ void apic_map_irq(unsigned int irq, unsigned int idt_idx){
         ent.mask = 0;
         ent.int_num = idt_idx;
         //ent.dest = cpus_tab[0].apic_id;
+
         ent.dest = apic_read_reg(0x20);
 
         ent.dest_mode = 0;
@@ -156,8 +156,10 @@ void apic_setup(){
     apic_addr[0xf0/4] |= 0x100;
     apic_addr[0xf0/4] |= 0xff;
 
-    draw_string("APIC SIVR=");
-    draw_hex(apic_addr[0xf0/4]);
+    draw_string("LAPIC ID=");
+    draw_hex(apic_read_reg(0x20));
+    draw_string("LAPIC VER=");
+    draw_hex(apic_read_reg(0x30));
 
 
 
