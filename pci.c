@@ -215,7 +215,7 @@ void pci_enum(){
     }
     else{
         for (int function = 0; function < 8; function++) {
-             if (pci_get_vendor(0, 0, function) != 0xFFFF) break;
+             if (pci_get_vendor(0, 0, function) == 0xFFFF) continue;
              bus = function;
              pci_enum_bus(bus);
          }
