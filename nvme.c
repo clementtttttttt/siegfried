@@ -54,6 +54,8 @@ nvme_disk *nvme_new_disk(nvme_disk ** in){
 
 void nvme_send_admin_cmd(nvme_ctrl *c, nvme_sub_queue_ent *e){
     mem_cpy((void*)(c->asq_vaddr + c->a_tail_i), e, sizeof(nvme_sub_queue_ent));
+    mem_set((void*)&c->acq_vaddr[c->a_tail_i], 0, sizeof(nvme_cmpl_queue_ent));
+
 
     unsigned int old_atail_i = c->a_tail_i;
     c->a_tail_i = (c->a_tail_i + 1) & 0x3f; //lesser than 64 only
@@ -258,6 +260,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.nsid = 0;
     nvme_send_admin_cmd(curr, &cmd);
 
+	draw_string("CREATING IO SUBQ\n");
+
     //io sub queue create
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
@@ -279,6 +283,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.prp1 = (unsigned long) page_lookup_paddr((void*) (curr->ctrl_info = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x00000001; //id ctrl number
     cmd.cint11 = 0; //no cint11
+    cmd.cint14 = 0; //no cint14
     cmd.nsid = 0;
     nvme_send_admin_cmd(curr, &cmd);
 
