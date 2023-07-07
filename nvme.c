@@ -112,19 +112,21 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     unsigned short old_iotail_i = in->ctrl->io_tail_i;
 
     in->ctrl->io_tail_i = (in->ctrl->io_tail_i + 1) & 0x3f;
-    in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
- //       draw_string("IO_TAIL_I=");
- //       draw_hex(in->ctrl->io_tail_i);
+        draw_string("IO_TAIL_I=");
+        draw_hex(in->ctrl->io_tail_i);
  //           draw_string("OLD_TAIL_I=");
   //      draw_hex(old_iotail_i);
   //  draw_string("NVME WAITING\n");
+
     while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
             //this is fucking bullshit
         klib_clear_var_cache((void*)&in->ctrl->icq_vaddr[old_iotail_i].cint3_raw);
     }
 
     in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = 0; //overwrite ent;
+
+    in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
 
     //FIXME!!!!!: proper handling of ios with more than 4 sects or smth
 
