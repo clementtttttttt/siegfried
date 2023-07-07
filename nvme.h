@@ -77,7 +77,7 @@ typedef struct nvme_ctrl_conf_reg{
     unsigned int pgsz : 4;
     unsigned int ams : 3;
     unsigned int shn : 2;
-    unsigned int iocsqes : 4;
+    unsigned int iosqes : 4;
     unsigned int iocqes : 4;
     unsigned int rsvd2 : 8;
 

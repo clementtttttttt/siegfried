@@ -227,6 +227,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     bar0->ctrl_conf.pgsz = 0;
 
+
     //FIXME: removing this line causes the driver to hang in real hw. i dont focking know why.
 //    draw_hex((unsigned long)bar0->sub_queue_addr);
     klib_clear_var_cache((void*)&bar0->sub_queue_addr);
