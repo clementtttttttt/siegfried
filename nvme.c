@@ -249,8 +249,26 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     draw_string("NVME CTRL REENABLED\n");
 
 
-    //io cmpl queue create;
+    //delete subm queue
     nvme_sub_queue_ent cmd = {0};
+   
+    cmd.cint0.opcode = 0;
+    cmd.cint0.cid = 1;
+    cmd.cint10 = 1;
+    nvme_send_admin_cmd(curr, &cmd);
+
+    //delete cmpl queue
+    mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));
+
+    cmd.cint0.opcode = 0x4;
+    cmd.cint0.cid = 1;
+    cmd.cint10 = 1;
+    nvme_send_admin_cmd(curr, &cmd);
+
+    
+    //io cmpl queue create
+    mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));
+
     cmd.cint0.opcode = 5;
     cmd.cint0.cid = 1;
 
