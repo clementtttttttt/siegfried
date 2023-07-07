@@ -297,7 +297,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
     cmd.cint0.opcode = 0x6;
-    cmd.cint0.cid = 0x0;
+    cmd.cint0.cid = 0x1;
 
     cmd.prp1 = (unsigned long) page_lookup_paddr((void*) (curr->ctrl_info = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x00000001; //id ctrl number
@@ -322,7 +322,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
     cmd.cint0.opcode = 0x6;
-    cmd.cint0.cid = 0x0;
+    cmd.cint0.cid = 0x1;
 
     cmd.prp1 = (unsigned long) page_lookup_paddr((void*) (curr->ns_list = k_pageobj_alloc(&page_heap, 4096)));
     cmd.cint10 = 0x00000002; //ns list number
