@@ -62,9 +62,9 @@ typedef struct nvme_cmpl_queue_ent{
     volatile union{
         struct{
             unsigned short cmd_id;
-            unsigned short is_new : 1;
+            unsigned short phase : 1;
             unsigned short stat : 15;
-        };
+        }__attribute__((packed));;
         unsigned int cint3_raw;
     };
 }__attribute__((packed)) nvme_cmpl_queue_ent;
@@ -172,7 +172,8 @@ typedef struct nvme_ctrl{
     volatile nvme_cmpl_queue_ent *acq_vaddr;
     volatile nvme_sub_queue_ent *isq_vaddr;
     volatile nvme_cmpl_queue_ent *icq_vaddr;
-    unsigned char a_tail_i, io_tail_i;
+    unsigned char a_tail_i;
+    char io_tail_i, phase;
     unsigned int *ns_list;
 
     nvme_ctrl_info *ctrl_info; //pointer to  4096b data struct

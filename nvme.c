@@ -73,6 +73,7 @@ void nvme_send_admin_cmd(nvme_ctrl *c, nvme_sub_queue_ent *e){
 
 unsigned short io_cmdid_c;
 
+
 //sector is 512
 void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
 
@@ -111,22 +112,24 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
     unsigned short old_iotail_i = in->ctrl->io_tail_i;
 
-    in->ctrl->io_tail_i = (in->ctrl->io_tail_i + 1) & 0x3f;
-    in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
-        draw_string("IO_TAIL_I=");
-        draw_hex(in->ctrl->io_tail_i);
- //           draw_string("OLD_TAIL_I=");
-  //      draw_hex(old_iotail_i);
-  //  draw_string("NVME WAITING\n");
+    if((++in->ctrl->io_tail_i) == 0x40){
 
-    while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
-            //this is fucking bullshit
-        klib_clear_var_cache((void*)&in->ctrl->icq_vaddr[old_iotail_i].cint3_raw);
+        in->ctrl->io_tail_i = 0;
     }
 
-    in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = 0; //overwrite ent;
+    in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
 
-    in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
+
+
+    while(in->ctrl->icq_vaddr[old_iotail_i].phase == in->ctrl->phase){
+
+    }
+     in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
+
+    in->ctrl->icq_vaddr[old_iotail_i].cmd_id = 0; //overwrite ent;
+    in->ctrl->icq_vaddr[old_iotail_i].stat = 0; //overwrite ent;
+
+  //  in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = in->ctrl->phase;
 
     //FIXME!!!!!: proper handling of ios with more than 4 sects or smth
 
@@ -137,6 +140,8 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
                 mem_cpy((void*)((unsigned long)buf), buf_io, num_sects*512 );
 
     }
+
+    if(old_iotail_i == 0x3f)  in->ctrl->phase = !in->ctrl->phase;
 
     k_pageobj_free(&page_heap, prp2_vm);
     k_pageobj_free(&page_heap, buf_io);
@@ -214,7 +219,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     curr -> pci_dev = in;
     curr -> acq_vaddr = (nvme_cmpl_queue_ent *)k_pageobj_alloc(&page_heap, 4096);
     curr -> asq_vaddr = (nvme_sub_queue_ent*)k_pageobj_alloc(&page_heap, 4096);
-//    curr -> acq_vaddr = (nvme_cmpl_queue_ent *) page_find_and_alloc(1);
+
+    //    curr -> acq_vaddr = (nvme_cmpl_queue_ent *) page_find_and_alloc(1);
  //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
 
 
