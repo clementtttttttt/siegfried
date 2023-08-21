@@ -38,7 +38,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
-	qemu-system-x86_64 -cdrom sf.iso -d cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G  -L /usr/share/edk2-ovmf/ -bios OVMF_CODE.fd -smp 3  -cpu host,+x2apic -enable-kvm -monitor stdio
+	qemu-system-x86_64 -cdrom sf.iso -d cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G -bios /usr/share/edk2-ovmf/OVMF_CODE.fd  -smp 3  -cpu host,+x2apic -enable-kvm -monitor stdio
 
 clean:
 	rm obj -rf -

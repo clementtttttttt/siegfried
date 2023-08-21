@@ -14,6 +14,8 @@ unsigned int timer_read_count(){
 void timer_setup(){
 
     idt_set_irq_ent(0x20,idt_timer_handler_s);
+        idt_flush();
+
 
     lvt_tmr_reg lvt_tmr;
     lvt_tmr.raw = apic_read_reg(0x320);
@@ -50,7 +52,6 @@ void timer_setup(){
     apic_write_reg(0x380, cnts_in_TTEth); //set timer init count
 
 
-    idt_flush();
 
  
 }

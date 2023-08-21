@@ -27,7 +27,7 @@ acpi_sdt_header *acpiman_get_tab(char* magic){
             return sys_xsdt_addr->tabs_ptr[i];
         }
     }
-    return (acpi_sdt_header*) 0xdead;
+    return (acpi_sdt_header*) 0;
 }
 
 void acpiman_setup(void* rsdp){

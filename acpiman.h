@@ -81,9 +81,28 @@ typedef struct acpi_fadt{
     unsigned int pm_timerblk;
     unsigned int gpe0_blk;
     unsigned int gpe1_blk;
+    unsigned char pm1_evlen;
+    unsigned char pm1_ctrllen;
+    unsigned char pm2_ctrllen;
+    unsigned char pm_timerlen;
+	unsigned char gpe0_len;
+	unsigned char gpe1_len;
+	unsigned char gpe1_base;
+	unsigned char cstate_ctrl;
+	unsigned short worst_c2_latency;
+	unsigned short worst_c3_latency;
+	unsigned short flush_sz;
+	unsigned short flush_stride;
+	unsigned char duty_off;
+	unsigned char duty_width;
+	unsigned char dayalarm;
+	unsigned char monthalarm;
+	unsigned char century;
+	
+	unsigned short arch_flags;
 
 
-}acpi_fadt;
+}__attribute__((packed))acpi_fadt;
 
 typedef struct acpi_hpet{
     acpi_sdt_header header;

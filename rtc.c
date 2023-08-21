@@ -51,6 +51,7 @@ unsigned long rtc_get_count(){
 void rtc_sleep_for_TTEth_sec(unsigned int TTEths){
     unsigned long dest_rtc_count = rtc_count + TTEths;
     asm("sti");
+    draw_string("WAITING FOR RTC\n");
     while(rtc_count <= dest_rtc_count){}
 
     asm("cli");

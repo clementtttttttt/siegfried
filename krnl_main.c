@@ -14,6 +14,7 @@
 #include "acpiman.h"
 #include "rtc.h"
 #include "diskman.h"
+#include "kb.h"
 #include "tasks.h"
 #include "syscall.h"
 
@@ -118,14 +119,17 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         acpiman_setup(&acpitag->rsdp);
 
     apic_setup();
-
+    
     syscall_setup();
+
+    kb_setup();
 
     rtc_setup();
 
     timer_setup();
 
     pci_enum();
+
 
     drivers_setup();
 

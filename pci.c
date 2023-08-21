@@ -208,8 +208,11 @@ void pci_enum_bus(unsigned char bus) {
 void pci_enum(){
 
     unsigned char bus;
+    
 
     unsigned char type = pci_get_type(0,0,0);
+    
+
     if((type&0x80) == 0){
         pci_enum_bus(0);
     }

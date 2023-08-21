@@ -97,8 +97,6 @@ void str_tok(char *str, char delim, str_tok_result *off){
 
     if(off->off > str_len(str) || str_len(str) == 0){off->off = 0; off->sz = 0; return;}
 
-    draw_hex(str_len(str));
-
     if(off->sz != 0){ //non-first search
         do{
             ++off->off;

@@ -8,6 +8,4 @@ void drivers_setup(){
     nvme_setup();
     diskman_setup();
 
-    kb_setup();
-
 }

@@ -103,6 +103,8 @@ idt_kb_handler_s:
     movq $1f, rip_save
     jmp idt_save_regs
     1:
+    
+    movq %rsp, %rdi
 
     call kb_handler
 
