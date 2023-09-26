@@ -138,7 +138,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     draw_string(krnl_cmdline);
     draw_string("\"\n");
 
-    str_tok_result res={0};
+    str_tok_result res;
     str_tok(krnl_cmdline, ' ', &res);
 
     do{

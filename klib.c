@@ -12,16 +12,21 @@ unsigned long str_len(char *in){
 
 }
 
+
 void mem_cpy(void *dest, void *src, unsigned long n)
 {
 // Typecast src and dest addresses to (char *)
-char *csrc = (char *)src;
-char *cdest = (char *)dest;
+	unsigned char *csrc = (unsigned char *)src;
+	unsigned char *cdest = (unsigned char *)dest;
 
 // Copy contents of src[] to dest[]
-for (unsigned long i=0; i<n; i++)
-    cdest[i] = csrc[i];
+	while(n){
+		*cdest++ = *csrc++;
+		--n;
+	}
 }
+
+
 
 void mem_set(void *dest, unsigned int val, unsigned long sz){
     char* d = dest;

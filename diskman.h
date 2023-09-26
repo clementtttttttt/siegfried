@@ -1,8 +1,8 @@
-typedef unsigned long (*diskman_read_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
-typedef unsigned long (*diskman_write_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
+typedef  long (*diskman_read_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
+typedef  long (*diskman_write_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
 
-#define DISKMAN_READ_FUNC(name) unsigned long name (unsigned long id, unsigned long off_sects, unsigned long num_sects, void* buf)
-#define DISKMAN_WRITE_FUNC(name) unsigned long name (unsigned long id, unsigned long off_sects, unsigned long num_sects, void* buf)
+#define DISKMAN_READ_FUNC(name)  long name (unsigned long id, unsigned long off_sects, unsigned long num_sects, void* buf)
+#define DISKMAN_WRITE_FUNC(name)  long name (unsigned long id, unsigned long off_sects, unsigned long num_sects, void* buf)
 
 typedef struct diskman_blk_list{
 

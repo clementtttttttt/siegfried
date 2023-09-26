@@ -19,7 +19,7 @@ extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode,
     return (extfs_bgrp_desc*)((unsigned long)descs_16x + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b);
 }
 
-extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode){
+extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode, void **free_ptr){
 
         extfs_inode *inode_tab = k_obj_alloc(512);
         extfs_bgrp_desc *bd16x = k_obj_alloc(512);
@@ -41,6 +41,8 @@ extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode){
         ,1, inode_tab);
 
         k_obj_free(bd16x);
+
+		*free_ptr = inode_tab;
 
         return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % (512/inf->inode_struct_sz_b))));
 
@@ -166,7 +168,9 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
         return 0;
     }
 
-    extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_inode);
+	void *f_ptr;
+
+    extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_inode, &f_ptr);
 
     extfs_dirent* dir_buf; //remove pointer arithmatic
 
@@ -221,9 +225,39 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
       }
       k_obj_free(dir_buf);
-
+      k_obj_free(f_ptr);
 
     return 0;
+}
+
+
+long
+ extfs_read_dirent(diskman_ent *d, unsigned long dir_ino, char *name, extfs_dirent *parent, extfs_dirent *new){
+
+		long ret;
+		extfs_disk_info *inf = d->fs_disk_info;
+		
+		void *f_ptr = NULL;
+		        extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_ino,&f_ptr);
+
+		
+        if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
+
+            ret= d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes/512), 2, parent);
+
+        }
+        else{
+            extfs_extent_head *chk2 =  (extfs_extent_head*)((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs;
+
+            extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
+
+            ret=d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes/512), 2, parent);
+
+
+        }
+        k_obj_free(f_ptr);
+	return ret;
+	
 }
 
 void extfs_enum(diskman_ent *d){
@@ -277,12 +311,13 @@ void extfs_enum(diskman_ent *d){
         extfs_bgrp_desc * bd = k_obj_alloc(512);
 
          extfs_read_inodes_blk_desc(d, EXTFS_ROOTDIR_INODE, bd); //root inode = 2
+		
+		void* free_ptr;
+
+        extfs_inode *inode_tab = extfs_read_inode_struct(d, EXTFS_ROOTDIR_INODE,&free_ptr);
 
 
-        extfs_inode *inode_tab = extfs_read_inode_struct(d, EXTFS_ROOTDIR_INODE);
-
-
-        draw_string("INODE BLK PTR 0=");
+/*        draw_string("INODE BLK PTR 0=");inode_tab
         draw_hex(inode_tab->blk_data_ptrs[0]);
 
         draw_string("NUM_BLKGRPS_INODES=");
@@ -297,11 +332,13 @@ void extfs_enum(diskman_ent *d){
                 draw_string(extfs_featstr_tab[i]);
                 draw_string(" ");
             }
-        }
+        }*/
 
-        draw_string("\n");
+
 
         extfs_dirent * root_dirents = k_obj_alloc(4096);
+
+		
 
         if(!(sb->req_flags & EXTFS_REQF_EXTENT)){
 
@@ -313,13 +350,12 @@ void extfs_enum(diskman_ent *d){
 
             extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
 
-            draw_hex(ex->blk_dat);
-
             d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes/512), 2, root_dirents);
 
-            draw_hex(chk2->magic);
 
         }
+        
+        void *f_ptr = NULL;
 
         while(root_dirents->inode){
 /*
@@ -335,8 +371,28 @@ void extfs_enum(diskman_ent *d){
 
             draw_hex(root_dirents->ent_sz);
 */
+
+            if(mem_cmp("testdir", root_dirents->name, str_len("testdir"))){
+                    extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode, &f_ptr);
+
+					if(!(sb->req_flags & EXTFS_REQF_EXTENT)){
+
+						d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab2))->blk_data_ptrs[0]*(inf->blksz_bytes/512), 2, root_dirents);
+
+					}
+					else{
+						extfs_extent_head *chk2 =  (extfs_extent_head*)((extfs_inode*)((unsigned long)inode_tab2))->blk_data_ptrs;
+
+						extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
+
+						d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes/512), 2, root_dirents);
+
+
+					}
+
+            }
             if(mem_cmp("words.txt", root_dirents->name, str_len("words.txt"))){
-                    extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode);
+                    extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode, &f_ptr);
 
                     if(sb->req_flags & 0x40){
                         extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)inode_tab2->blk_data_ptrs,0);
@@ -347,9 +403,8 @@ void extfs_enum(diskman_ent *d){
 
 
                             d->read_func(d->inode, blks->blks_off * inf->blksz_bytes / 512,0x10,buf5);
+							draw_string_w_sz(buf5, 100);
 
-
-//                            draw_string_w_sz(buf5, 0x10 * 512);
                     }
 
             }
@@ -359,10 +414,11 @@ void extfs_enum(diskman_ent *d){
 
 
         }
+        k_obj_free(f_ptr);
 
     }
 
-
+	
     k_obj_free(chkbuf);
 
 

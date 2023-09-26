@@ -1,6 +1,6 @@
-#include "obj_heap.h"
 #include "acpiman.h"
 #include "klib.h"
+#include "obj_heap.h"
 #include "debug.h"
 #include "draw.h"
 #include "page.h"
@@ -95,7 +95,7 @@ void acpiman_setup(void* rsdp){
         h = sys_xsdt_addr->tabs_ptr[i] = page_map_paddr((unsigned long) h, 1);
 
         draw_string("MAGIC IS ");
-        char magic[5] = {0};
+        char magic[5];
         mem_cpy(magic, h->magic, 4);
         draw_string(magic);
     }

@@ -6,7 +6,7 @@
 
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
 
-inline void set_paddr(void* in, unsigned long inaddr){
+static inline void set_paddr(void* in, unsigned long inaddr){
     pml4e *t = in;
 
     inaddr >>= 12;
@@ -20,7 +20,7 @@ inline void set_paddr(void* in, unsigned long inaddr){
     return;
 }
 
-inline void set_paddr_pde(void* in, unsigned long inaddr){
+static inline void set_paddr_pde(void* in, unsigned long inaddr){
     pde *t = in;
 
     inaddr >>= 21;
@@ -35,7 +35,7 @@ inline void set_paddr_pde(void* in, unsigned long inaddr){
     return;
 }
 
-inline void* get_paddr(void* in){
+static inline void* get_paddr(void* in){
     pml4e *t = in;
 
     return (void*)(((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12);
@@ -340,7 +340,7 @@ void page_alloc_mmio(void *phy, void *vir){
 
 
 
-inline unsigned char page_physmemmap_is_used(unsigned long paddr){
+static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
     return phys_mem_map[paddr/2097152/8] & (1<<((paddr/2097152)%8));
 
 }

@@ -259,7 +259,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
 
     //delete subm queue
-    nvme_sub_queue_ent cmd = {0};
+    nvme_sub_queue_ent cmd;
+    mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));
    
     cmd.cint0.opcode = 0;
     cmd.cint0.cid = 1;

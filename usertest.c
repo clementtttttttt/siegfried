@@ -7,7 +7,7 @@ int main(){
 
 //        char buf[512];
 
-
+	while(1){}
 
         syscall2(3, (unsigned long)"\nREACHED END OF INIT! reaching end of init! \r", 34);
 
