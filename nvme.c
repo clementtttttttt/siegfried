@@ -110,7 +110,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
     mem_cpy((void*)(in->ctrl->isq_vaddr + in->ctrl->io_tail_i), &cmd, sizeof(nvme_sub_queue_ent));
 
-    unsigned short old_iotail_i = in->ctrl->io_tail_i;
+    volatile unsigned short old_iotail_i = in->ctrl->io_tail_i;
 
     if((++in->ctrl->io_tail_i) == 0x40){
 
@@ -118,7 +118,6 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     }
 
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
-
 
 
     while(in->ctrl->icq_vaddr[old_iotail_i].phase == in->ctrl->phase){

@@ -100,17 +100,17 @@ typedef struct nvme_bar0{
     unsigned int ctrl_stat;
     unsigned int nvm_reset;
     unsigned int queue_att;
-    nvme_sub_queue_ent * volatile sub_queue_addr; //ZERO OUT BIT 0, queue is hard coded to 64
+    volatile nvme_sub_queue_ent * volatile sub_queue_addr; //ZERO OUT BIT 0, queue is hard coded to 64
 					 //
-    nvme_cmpl_queue_ent * volatile cmpl_queue_addr ; //ZERO OUT BIT 0
+    volatile nvme_cmpl_queue_ent * volatile cmpl_queue_addr ; //ZERO OUT BIT 0
 
     char we_dont_give_a_shit [0xFC8];
 
-    unsigned int sub_queue_tail_doorbell;
-    unsigned int comp_queue_tail_doorbell;
+    volatile unsigned int sub_queue_tail_doorbell;
+    volatile unsigned int comp_queue_tail_doorbell;
 
-    unsigned int io_sub_queue_tail_doorbell;
-    unsigned int io_cmpl_queue_tail_doorbell;
+    volatile unsigned int io_sub_queue_tail_doorbell;
+    volatile unsigned int io_cmpl_queue_tail_doorbell;
 
 
 
@@ -172,8 +172,8 @@ typedef struct nvme_ctrl{
     volatile nvme_cmpl_queue_ent *acq_vaddr;
     volatile nvme_sub_queue_ent *isq_vaddr;
     volatile nvme_cmpl_queue_ent *icq_vaddr;
-    unsigned char a_tail_i;
-    char io_tail_i, phase;
+    volatile unsigned char a_tail_i;
+    volatile unsigned char io_tail_i, phase;
     unsigned int *ns_list;
 
     nvme_ctrl_info *ctrl_info; //pointer to  4096b data struct
@@ -185,7 +185,7 @@ typedef struct nvme_disk{
     struct nvme_disk *next;
     nvme_disk_info *info;
     unsigned int sector_sz_in_bytes;
-    nvme_ctrl *ctrl;
+    volatile nvme_ctrl *ctrl;
     unsigned int id;
     unsigned long inode;
 

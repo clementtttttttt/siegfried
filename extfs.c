@@ -232,7 +232,7 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
 
 long
- extfs_read_dirent(diskman_ent *d, unsigned long dir_ino, char *name, extfs_dirent *parent, extfs_dirent *new){
+ extfs_read_dir_dirents(diskman_ent *d, unsigned long dir_ino, extfs_dirent *parent){
 
 		long ret;
 		extfs_disk_info *inf = d->fs_disk_info;
@@ -312,10 +312,7 @@ void extfs_enum(diskman_ent *d){
 
          extfs_read_inodes_blk_desc(d, EXTFS_ROOTDIR_INODE, bd); //root inode = 2
 		
-		void* free_ptr;
-
-        extfs_inode *inode_tab = extfs_read_inode_struct(d, EXTFS_ROOTDIR_INODE,&free_ptr);
-
+	
 
 /*        draw_string("INODE BLK PTR 0=");inode_tab
         draw_hex(inode_tab->blk_data_ptrs[0]);
@@ -338,7 +335,7 @@ void extfs_enum(diskman_ent *d){
 
         extfs_dirent * root_dirents = k_obj_alloc(4096);
 
-		
+		/*
 
         if(!(sb->req_flags & EXTFS_REQF_EXTENT)){
 
@@ -353,7 +350,9 @@ void extfs_enum(diskman_ent *d){
             d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes/512), 2, root_dirents);
 
 
-        }
+        }*/
+        
+        extfs_read_dir_dirents(d, EXTFS_ROOTDIR_INODE,  root_dirents);
         
         void *f_ptr = NULL;
 
@@ -373,22 +372,9 @@ void extfs_enum(diskman_ent *d){
 */
 
             if(mem_cmp("testdir", root_dirents->name, str_len("testdir"))){
-                    extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode, &f_ptr);
 
-					if(!(sb->req_flags & EXTFS_REQF_EXTENT)){
-
-						d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab2))->blk_data_ptrs[0]*(inf->blksz_bytes/512), 2, root_dirents);
-
-					}
-					else{
-						extfs_extent_head *chk2 =  (extfs_extent_head*)((extfs_inode*)((unsigned long)inode_tab2))->blk_data_ptrs;
-
-						extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
-
-						d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes/512), 2, root_dirents);
-
-
-					}
+					
+					extfs_read_dir_dirents(d,root_dirents->inode,root_dirents);
 
             }
             if(mem_cmp("words.txt", root_dirents->name, str_len("words.txt"))){

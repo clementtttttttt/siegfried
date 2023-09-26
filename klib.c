@@ -26,9 +26,15 @@ void mem_cpy(void *dest, void *src, unsigned long n)
 	}
 }
 
+#ifdef HAVE_CC_INHIBIT_LOOP_TO_LIBCALL
+# define inhibit_loop_to_libcall \
+    __attribute__ ((__optimize__ ("-fno-tree-loop-distribute-patterns")))
+#else
+# define inhibit_loop_to_libcall
+#endif
 
 
-void mem_set(void *dest, unsigned int val, unsigned long sz){
+void inhibit_loop_to_libcall mem_set(void *dest, unsigned int val, unsigned long sz){
     char* d = dest;
 
     void* finish = (void*)(((unsigned long)dest )+ sz);
@@ -67,13 +73,14 @@ void mem_set(void *dest, unsigned int val, unsigned long sz){
 }
 
 
+
 void klib_clear_var_cache(void *v){
 
     asm("clflush %0"::"m"(v));
 }
 //return 0 when not same
 
-int mem_cmp(char *l, char *r, unsigned long sz){
+int inhibit_loop_to_libcall mem_cmp(char *l, char *r, unsigned long sz){
 
     dbgnumout_hex((unsigned long)l);
     dbgnumout_hex((unsigned long)r);
