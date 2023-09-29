@@ -109,20 +109,21 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
 
     mem_cpy((void*)(in->ctrl->isq_vaddr + in->ctrl->io_tail_i), &cmd, sizeof(nvme_sub_queue_ent));
-
-    volatile unsigned short old_iotail_i = in->ctrl->io_tail_i;
+    unsigned short old_iotail_i = in->ctrl->io_tail_i;
 
     if((++in->ctrl->io_tail_i) == 0x40){
 
         in->ctrl->io_tail_i = 0;
+    	in->ctrl->phase = !in->ctrl->phase;
     }
 
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
-
-
+    //mmio_pokel(&in->ctrl->bar->io_sub_queue_tail_doorbell, in->ctrl->io_tail_i);
+	
     while(in->ctrl->icq_vaddr[old_iotail_i].phase == in->ctrl->phase){
-
+	
     }
+
      in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
 
     in->ctrl->icq_vaddr[old_iotail_i].cmd_id = 0; //overwrite ent;
@@ -140,8 +141,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
     }
 
-    if(old_iotail_i == 0x3f)  in->ctrl->phase = !in->ctrl->phase;
-
+    
     k_pageobj_free(&page_heap, prp2_vm);
     k_pageobj_free(&page_heap, buf_io);
 
@@ -210,21 +210,32 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     bar0_p &= 0xFFFFFFFFFFFFFFF0;
 
     volatile nvme_bar0 *bar0 = page_map_paddr_mmio(bar0_p, 1);
-
+	
 
     nvme_ctrl *curr = nvme_new_ctrl();
 
     curr -> bar = bar0;
     curr -> pci_dev = in;
     curr -> acq_vaddr = (nvme_cmpl_queue_ent *)k_pageobj_alloc(&page_heap, 4096);
-    curr -> asq_vaddr = (nvme_sub_queue_ent*)k_pageobj_alloc(&page_heap, 4096);
+    curr -> asq_vaddr = (nvme_sub_queue_ent*)k_pageobj_alloc(&page_heap, 4096);  
+
+	//zero out entries just for good measure
+	mem_set((void*)curr->acq_vaddr, 0, 4096);
+	mem_set((void*)curr->asq_vaddr, 0, 4096);
 
     //    curr -> acq_vaddr = (nvme_cmpl_queue_ent *) page_find_and_alloc(1);
  //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
 
 
     bar0->ctrl_conf.enable = 0;;
-
+    
+    while((bar0->ctrl_stat & 1)){
+        if(bar0->ctrl_stat & 0b10){
+            draw_string("ERROR: NVME CSTS.CFS SET\n");
+            return;
+        }
+    }
+    
     bar0->queue_att = 0x003f003f; //64 ents for both queues
     bar0->sub_queue_addr = (nvme_sub_queue_ent *)page_lookup_paddr((void*)curr->asq_vaddr); //pointer to an array of sz 64
     bar0->cmpl_queue_addr = (nvme_cmpl_queue_ent*) page_lookup_paddr((void*)curr->acq_vaddr);
@@ -232,16 +243,13 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     bar0->int_disable = 0xffffffff;
     bar0->ctrl_conf_raw = 0x460001;
 
-    bar0->ctrl_conf.pgsz = 0;
-
-
-    //FIXME: removing this line causes the driver to hang in real hw. i dont focking know why.
-//    draw_hex((unsigned long)bar0->sub_queue_addr);
-    klib_clear_var_cache((void*)&bar0->sub_queue_addr);
-
+    
 
     draw_string("PGSZ=");
     draw_hex(1 << (12+bar0->ctrl_conf.pgsz));
+    
+    draw_string("DBSTRD=");
+    draw_hex(0x4 << bar0->cap.db_stride);
  
 
 
@@ -388,7 +396,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     unsigned char cap_id = (pci_read_conw(in->bus, in->dev, in->func, cap_off));
 
     while(cap_id != 0x11 && cap_id != 0){
-        draw_string("==START CAP_OFF PRNT==\n");
+        draw_string("==START CAP_ID PRNT==\n");
         draw_hex(cap_off);
         draw_hex(cap_id);
         draw_string("==END CAP_ID PRNT==\n");
@@ -397,7 +405,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         cap_id = (pci_read_conw(in->bus, in->dev, in->func, cap_off));
 
     }
-        draw_string("==START CAP_OFF PRNT==\n");
+        draw_string("==START CAP_ID PRNT==\n");
         draw_hex(cap_off);
         draw_hex(cap_id);
         draw_string("==END CAP_ID PRNT==\n");
@@ -417,7 +425,9 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     draw_string("\n");
 
 
-
+	//zero out entries just for good measure
+	mem_set((void*)curr->acq_vaddr, 0, 4096);
+	mem_set((void*)curr->asq_vaddr, 0, 4096);
 
 
 }

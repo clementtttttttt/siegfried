@@ -172,8 +172,8 @@ typedef struct nvme_ctrl{
     volatile nvme_cmpl_queue_ent *acq_vaddr;
     volatile nvme_sub_queue_ent *isq_vaddr;
     volatile nvme_cmpl_queue_ent *icq_vaddr;
-    volatile unsigned char a_tail_i;
-    volatile unsigned char io_tail_i, phase;
+    unsigned char a_tail_i;
+    unsigned char io_tail_i, phase;
     unsigned int *ns_list;
 
     nvme_ctrl_info *ctrl_info; //pointer to  4096b data struct
