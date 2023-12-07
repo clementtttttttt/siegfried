@@ -40,6 +40,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     dbgconout("RIP: ");
     dbgnumout_hex(fr->rip);
 
+
     dbgconout("CR2: ");
     dbgnumout_hex(idt_dump_cr2());
 
@@ -61,6 +62,10 @@ void idt_pagefault_handler(task_trap_sframe *fr){
 
     draw_string("RIP=");
     draw_hex(fr->rip);
+    
+    draw_string("RIP DUMP(REVERSED)=");
+    draw_hex(*(unsigned long*)fr->rip);
+
     draw_string("CR2=");
     draw_hex(idt_dump_cr2());
 

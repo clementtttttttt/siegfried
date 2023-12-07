@@ -13,18 +13,7 @@ unsigned long str_len(char *in){
 }
 
 
-void mem_cpy(void *dest, void *src, unsigned long n)
-{
-// Typecast src and dest addresses to (char *)
-	unsigned char *csrc = (unsigned char *)src;
-	unsigned char *cdest = (unsigned char *)dest;
 
-// Copy contents of src[] to dest[]
-	while(n){
-		*cdest++ = *csrc++;
-		--n;
-	}
-}
 
 #ifdef HAVE_CC_INHIBIT_LOOP_TO_LIBCALL
 # define inhibit_loop_to_libcall \
@@ -33,6 +22,25 @@ void mem_cpy(void *dest, void *src, unsigned long n)
 # define inhibit_loop_to_libcall
 #endif
 
+
+void inhibit_loop_to_libcall mem_cpy(void *dest, void *src, unsigned long n)
+{
+// Typecast src and dest addresses to (char *)
+        unsigned char *csrc = (unsigned char *)src;
+        unsigned char *cdest = (unsigned char *)dest;
+
+// Copy contents of src[] to dest[]
+      	while(n--){
+		*cdest++ = *csrc++;
+		
+	}
+}
+
+//make the compiler shut up
+void *memcpy(void *dest, void *src, unsigned long n){
+	mem_cpy(dest, src, n);
+	return dest;
+}
 
 void inhibit_loop_to_libcall *mem_set(void *dest, unsigned int c, unsigned long n){
   unsigned char *s = dest;
@@ -78,12 +86,10 @@ void klib_clear_var_cache(void *v){
 }
 //return 0 when not same
 
-int inhibit_loop_to_libcall mem_cmp(char *l, char *r, unsigned long sz){
+int mem_cmp(char *l, void *r, unsigned long sz){
 
-    dbgnumout_hex((unsigned long)l);
-    dbgnumout_hex((unsigned long)r);
     while(sz){
-        if(*l != *r){
+        if(*l != *(char*)r){
             return 0;
         }
         --sz;

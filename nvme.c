@@ -177,24 +177,24 @@ DISKMAN_WRITE_FUNC(nvme_write_disk){
 
     nvme_disk *disk = nvme_find_disk_from_inode(id);
 
-    nvme_send_io_cmd(disk, off_sects, /*opcode*/1, num_sects, buf);
+    nvme_send_io_cmd(disk, off_bytes, /*opcode*/1, num_bytes/512, buf);
 
     //supposed to return write sects, not fucntional for now
-    return num_sects;
+    return num_bytes;
 }
 
 DISKMAN_READ_FUNC(nvme_read_disk){
     nvme_disk *disk = nvme_find_disk_from_inode(id);
 
     if(disk == 0) return 0;
+    
+    size_t buf_sz = num_bytes + (off_bytes%512?512:0);
 
-    //draw_string("BUF ADDR=");
-    //draw_hex((unsigned long)buf);
-    nvme_send_io_cmd(disk, off_sects, /*opcode*/2, num_sects, buf);
+    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512 , buf);
 
 
     //supposed to return read sects, not fucntional for now
-    return num_sects;
+    return num_bytes;
 }
 
 void nvme_setup_pci_dev(pci_dev_ent *in){

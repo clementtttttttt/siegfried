@@ -66,12 +66,14 @@ void diskman_setup(){
 
         mem_set(detect_sect, 0, 1024);
 
-        i->read_func(i->inode, 0, 2, detect_sect);
+        i->read_func(i->inode, 0, 1024, detect_sect);
 
 
-        //create partition drives
+        //create partition drives			
+
 
         if(mem_cmp(&detect_sect[512], "EFI PART", 8)){
+			
             diskman_gpt_enum(i);
         }
         //draw_string_w_sz(detect_sect, 1024);

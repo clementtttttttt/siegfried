@@ -47,7 +47,7 @@ unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned 
     gpt_partlist_ent *e = gpt_find_ent(inode);
 
 
-    e->disk->read_func(e->disk->inode, e->lba_start + off, num, buf);
+    e->disk->read_func(e->disk->inode, e->lba_start*512 + off, num, buf);
 
 
     return off;
@@ -57,7 +57,7 @@ unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned
 
     gpt_partlist_ent *e = gpt_find_ent(inode);
 
-    e->disk->write_func(e->disk->inode, e->lba_start + off, num, buf);
+    e->disk->write_func(e->disk->inode, e->lba_start*512 + off, num, buf);
 
 
     return off;
@@ -67,7 +67,7 @@ void diskman_gpt_enum(diskman_ent *in){
 
     mem_set(buf, 0, 512);
 
-    in->read_func(in->inode, 1, 1, buf );
+    in->read_func(in->inode, 512, 512, buf );
 
     gpt_header *head = k_obj_alloc(512);
 
@@ -94,7 +94,7 @@ void diskman_gpt_enum(diskman_ent *in){
     for(unsigned long i=0; i < head->num_parts; ++i){
 
         //draw_hex(head->lba_part_ent+((i*head->parts_ent_sz)/512));
-        in->read_func(in->inode, head->lba_part_ent+((i*head->parts_ent_sz)/512), 1, esect);
+        in->read_func(in->inode, head->lba_part_ent*512+((i*head->parts_ent_sz)), 1, esect);
 
 
         gpt_partent *ent = (gpt_partent*)&esect[(i*head->parts_ent_sz)%512];

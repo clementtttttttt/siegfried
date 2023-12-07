@@ -34,6 +34,7 @@ asm("task_load_task_regs_and_spawn:;\
         iretq");
 
 void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_state *new_ptr_to_stack_addr);
+
 asm(".globl task_save_and_change_krnl_state;\
     task_save_and_change_krnl_state:;\
         cli;\
@@ -158,20 +159,24 @@ void tasks_setup(){
     tasking_enabled = 1;
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
-    runner_spawn_from_file_at_root(krnl_init_inode, "init.sfe");
+    //runner_spawn_from_file_at_root(krnl_init_inode, "init.sfe");
 
 
-    task* t=task_start_func(init_loader);
+       task* t=task_start_func(init_loader);
+
+
     void* new = page_find_and_alloc_user(t->page_tab, 1);
 
+   
     task_switch_tab(t->page_tab);
-    //init_loader_end defined in linker.ld
-    mem_cpy(new, init_loader, (unsigned long)&init_loader_end - (unsigned long)&init_loader);
 
+	//init_loader_end defined in linker.ld
+    mem_cpy(new, init_loader, (unsigned long)&init_loader_end - (unsigned long)&init_loader);
+   
     task_switch_tab(pml4_table);
 
     t -> tf -> rip = (unsigned long) new;
-
+   	
     curr_task = tasks;
 
 
@@ -185,10 +190,10 @@ volatile int task_in_krnl = 0;
 
 void task_scheduler(){
 
-        atomic_store(&sched_lock, 1);
-
+		sched_lock = 1;
+		
         while(1){
-
+	
                 if(curr_task == 0) continue; //continue while curr task is 0
 
 
@@ -203,6 +208,7 @@ void task_scheduler(){
 
                 task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ);
 
+		
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
         }
 
@@ -211,7 +217,7 @@ void task_scheduler(){
 void task_yield(){
 
 
-        if(atomic_load(&sched_lock)){
+        if(sched_lock){
                 return;
         }
         if(curr_task == 0 ){
