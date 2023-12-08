@@ -77,10 +77,6 @@ unsigned short io_cmdid_c;
 //sector is 512
 void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
 
-//        draw_string("O=");
-//        draw_hex(off_sects);
-//        draw_string("N=");
-//        draw_hex(num_sects);
 
     void *buf_io = k_pageobj_alloc(&page_heap, 4096);
 
@@ -186,12 +182,18 @@ DISKMAN_WRITE_FUNC(nvme_write_disk){
 DISKMAN_READ_FUNC(nvme_read_disk){
     nvme_disk *disk = nvme_find_disk_from_inode(id);
 
+
     if(disk == 0) return 0;
     
-    size_t buf_sz = num_bytes + (off_bytes%512?512:0);
+    unsigned long buf_sz = num_bytes + (off_bytes%512?512:0);
+ 
+ 	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz/4096  + 4096);
+	
+    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, rdbuf);
 
-    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512 , buf);
-
+    mem_cpy(buf, ((char*)rdbuf)+(off_bytes%512), num_bytes);
+	
+    k_pageobj_free(&page_heap,rdbuf);
 
     //supposed to return read sects, not fucntional for now
     return num_bytes;

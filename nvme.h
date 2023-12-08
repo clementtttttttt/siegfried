@@ -81,7 +81,7 @@ typedef struct nvme_ctrl_conf_reg{
     unsigned int iocqes : 4;
     unsigned int rsvd2 : 8;
 
-}__attribute__((packed))nvme_ctrl_conf_reg;
+}__attribute__((packed, aligned(4)))nvme_ctrl_conf_reg;
 
 typedef struct nvme_bar0{
 

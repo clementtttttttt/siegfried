@@ -46,7 +46,6 @@ unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned 
 
     gpt_partlist_ent *e = gpt_find_ent(inode);
 
-
     e->disk->read_func(e->disk->inode, e->lba_start*512 + off, num, buf);
 
 
@@ -93,8 +92,8 @@ void diskman_gpt_enum(diskman_ent *in){
 
     for(unsigned long i=0; i < head->num_parts; ++i){
 
-        //draw_hex(head->lba_part_ent+((i*head->parts_ent_sz)/512));
-        in->read_func(in->inode, head->lba_part_ent*512+((i*head->parts_ent_sz)), 1, esect);
+        //draw_hex(head->lba_part_ent*512+((i*head->parts_ent_sz)));
+        in->read_func(in->inode, head->lba_part_ent*512+((i*head->parts_ent_sz)), 512, esect);
 
 
         gpt_partent *ent = (gpt_partent*)&esect[(i*head->parts_ent_sz)%512];
@@ -132,6 +131,8 @@ void diskman_gpt_enum(diskman_ent *in){
         draw_string("\n");
         draw_string("PART INODE=");
         draw_hex(e->inode);
+        draw_string("PART OFF=");
+        draw_hex(e->lba_start);
     }
 
     k_obj_free(head);

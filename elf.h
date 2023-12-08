@@ -1,3 +1,7 @@
+
+
+
+
 typedef struct elf_head{
     unsigned char magic[4]; //"\7fELF"
     unsigned char bits;
@@ -18,10 +22,10 @@ typedef struct elf_head{
     unsigned short sect_tab_ent_sz;
     unsigned short sect_tab_num_ents;
     unsigned short sect_tab_name_idx;
-
+	
+//	elf_prog_head_ent prog_head_ents[];
 
 }__attribute__((packed)) elf_head;
-
 typedef struct elf_prog_head_ent{
 
     unsigned int seg_type;

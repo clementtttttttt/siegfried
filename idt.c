@@ -173,6 +173,10 @@ void idt_gpf_handler(task_trap_sframe *frame){
 
     draw_string("RIP=");
     draw_hex(frame->rip);
+    
+        
+    draw_string("RIP DUMP(REVERSED)=");
+    draw_hex(*(unsigned long*)frame->rip);
 
     draw_string("RCX=");
     draw_hex(frame->rcx);    

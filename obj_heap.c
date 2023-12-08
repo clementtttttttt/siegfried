@@ -1,6 +1,7 @@
 #include "obj_heap.h"
 #include "page.h"
 #include "debug.h"
+#include "draw.h"
 
 /**  Durand's Amazing Super Duper Memory functions.  */
 

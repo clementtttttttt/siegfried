@@ -151,7 +151,6 @@ extern unsigned long krnl_init_inode;
 void tasks_setup(){
 
     asm("cli");
-
     mem_set(&tss, 0, sizeof(tss));
 
     tss.rsp_0 = (unsigned long)k_obj_alloc(16384);
@@ -159,7 +158,7 @@ void tasks_setup(){
     tasking_enabled = 1;
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
-    //runner_spawn_from_file_at_root(krnl_init_inode, "init.sfe");
+    runner_spawn_from_file_at_root(krnl_init_inode, "sfinit");
 
 
        task* t=task_start_func(init_loader);
@@ -167,9 +166,8 @@ void tasks_setup(){
 
     void* new = page_find_and_alloc_user(t->page_tab, 1);
 
-   
     task_switch_tab(t->page_tab);
-
+	
 	//init_loader_end defined in linker.ld
     mem_cpy(new, init_loader, (unsigned long)&init_loader_end - (unsigned long)&init_loader);
    

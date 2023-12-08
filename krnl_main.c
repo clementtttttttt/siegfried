@@ -164,8 +164,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     while(res.sz != 0);
 
 
-    //load tasks and init loader
-
+    //load tasks and init loader	
     tasks_setup();
 
     asm("cli");

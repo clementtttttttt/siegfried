@@ -90,7 +90,16 @@ typedef struct extfs_bgrp_desc{
     unsigned short free_inodes_in_grp;
     unsigned short dirs_in_grp;
 
-    char padding[14];
+	unsigned short flags;
+	
+	unsigned int exclude_bmp;
+	unsigned short chksum_lo;
+	unsigned short inode_chksum_lo;
+	
+	unsigned short bg_tab_lo;
+	unsigned short chksum;
+	
+    char padding[0x1c];
 
 }__attribute__((packed))extfs_bgrp_desc;
 

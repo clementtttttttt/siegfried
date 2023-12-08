@@ -42,11 +42,12 @@ extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode, void *
         ,512, inode_tab);
 
         k_obj_free(bd16x);
-
+	
 		*free_ptr = inode_tab;
+		
 
-        return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % (512/inf->inode_struct_sz_b))));
-
+        //return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % (512/inf->inode_struct_sz_b))));
+		return inode_tab;
 }
 
 extfs_blk_list *extfs_new_pair(extfs_blk_list **root, unsigned long num, unsigned long off, unsigned long blks_f_off){
@@ -164,18 +165,20 @@ void extfs_free_blk_list(extfs_blk_list *l){
 }
 
 unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* buf, unsigned long count){
-	    void *f_ptr;
+	    void *f_ptr=NULL;
 
     extfs_inode *inode_tab = extfs_read_inode_struct(d, in, &f_ptr);
+   
     extfs_disk_info *inf = d->fs_disk_info;
 		unsigned long read;
-        if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
+    
+    	if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
 
             read =d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes), count, buf);
-
+		k_obj_free(f_ptr);		
         }
         else{
-			void *f_ptr = NULL;                    extfs_inode *inode_tab = extfs_read_inode_struct(d, in, &f_ptr);
+		extfs_inode *inode_tab = extfs_read_inode_struct(d, in, &f_ptr);
 
                         extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)inode_tab->blk_data_ptrs,0);
 
@@ -190,7 +193,7 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* 
 
      }
         
-        k_obj_free(f_ptr);
+       
         return read;
 }
 
@@ -204,22 +207,25 @@ long
 		
 		void *f_ptr = NULL;
 		        extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_ino,&f_ptr);
-
-		
+		        
+		   
         if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
 
-            ret= d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes), 2*512, parent);
-
+            ret= d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes), 512*2, parent);
         }
         else{
             extfs_extent_head *chk2 =  (extfs_extent_head*)((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs;
 
             extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
 
-            ret=d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes), 2*512, parent);
+			draw_string("SIZE IN BYTES:");
+			draw_hex(inode_tab->sz_in_bytes_l);
+            ret=d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes), 512*2, parent);
 
 
         }
+ 
+
         k_obj_free(f_ptr);
 	return ret;
 	
@@ -227,7 +233,7 @@ long
 
 unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode,char *name){
 
-    draw_hex(d->fs_type);
+
     if(d->fs_type != DISKMAN_FS_EXTFS){
         return 0;
     }     extfs_dirent * root_dirents = k_obj_alloc(4096);
@@ -250,7 +256,7 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
         }*/
         extfs_read_dir_dirents(d, dir_inode,  root_dirents);
         
-        void *f_ptr = NULL;
+       
 
         while(root_dirents->inode){
 /*
@@ -268,8 +274,8 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
 
             if(mem_cmp(name, root_dirents->name, str_len(name))){
-					k_obj_free(f_ptr);
-                    return root_dirents->inode;
+					
+			return root_dirents->inode;
 
             }
 
@@ -278,8 +284,8 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
 
         }
-        k_obj_free(f_ptr);
-        
+
+ 
         return 0;
 
 }
@@ -334,9 +340,11 @@ void extfs_enum(diskman_ent *d){
 
         extfs_bgrp_desc * bd = k_obj_alloc(512);
 
-         extfs_read_inodes_blk_desc(d, EXTFS_ROOTDIR_INODE, bd); //root inode = 2
-		
-	
+        extfs_read_inodes_blk_desc(d, EXTFS_ROOTDIR_INODE, bd); //root inode = 2
+			
+
+	draw_string("BGD DEBUG:");
+	draw_hex(bd->blk_inode_tab);
 
 
 
