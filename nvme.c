@@ -182,6 +182,7 @@ DISKMAN_WRITE_FUNC(nvme_write_disk){
 DISKMAN_READ_FUNC(nvme_read_disk){
     nvme_disk *disk = nvme_find_disk_from_inode(id);
 
+	
 
     if(disk == 0) return 0;
     
@@ -198,6 +199,8 @@ DISKMAN_READ_FUNC(nvme_read_disk){
     //supposed to return read sects, not fucntional for now
     return num_bytes;
 }
+
+
 
 void nvme_setup_pci_dev(pci_dev_ent *in){
 
@@ -229,7 +232,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
  //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
 
 
-    bar0->ctrl_conf.enable = 0;;
+    bar0->ctrl_conf_raw &= ~NVME_CTRL_ENABLE;
+
     
     while((bar0->ctrl_stat & 1)){
         if(bar0->ctrl_stat & 0b10){
@@ -245,14 +249,11 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     bar0->int_disable = 0xffffffff;
     bar0->ctrl_conf_raw = 0x460001;
 
-    
-
-    draw_string("PGSZ=");
-    draw_hex(1 << (12+bar0->ctrl_conf.pgsz));
-    
-    draw_string("DBSTRD=");
-    draw_hex(0x4 << bar0->cap.db_stride);
  
+    draw_string("PGSZ=");
+    draw_hex(1 << (12+(NVME_CTRL_PGSZ(bar0->ctrl_conf_raw))));
+    
+    
 
 
     //wiat for csts.rdy
@@ -265,7 +266,6 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     draw_hex((unsigned long)pci_read_conw(in->bus,in->dev,in->func,0x3c));
 
     draw_string("NVME CTRL REENABLED\n");
-
 
     //delete subm queue
     nvme_sub_queue_ent cmd;
@@ -439,7 +439,14 @@ void nvme_setup(){
     pci_dev_ent* it = 0;
 
     while((it = pci_get_next_dev_ent(it)) != 0){
-        if(it->cl == 1 && it->subcl == 8){
+        draw_string("==PCI DEVICE DETECTION==");
+        draw_string("VENDOR+DEV:");
+        draw_hex(it->vendor);
+        draw_hex(it->devid);
+        draw_string("CLASS+SUBCLASS:");
+        draw_hex(it->cl);
+        draw_hex(it->subcl);
+	if(it->cl == 1 && it->subcl == 8){
             nvme_setup_pci_dev(it);
         }
     }

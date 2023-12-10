@@ -3,8 +3,8 @@ ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
 
-CC=clang --target=x86_64-pc-none-elf -march=x86-64
-#CC=x86_64-pc-none-elf-gcc
+#CC=clang --target=x86_64-pc-none-elf -march=x86-64
+CC=x86_64-pc-none-elf-gcc
 
 SOURCES=$(wildcard *.c)
 HEADERS = $(wildcard *.h)
@@ -20,7 +20,7 @@ OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
 all: sfkrnl.elf
 
 sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
-	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O0 -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
+	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O2 -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
 	@echo CCLD\($(CC)\) $@
 
 obj/%.o : %.c | obj
@@ -38,7 +38,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
-	qemu-system-x86_64 -cdrom sf.iso -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G -bios /usr/share/edk2-ovmf/OVMF_CODE.fd  -smp 3  -cpu core2duo -monitor stdio
+	qemu-system-x86_64 -cdrom sf.iso -d guest_errors,cpu_reset -drive file=/dev/nvme0n1,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 6G -bios /usr/share/edk2-ovmf/OVMF_CODE.fd  -smp 3  -cpu core2duo -monitor stdio
 
 clean:
 	rm obj -rf -

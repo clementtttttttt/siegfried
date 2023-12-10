@@ -87,16 +87,10 @@ void klib_clear_var_cache(void *v){
 //return 0 when not same
 
 int mem_cmp(char *l, void *r, unsigned long sz){
-
-    while(sz){
-        if(*l != *(char*)r){
-            return 0;
-        }
-        --sz;
-        ++l;
-        ++r;
-    }
-    return 1;
+	unsigned char *ul = (unsigned char*)l;
+	unsigned char *ur = r;
+	for(unsigned long i=0;i < sz && ((*ul - *ur) == 0);++i);
+	return !(*ul-*ur);
 }
 
 unsigned long atoi_w_sz(char *str, unsigned long sz){

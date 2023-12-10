@@ -185,7 +185,6 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* 
 
 
 
-
                            read= d->read_func(d->inode, blks->blks_off * inf->blksz_bytes,count,buf);
                             
                             k_obj_free(f_ptr);
@@ -218,8 +217,6 @@ long
 
             extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
 
-			draw_string("SIZE IN BYTES:");
-			draw_hex(inode_tab->sz_in_bytes_l);
             ret=d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes), 512*2, parent);
 
 
@@ -269,11 +266,10 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
             draw_hex(root_dirents->inode);
 
             draw_string(" SZ=");
+*/
+            draw_hex(root_dirents->ent_sz);
 
-            draw_hex(root_dirents->ent_sz);*/
-
-
-            if(mem_cmp(name, root_dirents->name, str_len(name))){
+            if(str_len(name) == str_len(root_dirents->name) && mem_cmp(name, root_dirents->name, str_len(name))){
 					
 			return root_dirents->inode;
 
@@ -387,9 +383,8 @@ void extfs_enum(diskman_ent *d){
 
             if(mem_cmp("testdir", root_dirents->name, str_len("testdir"))){
 
-					
-					extfs_read_dir_dirents(d,root_dirents->inode,root_dirents);
-
+			
+		
             }
 /*            if(mem_cmp("words.txt", root_dirents->name, str_len("words.txt"))){
                     extfs_inode *inode_tab2 = extfs_read_inode_struct(d, root_dirents->inode, &f_ptr);

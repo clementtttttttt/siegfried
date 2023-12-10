@@ -1,4 +1,16 @@
 
+typedef struct elf_prog_head_ent{
+
+    unsigned int seg_type;
+    unsigned int flags;
+    unsigned long dat_off;
+    unsigned long vaddr;
+    unsigned long ign;
+    unsigned long f_sz;
+    unsigned long mem_sz;
+    unsigned long alignment;
+
+}__attribute__((packed)) elf_prog_head_ent;
 
 
 
@@ -23,18 +35,6 @@ typedef struct elf_head{
     unsigned short sect_tab_num_ents;
     unsigned short sect_tab_name_idx;
 	
-//	elf_prog_head_ent prog_head_ents[];
+	elf_prog_head_ent prog_tab[];
 
 }__attribute__((packed)) elf_head;
-typedef struct elf_prog_head_ent{
-
-    unsigned int seg_type;
-    unsigned int flags;
-    unsigned long dat_off;
-    unsigned long vaddr;
-    unsigned long ign;
-    unsigned long f_sz;
-    unsigned long mem_sz;
-    unsigned long alignment;
-
-}__attribute__((packed)) elf_prog_head_ent;

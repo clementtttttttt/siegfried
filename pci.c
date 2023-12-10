@@ -217,9 +217,12 @@ void pci_enum(){
         pci_enum_bus(0);
     }
     else{
+    	draw_string("PCI: found a multi bus system");
         for (int function = 0; function < 8; function++) {
              if (pci_get_vendor(0, 0, function) == 0xFFFF) continue;
              bus = function;
+	     draw_string("PCI: scanning bus ");
+	     draw_hex(bus);
              pci_enum_bus(bus);
          }
     }

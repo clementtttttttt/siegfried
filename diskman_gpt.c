@@ -63,14 +63,12 @@ unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned
 }
 
 void diskman_gpt_enum(diskman_ent *in){
-
-    mem_set(buf, 0, 512);
-
-    in->read_func(in->inode, 512, 512, buf );
-
     gpt_header *head = k_obj_alloc(512);
 
-    mem_cpy(head, buf, 512);
+    mem_set(head, 0, 512);
+
+    in->read_func(in->inode, 512, 512, head );
+
 
     draw_string("FOUND GPT TAB: UUID=");
     draw_string_w_sz(head->guid, 16);
@@ -90,13 +88,14 @@ void diskman_gpt_enum(diskman_ent *in){
 
     char *esect = k_obj_alloc(512);
 
+    
     for(unsigned long i=0; i < head->num_parts; ++i){
 
         //draw_hex(head->lba_part_ent*512+((i*head->parts_ent_sz)));
-        in->read_func(in->inode, head->lba_part_ent*512+((i*head->parts_ent_sz)), 512, esect);
+        in->read_func(in->inode, head->lba_part_ent*512 + (i * head->parts_ent_sz), 512, esect);
 
 
-        gpt_partent *ent = (gpt_partent*)&esect[(i*head->parts_ent_sz)%512];
+        gpt_partent *ent = (gpt_partent*)&esect[0];
 
         __int128 cmp_z = 0;
         if(mem_cmp(ent->type_guid, (char*)&cmp_z, 16)){

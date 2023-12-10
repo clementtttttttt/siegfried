@@ -20,18 +20,22 @@ int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
 			return 0;
     }
 
-    elf_head *header = k_obj_alloc(sizeof(elf_head));
+    elf_head *header = k_obj_alloc(512);
 	
 	draw_string("INIT INODE: ");
 	draw_hex(in);
-    extfs_read_inode_contents(diskman_find_ent(disk_inode), in, header, sizeof(elf_head));
+    extfs_read_inode_contents(diskman_find_ent(disk_inode), in, header, 512);
 	
-    if(mem_cmp("\7fELF", header->magic,4)){
-		draw_string("invalid elf file\n");
+    if(!mem_cmp("\x7f\ELF", header->magic,4)){
+		draw_string("invalid elf file");
 		return 0;
 	}
-
-    
+	
+	draw_string("RUNNER: program header #0 vaddr = ");
+	draw_hex(header->prog_tab[0].vaddr);
+	
+	
+		
 
 
     return 0;

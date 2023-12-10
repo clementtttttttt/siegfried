@@ -69,6 +69,10 @@ typedef struct nvme_cmpl_queue_ent{
     };
 }__attribute__((packed)) nvme_cmpl_queue_ent;
 
+
+//bitfield defs
+#define NVME_CTRL_ENABLE 1
+#define NVME_CTRL_PGSZ(in) ((in & 0b11110000000) >> 7)
 typedef struct nvme_ctrl_conf_reg{
 
     unsigned int enable : 1;
@@ -86,7 +90,7 @@ typedef struct nvme_ctrl_conf_reg{
 typedef struct nvme_bar0{
 
     nvme_cap_reg cap;
-    unsigned int ver;
+    unsigned int version;
     unsigned int int_disable;
     unsigned int int_enable;
 
