@@ -1,6 +1,7 @@
 #include "draw.h"
 #include "klib.h"
 #include "debug.h"
+#include "kb.h"
 
 unsigned long str_len(char *in){
     char *old=in;
@@ -102,8 +103,10 @@ for (; n; n--, s++) *s = c;
 }
 
 void halt_and_catch_fire(){
-	asm(".hlt: cli; hlt; jmp .hlt");
-	
+	draw_string("H&CF: press any key to reboot");
+	kb_wait_and_pop_char();
+	draw_string("H&CF: rebooting NOW");
+	asm("xor %rax, %rax;mov %rax,%cr3");
 }
 
 

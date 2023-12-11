@@ -417,16 +417,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         return;
     }
 
-    //opcodes: 0x1 = write, 0x2 = read
-    draw_string("NVME DISK CONTENT DUMP TEST:\n");
-
-    //opcodes: 0x1 = write, 0x2 = read
-    unsigned long *buff = k_pageobj_alloc(&page_heap, 4096);
-    nvme_send_io_cmd(curr->disks, 1, 2, 1, buff);
-
-    draw_string_w_sz((char*)buff, 512);
-    draw_string("\n");
-
+    
+    
 
 	//zero out entries just for good measure
 	mem_set((void*)curr->acq_vaddr, 0, 4096);

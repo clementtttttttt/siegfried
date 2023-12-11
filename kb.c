@@ -8,9 +8,29 @@
 #define KB_DAT 0x60
 #define KB_STAT 0x64
 
-char kb_port = 0; //eith 1 or 2
 
-unsigned char knb_send_cmd_s(unsigned char cmd, unsigned char cmd2){
+static char kb_buf[256] = {0}; //circular key buffer
+static unsigned char key_pop_ptr=0, key_push_ptr=0;
+
+void kb_push_char(char c){
+		kb_buf[key_push_ptr++] = c;
+}
+
+char kb_pop_char (){
+		char ret = kb_buf[key_pop_ptr];
+		kb_buf[key_pop_ptr++] = 0; //clear it just in case
+		return ret;
+}
+
+char kb_wait_and_pop_char(){
+	key_pop_ptr = key_push_ptr;
+	kb_buf[key_pop_ptr] = 0;//clear for wait
+	asm("sti"); //enable ints
+	while(!kb_buf[key_pop_ptr]) asm("hlt");
+	return kb_pop_char();
+}
+
+unsigned char kb_send_cmd_s(unsigned char cmd, unsigned char cmd2){
 
         io_outb(KB_CMD, cmd);
         while(io_inb(KB_STAT) & 0b10);
@@ -114,13 +134,13 @@ void kb_handler(struct task_sframe *frame){
     if(!(test & 0x80)){
         test = kb_to_ascii(test);
 		if(test == 27){
-				draw_string("\n===DEBUG REG DUMP TRIGGERED==\n");
-    draw_string("RIP=");
-    draw_hex(frame->rip);
-        draw_string("RSP=");
-    draw_hex(frame->rsp);
+				draw_string("\n===DEBUG DUMPS TRIGGERED==\n");
+				
+				task_dump_sframe(frame);
+				idt_print_stacktrace((void*)frame->rbp);
 		}	
     }
+    kb_push_char(test);
 }
 
 void idt_kb_handler_s();

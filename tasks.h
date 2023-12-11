@@ -112,7 +112,7 @@ typedef struct task{
 }task;
 
 extern task *curr_task;
-
+void task_dump_sframe(task_int_sframe *in);
 
 void task_scheduler();
 void task_yield();

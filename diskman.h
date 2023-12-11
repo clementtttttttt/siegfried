@@ -48,6 +48,7 @@ typedef siegfried_file* (*diskman_fopen_t) (unsigned long disk_id, char *path);
 
 #define DISKMAN_FWRITE_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
 #define DISKMAN_FREAD_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
+#define DISKMAN_FOPEN_FUNC(name) siegfried_file* name (unsigned long disk_id, char *path);
 
 typedef struct diskman_fs_driver_funcs{
 

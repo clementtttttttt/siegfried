@@ -256,18 +256,6 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
        
 
         while(root_dirents->inode){
-/*
-            draw_string("FNAME=");
-
-            draw_string_w_sz(root_dirents->name, root_dirents->namelen_l);
-
-            draw_string(" INODE=");
-
-            draw_hex(root_dirents->inode);
-
-            draw_string(" SZ=");
-*/
-            draw_hex(root_dirents->ent_sz);
 
             if(str_len(name) == str_len(root_dirents->name) && mem_cmp(name, root_dirents->name, str_len(name))){
 					

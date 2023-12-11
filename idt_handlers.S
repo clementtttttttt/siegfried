@@ -19,6 +19,7 @@
 tmp_r15: .quad 0
 
 rip_save: .quad 0
+rax_save: .quad 0
 
 apic_ack_int:
     movq apic_addr, %rdi
@@ -139,9 +140,13 @@ idt_syscall_handler_s:
 
     call syscall_main
 
+	movq %rax, rax_save
+
     movq $2f, rip_save
     jmp idt_load_regs
     2:
+    
+    mov rax_save, %rax
 
     iretq
 
