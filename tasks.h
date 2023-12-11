@@ -95,6 +95,10 @@ typedef struct krnl_state{
 
 }__attribute__((packed)) krnl_state;
 
+enum task_states{
+	T_NULL, T_RUNNING, T_DEAD
+};
+
 typedef struct task{
     krnl_state *krnl_state; //stack + STACK_SZ - sizeof(krnl_state).
     void* krnl_stack_base;
@@ -104,7 +108,7 @@ typedef struct task{
     struct task *next;
     unsigned long tid;
     unsigned long errno;
-
+    unsigned long state;
 }task;
 
 extern task *curr_task;
@@ -115,8 +119,9 @@ void task_yield();
 void tasks_setup();
 void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_state *new_ptr_to_stack_addr);
 
+void task_exit(unsigned long);
 void task_enter_krnl();
 void task_exit_krnl();
-
+task *task_start_func(void *func);
 void init_loader_end();
 __attribute__((noinline, section(".init_loader"))) void init_loader();

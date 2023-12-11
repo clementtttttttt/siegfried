@@ -38,3 +38,8 @@ typedef struct elf_head{
 	elf_prog_head_ent prog_tab[];
 
 }__attribute__((packed)) elf_head;
+
+enum elfsegtypes{
+	ELF_NULL, ELF_LOAD, ELF_DYNAMIC, ELF_INTERP, ELF_NOTE
+	
+};

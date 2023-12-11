@@ -185,9 +185,10 @@ DISKMAN_READ_FUNC(nvme_read_disk){
 	
 
     if(disk == 0) return 0;
+   
     
-    unsigned long buf_sz = num_bytes + (off_bytes%512?512:0);
- 
+    unsigned long buf_sz = num_bytes + 512 + (off_bytes%512?512:0);
+
  	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz/4096  + 4096);
 	
     nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, rdbuf);

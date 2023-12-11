@@ -23,7 +23,7 @@ static inline void draw_pixel_at(unsigned long x,unsigned long y, unsigned int c
 
 }*/
 
-void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
+static inline void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
 
     if(in == 0 ) return;
 
@@ -42,36 +42,107 @@ void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
     unsigned long x_inc = bb/8;
     unsigned long y_inc = p - x_inc*8;
 
-    unsigned long where = iny * p + inx * x_inc;
+    //unsigned long where = iny * p + inx * x_inc;
+
+    unsigned char *restrict fb_it = draw_fb_addr + iny*p + inx*x_inc;
+    
+    unsigned char *restrict comp_byte_ptr = font_bits + (font_start_y)*font_width/8 + font_start_x;
+
 
     for(unsigned long y = 0; y < 8; ++y){
 
-        unsigned char comp_byte = font_bits[(font_start_y + y)*font_width/8 + font_start_x];
-
+        
 
         for(unsigned long x=0; x<8; ++x){
-            where += x_inc;
-            if (!(comp_byte & (1<<x)) && in != 0){
-                draw_fb_addr[where] = 0xff;              // BLUE
-                draw_fb_addr[where + 1] = 0xff;   // GREEN
-                draw_fb_addr[where + 2] = 0xff;  // RED
+            fb_it += x_inc;
+            if (!(*comp_byte_ptr & (1<<x)) && in != 0){
+                fb_it[0] = 0xff;              // BLUE
+                fb_it[1] = 0xff;   // GREEN
+                fb_it[2] = 0xff;  // RED
                 if(x_inc == 4){
-                    draw_fb_addr[where + 3] = 0xff;
+                    fb_it[3] = 0xff;
                 }
             }
 
+	    	    
+
         }
-        where += y_inc;
+	            comp_byte_ptr += font_width/8;
+
+        fb_it += y_inc;
+    }
+
+}
+
+static inline void draw_char_at_fbptr(unsigned char in, unsigned char *restrict fb_it){
+
+    if(in == 0 ) return;
+    unsigned long x_inc = bb/8;
+    unsigned long y_inc = p - x_inc*8;
+    switch(in){
+        case 'y':
+        case 'g':
+        case 'p':
+        case 'q':
+            fb_it += p*2;
+            break;
+    }
+
+    unsigned long font_start_x = (in % 8);
+    unsigned long font_start_y = (in / 8) *8;
+
+
+
+    //unsigned long where = iny * p + inx * x_inc;
+
+    
+    
+    unsigned char *restrict comp_byte_ptr = font_bits + (font_start_y)*font_width/8 + font_start_x;
+
+
+    for(unsigned long y = 0; y < 8; ++y){
+
+        
+
+        for(unsigned long x=0; x<8; ++x){
+            fb_it += x_inc;
+            if (!(*comp_byte_ptr & (1<<x)) && in != 0){
+                fb_it[0] = 0xff;              // BLUE
+                fb_it[1] = 0xff;   // GREEN
+                fb_it[2] = 0xff;  // RED
+                if(x_inc == 4){
+                    fb_it[3] = 0xff;
+                }
+            }
+
+	    	    
+
+        }
+	            comp_byte_ptr += font_width/8;
+
+        fb_it += y_inc;
     }
 
 }
 
 void draw_swap_textbuf(){
+    char *restrict text_buf_ptr = text_buf;
 
-    for(unsigned long y = 0; y < th*tw; y += tw){
-        for(unsigned long x=0; x < tw; ++x){
-            draw_char_at(text_buf[y+x], x*8, y/tw*10);
-        }
+
+	unsigned char *restrict fb_it =  draw_fb_addr; //+ iny*p + inx*x_inc;
+    unsigned long x_inc = bb/8;
+    //unsigned long y_inc = p - x_inc*8;
+    for(unsigned long ty = 0; ty < th; ++ty){
+    		
+        for(unsigned long tx=0; tx < tw; ++tx){
+            draw_char_at_fbptr(*text_buf_ptr, fb_it);
+				
+			
+            ++text_buf_ptr;
+            fb_it += x_inc*8;
+		}
+		fb_it += p*9;
+	
     }
 }
 

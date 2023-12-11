@@ -164,7 +164,7 @@ void extfs_free_blk_list(extfs_blk_list *l){
 
 }
 
-unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* buf, unsigned long count){
+unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* buf, unsigned long count, unsigned long off){
 	    void *f_ptr=NULL;
 
     extfs_inode *inode_tab = extfs_read_inode_struct(d, in, &f_ptr);
@@ -174,7 +174,7 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* 
     
     	if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
 
-            read =d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes), count, buf);
+            read =d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes) + off, count, buf);
 		k_obj_free(f_ptr);		
         }
         else{
@@ -185,7 +185,7 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* 
 
 
 
-                           read= d->read_func(d->inode, blks->blks_off * inf->blksz_bytes,count,buf);
+                           read= d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + off,count,buf);
                             
                             k_obj_free(f_ptr);
 							

@@ -31,3 +31,4 @@ typedef struct idt_tab_desc{
 void idt_setup();
 void idt_set_irq_ent(unsigned long no, void* addr);
 void idt_flush();
+void idt_print_stacktrace(unsigned long *stack);

@@ -19,7 +19,7 @@ void idt_print_stacktrace(unsigned long *stack){
     draw_string("STACK=");
     draw_hex((unsigned long)stack);
 
-    stack = __builtin_frame_address(0);
+   // stack = __builtin_frame_address(0);
 
     while(stack != 0){
             draw_hex(stack[1]);
@@ -34,6 +34,12 @@ asm("idt_dump_cr2: movq %cr2, %rax; retq");
 
 void idt_pagefault_handler(task_trap_sframe *fr){
 
+    if(curr_task){
+		draw_string("\nERR: userland PF");
+		curr_task->tf = (void*)(((unsigned long)fr));
+
+        task_exit(139);
+    }
     dbgconout("PAGE FAULT: ERRCODE=");
     dbgnumout_bin(fr->errcode);
 
@@ -87,7 +93,10 @@ struct gpf_err{
 void idt_df_handler(task_trap_sframe *frame){
 
     if(curr_task){
-     //   if(curr_task -> tid != 1){return;}
+		draw_string("\nERR: userland DF");
+		curr_task->tf = (void*)(((unsigned long)frame));
+
+        task_exit(139);
     }
     draw_hex(curr_task->tid);
 
@@ -108,7 +117,11 @@ void idt_df_handler(task_trap_sframe *frame){
     draw_string("RCX=");
     draw_hex(frame->rcx);
 
-    idt_print_stacktrace((unsigned long*)frame->rsp);
+	if(curr_task->tid != 0)
+    idt_print_stacktrace((unsigned long*)curr_task->tf->rbp);
+	else{
+			idt_print_stacktrace((unsigned long*) frame->rbp);
+	}
 
     asm("cli;hlt;");
     while(1){
@@ -120,7 +133,10 @@ void idt_df_handler(task_trap_sframe *frame){
 void idt_div0_handler(task_trap_sframe *frame){
 
     if(curr_task){
-     //   if(curr_task -> tid != 1){return;}
+		draw_string("\nERR: userland GPF");
+		curr_task->tf = (void*)(((unsigned long)frame));
+
+        task_exit(139);
     }
     draw_hex(curr_task->tid);
 
@@ -135,7 +151,7 @@ void idt_div0_handler(task_trap_sframe *frame){
     draw_string("RCX=");
     draw_hex(frame->rcx);
 
-    idt_print_stacktrace((unsigned long*)frame->rsp);
+    idt_print_stacktrace((unsigned long*)frame->rbp);
 
     asm("cli;hlt;");
     while(1){
@@ -146,7 +162,10 @@ void idt_div0_handler(task_trap_sframe *frame){
 void idt_gpf_handler(task_trap_sframe *frame){
 
     if(curr_task){
-     //   if(curr_task -> tid != 1){return;}
+		draw_string("\nERR: userland GPF");
+		curr_task->tf = (void*)(((unsigned long)frame));
+
+        task_exit(139);
     }
     draw_hex(curr_task->tid);
 
@@ -181,7 +200,7 @@ void idt_gpf_handler(task_trap_sframe *frame){
     draw_string("RCX=");
     draw_hex(frame->rcx);    
 
-    idt_print_stacktrace((unsigned long*)frame->rsp);
+    idt_print_stacktrace((unsigned long*)frame->rbp);
 
     asm("cli;hlt;");
     while(1){

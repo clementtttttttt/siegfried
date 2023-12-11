@@ -82,17 +82,22 @@ typedef union pde{
 void page_clone_krnl_tab(pml4e *dest);
 void page_clone_page_tab(pml4e *dest, pml4e *src);
 
+void page_unmap_vaddr(void* vaddr);
 void page_alloc_tab(pml4e *tab, void *phy, void *vir);
 void* page_lookup_paddr_tab(pml4e *tab, void* in);
-
+unsigned long page_virt_find_addr_user(pml4e *tab, unsigned long pgs);
 void page_alloc(void* phy, void* vir);
 void page_alloc_dev(void *phy, void *vir);
 void page_flush();
 void page_init_map();
 void *page_find_and_alloc(unsigned long pgs);
-void *page_find_and_alloc_user(pml4e *tab, unsigned long pgs);
+void *page_find_and_alloc_user(pml4e *tab,unsigned long vaddr,  unsigned long pgs);
 void page_free_found(unsigned long in_vaddr, unsigned long pgs);
 void *page_map_paddr(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs);
 void *page_lookup_paddr(void* vir);
+void page_free_tab(pml4e *tab);
+
+void page_switch_tab(pml4e *tab);
+void page_switch_krnl_tab();

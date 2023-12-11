@@ -66,7 +66,12 @@ void syscall_diskman_get_next_ent(syscall_disk_ent *e){
      e -> diskman_ent = d;
 }
 
-void (*syscall_table[200])() = {syscall_sleep, syscall_diskman_get_next_ent, syscall_diskman_read, draw_string_w_sz};
+
+void syscall_exit(unsigned long code){
+		task_exit(code);
+}
+
+void (*syscall_table[200])() = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read};
 
 void syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4){
 	

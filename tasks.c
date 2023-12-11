@@ -7,6 +7,7 @@
 #include "syscall.h"
 #include <stdatomic.h>
 #include "runner.h"
+#include "idt.h"
 
 unsigned char tasking_enabled = 0;
 
@@ -70,12 +71,7 @@ void task_pre_init(){
 
 }
 
-void task_exit(){
-        if(curr_task->tid == 1){
-                draw_string("INIT DIED\n");
-                while(1);
-        }
-}
+
 
 unsigned long tid_counter = 0;
 
@@ -136,7 +132,7 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
         new->page_tab = k_pageobj_alloc(&page_heap, 4096 );
         page_clone_krnl_tab(new->page_tab);
 
-        new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, 1)) + TASK_STACK_SZ;
+        new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1)) + TASK_STACK_SZ;
 
 
         return new;
@@ -161,19 +157,9 @@ void tasks_setup(){
     runner_spawn_from_file_at_root(krnl_init_inode, "sfinit");
 
 
-       task* t=task_start_func(init_loader);
 
-
-    void* new = page_find_and_alloc_user(t->page_tab, 1);
-
-    task_switch_tab(t->page_tab);
 	
-	//init_loader_end defined in linker.ld
-    mem_cpy(new, init_loader, (unsigned long)&init_loader_end - (unsigned long)&init_loader);
-   
-    task_switch_tab(pml4_table);
 
-    t -> tf -> rip = (unsigned long) new;
    	
     curr_task = tasks;
 
@@ -187,20 +173,32 @@ krnl_state *scheduler_state;
 volatile int task_in_krnl = 0;
 
 void task_scheduler(){
-
+	
+	page_switch_krnl_tab();
 		sched_lock = 1;
 		
         while(1){
 	
                 if(curr_task == 0) continue; //continue while curr task is 0
 
-
+				
                 if(curr_task->next == 0) {
                         curr_task = tasks;
                 }
                 else {
                         curr_task = curr_task->next;
                 }
+                
+                if(curr_task->state == T_DEAD){
+					if(curr_task->tid == 1){
+						
+						draw_string("\nTID 1 IS A ZOMBIE, triggering trap"); 
+						__builtin_trap();
+						while(1){}
+					}
+					continue;
+			
+				}
 
                 task_switch_tab(curr_task->page_tab);
 
@@ -208,8 +206,35 @@ void task_scheduler(){
 
 		
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
+                
+                page_switch_krnl_tab();
         }
 
+}
+
+void task_exit(unsigned long code){
+
+
+	if(curr_task->tid == 1){
+						if(curr_task->tid == 1){
+						
+						draw_string("\nTID 1 (INIT) IS A ZOMBIE, printing stack trace and H&CFing \n"); 
+						idt_print_stacktrace((void*)curr_task->tf->rbp);
+						halt_and_catch_fire();
+					}	
+		
+	}
+	
+	page_switch_krnl_tab();
+
+	k_obj_free(curr_task->krnl_stack_base);
+		
+	curr_task->state = T_DEAD;
+
+	page_free_tab(curr_task->page_tab);
+
+	asm("sti");
+	while(!sched_lock){}
 }
 
 void task_yield(){

@@ -28,11 +28,34 @@ void inhibit_loop_to_libcall mem_cpy(void *dest, void *src, unsigned long n)
 // Typecast src and dest addresses to (char *)
         unsigned char *csrc = (unsigned char *)src;
         unsigned char *cdest = (unsigned char *)dest;
+	
+	if(n % 8 == 0){
+		unsigned long n_64 = n/8;
+		unsigned long *d_64 = dest;
+		unsigned long *s_64 = src;
+		while(n_64--){
+			*d_64++ = *s_64++;
+		}
 
-// Copy contents of src[] to dest[]
-      	while(n--){
-		*cdest++ = *csrc++;
+	}
+	else
+	if(n%4 == 0){
+        
+                unsigned long n_32 = n/4;
+                unsigned long *d_32 = dest;
+                unsigned long *s_32 = src;
+                while(n_32--){
+                        *d_32++ = *s_32++;
+                }
+
+
+	}
+	else{
+		// Copy contents of src[] to dest[]
+      		while(n--){
+			*cdest++ = *csrc++;
 		
+		}
 	}
 }
 
@@ -78,6 +101,10 @@ for (; n; n--, s++) *s = c;
 	return dest;
 }
 
+void halt_and_catch_fire(){
+	asm(".hlt: cli; hlt; jmp .hlt");
+	
+}
 
 
 void klib_clear_var_cache(void *v){
