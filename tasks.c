@@ -151,12 +151,12 @@ void tasks_setup(){
 
     tss.rsp_0 = (unsigned long)k_obj_alloc(16384);
     tss.iopb = 0xffff;
-    tasking_enabled = 1;
+    tasking_enabled = 1; 
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
-    runner_spawn_from_file_at_root(krnl_init_inode, "sfinit");
+    if(!runner_spawn_from_file_at_root(krnl_init_inode, "sfinit")){ //tid 0 = fail
 
-
+    }
 
 	
 
@@ -212,6 +212,38 @@ void task_scheduler(){
 
 }
 
+void task_dump_sframe(task_int_sframe *in){
+	unsigned long *in_long = (unsigned long*)in; 
+	char *reg_name[] = {
+		"DS",
+		"RAX",
+		"RBP",
+		"RBX",
+		"R15",
+		"R14",
+		"R13",
+		"R12",
+		"R11",
+		"R10",
+		"R9",
+		"R8",
+		"RCX",
+		"RDX", 
+		"RSI",
+		"RDI",
+		
+		
+		
+		
+	};
+	for(int i=0;i<16;++i){
+		draw_string(reg_name[i]);
+		draw_string(":");
+		draw_hex(in_long[i]);
+	}
+
+}
+
 void task_exit(unsigned long code){
 
 
@@ -219,6 +251,7 @@ void task_exit(unsigned long code){
 						if(curr_task->tid == 1){
 						
 						draw_string("\nTID 1 (INIT) IS A ZOMBIE, printing stack trace and H&CFing \n"); 
+						task_dump_sframe(curr_task->tf);
 						idt_print_stacktrace((void*)curr_task->tf->rbp);
 						halt_and_catch_fire();
 					}	

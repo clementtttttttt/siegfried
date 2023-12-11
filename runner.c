@@ -81,5 +81,5 @@ int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
 			
 	}
 
-    return 0;
+    return t->tid;
 }

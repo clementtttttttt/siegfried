@@ -34,22 +34,6 @@ asm("idt_dump_cr2: movq %cr2, %rax; retq");
 
 void idt_pagefault_handler(task_trap_sframe *fr){
 
-    if(curr_task){
-		draw_string("\nERR: userland PF");
-		curr_task->tf = (void*)(((unsigned long)fr));
-
-        task_exit(139);
-    }
-    dbgconout("PAGE FAULT: ERRCODE=");
-    dbgnumout_bin(fr->errcode);
-
-    dbgconout("RIP: ");
-    dbgnumout_hex(fr->rip);
-
-
-    dbgconout("CR2: ");
-    dbgnumout_hex(idt_dump_cr2());
-
     draw_string("\n\xcd\xcd\xcd\xcdPAGE FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
     draw_hex(fr -> errcode);
     draw_string("ERRBITS: ");
@@ -74,6 +58,22 @@ void idt_pagefault_handler(task_trap_sframe *fr){
 
     draw_string("CR2=");
     draw_hex(idt_dump_cr2());
+    if(curr_task){
+		draw_string("\nERR: userland PF");
+		curr_task->tf = (void*)(((unsigned long)fr));
+
+        task_exit(139);
+    }
+    dbgconout("PAGE FAULT: ERRCODE=");
+    dbgnumout_bin(fr->errcode);
+
+    dbgconout("RIP: ");
+    dbgnumout_hex(fr->rip);
+
+
+    dbgconout("CR2: ");
+    dbgnumout_hex(idt_dump_cr2());
+
 
     idt_print_stacktrace((unsigned long*)fr->rbp);
 
@@ -161,21 +161,6 @@ void idt_div0_handler(task_trap_sframe *frame){
 
 void idt_gpf_handler(task_trap_sframe *frame){
 
-    if(curr_task){
-		draw_string("\nERR: userland GPF");
-		curr_task->tf = (void*)(((unsigned long)frame));
-
-        task_exit(139);
-    }
-    draw_hex(curr_task->tid);
-
-    draw_string("FAULT TASK TID IS 1: PANICKING!!!\n");
-
-    dbgconout("GENERAL PROPTECTION FAULT: ERRCODE=");
-    dbgnumout_bin(frame->errcode);
-
-    dbgconout("RIP: ");
-    dbgnumout_hex(frame->rip);
 
     draw_string("\xcd\xcd\xcd\xcdGENERAL PROTECTION FAULT\xcd\xcd\xcd\xcd\nRAW ERRCODE=");
     draw_hex(frame->errcode);
@@ -196,6 +181,18 @@ void idt_gpf_handler(task_trap_sframe *frame){
         
     draw_string("RIP DUMP(REVERSED)=");
     draw_hex(*(unsigned long*)frame->rip);
+
+
+    if(curr_task){
+		draw_string("\nERR: userland GPF");
+		curr_task->tf = (void*)(((unsigned long)frame));
+
+        task_exit(139);
+    }
+    draw_hex(curr_task->tid);
+
+    draw_string("FAULT TASK TID IS 1: PANICKING!!!\n");
+
 
     draw_string("RCX=");
     draw_hex(frame->rcx);    
