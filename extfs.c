@@ -171,7 +171,7 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 				curr_inode = EXTFS_ROOTDIR_INODE;
 				break;
 			default:
-				//TODO: curr_inode = curr_task->dir->inode
+				curr_inode = curr_task->dir.inode;
 				break;
 				
 			

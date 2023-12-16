@@ -1,7 +1,6 @@
 #ifndef _SYS_DISKMAN_H
 #define _SYS_DISKMAN_H
 
-typedef struct diskman_ent diskman_ent;
 
 
 typedef  long (*diskman_read_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
@@ -11,22 +10,9 @@ typedef  long (*diskman_write_func_t) (unsigned long inode, unsigned long off_se
 #define DISKMAN_WRITE_FUNC(name)  long name (unsigned long id, unsigned long off_bytes, unsigned long num_bytes, void* buf)
 
 
-
-typedef struct siegfried_file{
-
-	diskman_ent *disk;
-    unsigned long inode;
-    char name[256];
-
-    unsigned short t; // file type(eg block device, char dev , dir , etc blab l
-
-    void* fs_spec_dat;
-
-}siegfried_file;
-
 typedef struct siegfried_dir{
 
-    siegfried_file *files;
+    struct siegfried_file *files;
     unsigned long num_files;
 	unsigned long inode;
 	char name[256];
@@ -38,13 +24,14 @@ enum diskman_file_tees{
 };
 
 
+
 typedef siegfried_dir* (*diskman_open_dir_t) (unsigned long dm_inode, char *path, unsigned long attrs);
 
-typedef unsigned long (*diskman_fread_t) (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs);
+typedef unsigned long (*diskman_fread_t) (struct siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs);
 
-typedef unsigned long (*diskman_fwrite_t) (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs);
+typedef unsigned long (*diskman_fwrite_t) (struct siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs);
 
-typedef siegfried_file* (*diskman_fopen_t) (unsigned long disk_id, char *path);
+typedef struct siegfried_file* (*diskman_fopen_t) (unsigned long disk_id, char *path);
 
 #define DISKMAN_OPEN_DIR_FUNC(name) siegfried_dir* name (unsigned long dm_inode, char *path, unsigned long attrs)
 
@@ -75,6 +62,20 @@ typedef struct diskman_ent{
     char ispart;
 
 }diskman_ent;
+
+
+typedef struct siegfried_file{
+
+	diskman_ent *disk;
+    unsigned long inode;
+    char name[256];
+
+    unsigned short t; // file type(eg block device, char dev , dir , etc blab l
+
+    void* fs_spec_dat;
+
+}siegfried_file;
+
 
 diskman_ent *diskman_new_ent();
 void diskman_setup();

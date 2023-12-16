@@ -24,6 +24,7 @@ static inline void draw_pixel_at(unsigned long x,unsigned long y, unsigned int c
 
 }*/
 
+/*
 static inline void draw_char_at(unsigned char in, unsigned long inx, unsigned long iny){
 
     if(in == 0 ) return;
@@ -75,7 +76,7 @@ static inline void draw_char_at(unsigned char in, unsigned long inx, unsigned lo
     }
 
 }
-
+*/
 static inline void draw_char_at_fbptr(unsigned char in, unsigned char *restrict fb_it){
 
     unsigned long x_inc = bb/8;

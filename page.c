@@ -420,12 +420,10 @@ void page_unmap_vaddr(void *vaddr){
 
         pde *pdei_table = (pde*) get_paddr(&(((pdpte*)get_paddr(&pml4_table[pml4i]))[pdptei]));
 
-        unsigned long pa =(unsigned long) get_paddr(&pdei_table[pdei]);
-
+        
 
         //FIXME: remove 48bit hard limit.
-        pa &= 0xffffffffffff;
-
+       
 
 
 
