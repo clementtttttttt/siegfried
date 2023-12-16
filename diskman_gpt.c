@@ -90,8 +90,8 @@ void diskman_gpt_enum(diskman_ent *in){
     draw_string("PARTENT SZ=");
     draw_hex(head->parts_ent_sz);
 
-    char *esect = k_obj_alloc(head->parts_ent_sz);
-
+	    char *esect = k_obj_alloc(head->parts_ent_sz);
+asm("sti");
 
     for(unsigned long i=0; i < head->num_parts; ++i){
 
@@ -148,4 +148,6 @@ void diskman_gpt_enum(diskman_ent *in){
 
     k_obj_free(head);
     k_obj_free(esect);
+	while(1){}
+	asm("cli");
 }
