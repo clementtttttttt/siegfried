@@ -72,7 +72,7 @@ void diskman_gpt_enum(diskman_ent *in){
     mem_set(head, 0, sizeof(gpt_header));
 
     in->read_func(in->inode, 512, sizeof(gpt_header), head );
-
+asm("sti");
 
     draw_string("FOUND GPT TAB: UUID=");
     draw_string_w_sz(head->guid, 16);
@@ -91,7 +91,6 @@ void diskman_gpt_enum(diskman_ent *in){
     draw_hex(head->parts_ent_sz);
 
 	    char *esect = k_obj_alloc(head->parts_ent_sz);
-asm("sti");
 
     for(unsigned long i=0; i < head->num_parts; ++i){
 
@@ -148,6 +147,5 @@ asm("sti");
 
     k_obj_free(head);
     k_obj_free(esect);
-	while(1){}
-	asm("cli");
+    asm("cli");
 }
