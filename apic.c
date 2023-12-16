@@ -86,6 +86,7 @@ void apic_setup(){
 
     //parse madt and stuff
     madt = (acpi_madt *)acpiman_get_tab("APIC");
+    cpus_tab = 0; // initialise so realloc doesn't get tripped up
 
     apic_madt_ent_head *it = &madt->ents_start;
     unsigned long cpu_count = 0;;

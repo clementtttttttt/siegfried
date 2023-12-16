@@ -9,6 +9,7 @@
 #include "klib.h"
 #include "syscall.h"
 
+#include "errno.h"
 void idt_syscall_handler_s();
 
 void syscall_setup(){
@@ -75,7 +76,7 @@ void (*syscall_table[200])() = {syscall_exit, syscall_sleep, draw_string_w_sz, s
 
 unsigned long  syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4){
 	
-	unsigned long retval;
+	unsigned long retval = -ENOSYS;
     if(syscall_table[func]){
         asm("cli; callq *%0; ":"=a"(retval):"r"(syscall_table[func]), "D"(i1), "S"(i2), "d"(i3), "c"(i4) : "rbx");
 	

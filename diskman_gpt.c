@@ -21,11 +21,14 @@ gpt_partlist_ent *diskman_gpt_new_ent(){
 
         ret = ret->next;
     }
+	
+	ret->next = 0;
 
     return ret;
 }
 
 gpt_partlist_ent *gpt_find_ent(unsigned long inode){
+
 
     gpt_partlist_ent *e = gparts;
 
@@ -63,11 +66,12 @@ unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned
 }
 
 void diskman_gpt_enum(diskman_ent *in){
-    gpt_header *head = k_obj_alloc(512);
+	
+    gpt_header *head = k_obj_alloc(sizeof(gpt_header));
 
-    mem_set(head, 0, 512);
+    mem_set(head, 0, sizeof(gpt_header));
 
-    in->read_func(in->inode, 512, 512, head );
+    in->read_func(in->inode, 512, sizeof(gpt_header), head );
 
 
     draw_string("FOUND GPT TAB: UUID=");
@@ -86,15 +90,17 @@ void diskman_gpt_enum(diskman_ent *in){
     draw_string("PARTENT SZ=");
     draw_hex(head->parts_ent_sz);
 
-    char *esect = k_obj_alloc(512);
+    char *esect = k_obj_alloc(head->parts_ent_sz);
 
-    
+
     for(unsigned long i=0; i < head->num_parts; ++i){
 
-        //draw_hex(head->lba_part_ent*512+((i*head->parts_ent_sz)));
-        in->read_func(in->inode, head->lba_part_ent*512 + (i * head->parts_ent_sz), 512, esect);
+      //z  //draw_hex(head->lba_part_ent*512+((i*head->parts_ent_sz)));
+        in->read_func(in->inode, head->lba_part_ent*512 + (i * head->parts_ent_sz), head->parts_ent_sz, esect);
 
 
+		        
+ 
         gpt_partent *ent = (gpt_partent*)&esect[0];
 
         __int128 cmp_z = 0;
@@ -113,6 +119,7 @@ void diskman_gpt_enum(diskman_ent *in){
         dev->read_func  = (void*) diskman_gpt_read;
         dev->write_func = (void*) diskman_gpt_write;
 
+		    
         gpt_partlist_ent *e = diskman_gpt_new_ent();
 
 
@@ -122,6 +129,8 @@ void diskman_gpt_enum(diskman_ent *in){
         e->attr = ent->attr;
         e->disk = in;
 
+
+		    
         draw_string("\nFOUND PART: PART_UUID=");
         draw_string_w_sz((char*)&ent->part_guid, 16);
         draw_string("\n");
@@ -132,6 +141,9 @@ void diskman_gpt_enum(diskman_ent *in){
         draw_hex(e->inode);
         draw_string("PART OFF=");
         draw_hex(e->lba_start);
+
+
+
     }
 
     k_obj_free(head);

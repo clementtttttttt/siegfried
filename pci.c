@@ -20,8 +20,8 @@ pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in){
 
 pci_dev_ent* pci_new_dev_ent(){
     if(pci_root == 0){
-        pci_root = k_obj_calloc(1,sizeof(pci_dev_ent));
-
+        pci_root = k_obj_alloc(sizeof(pci_dev_ent));
+	pci_root->next = 0;
         return pci_root;
 
     }
@@ -32,8 +32,8 @@ pci_dev_ent* pci_new_dev_ent(){
         //skip to last ent in linked list.
         for(i = pci_root; i->next != 0; i = i->next);
 
-        i->next = k_obj_calloc(1,sizeof(pci_dev_ent));
-
+        i->next = k_obj_alloc(sizeof(pci_dev_ent));
+	i->next->next = 0;
         return i->next;
     }
 }

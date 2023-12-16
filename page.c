@@ -413,22 +413,23 @@ asm("page_get_curr_tab:;\
 
 void page_unmap_vaddr(void *vaddr){
 	
-	unsigned long vir = (unsigned long) vaddr;
+        unsigned long vir =(unsigned long) vaddr ;
+        unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
+        unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+        unsigned long pdei = (unsigned long)vir >> 21 & 0x1ff;
 
-    unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
-    unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+        pde *pdei_table = (pde*) get_paddr(&(((pdpte*)get_paddr(&pml4_table[pml4i]))[pdptei]));
 
-    pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
-
-    if(pdpt_table == 0){
-        dbgconout("pdpt_table is 0");
-        return;
+        unsigned long pa =(unsigned long) get_paddr(&pdei_table[pdei]);
 
 
-    }
-    
-    pdpt_table[pdptei].present = 0;
+        //FIXME: remove 48bit hard limit.
+        pa &= 0xffffffffffff;
 
+
+
+
+        pdei_table[pdei].present = 0;
 
 	
 }

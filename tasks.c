@@ -154,7 +154,7 @@ void tasks_setup(){
     tasking_enabled = 1; 
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
-    if(!runner_spawn_from_file_at_root(krnl_init_inode, "sfinit")){ //tid 0 = fail
+    if(!runner_spawn_from_file_at_root(krnl_init_inode, "/sfinit")){ //tid 0 = fail
 
     }
 

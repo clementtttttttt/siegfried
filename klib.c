@@ -167,7 +167,7 @@ void str_tok(char *str, char delim, str_tok_result *off){
     }
     if(i > str_len(str)){off->off = 0; off->sz = 0; return;}
 
-    off->sz = i - off->off+1;
+    off->sz = i - off->off;
 
 
 

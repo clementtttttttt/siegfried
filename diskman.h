@@ -1,24 +1,24 @@
+#ifndef _SYS_DISKMAN_H
+#define _SYS_DISKMAN_H
+
+typedef struct diskman_ent diskman_ent;
+
+
 typedef  long (*diskman_read_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
 typedef  long (*diskman_write_func_t) (unsigned long inode, unsigned long off_sects, unsigned long num_sects, void* buf);
 
 #define DISKMAN_READ_FUNC(name)  long name (unsigned long id, unsigned long off_bytes, unsigned long num_bytes, void* buf)
 #define DISKMAN_WRITE_FUNC(name)  long name (unsigned long id, unsigned long off_bytes, unsigned long num_bytes, void* buf)
 
-typedef struct diskman_blk_list{
 
-    struct diskman_blk_list *next;
-    unsigned long num_blks;
-    unsigned long blks_off;
-    unsigned long blks_f_off;
-
-}diskman_blk_list;
 
 typedef struct siegfried_file{
 
-    diskman_blk_list *inode;
+	diskman_ent *disk;
+    unsigned long inode;
     char name[256];
 
-    unsigned short t;
+    unsigned short t; // file type(eg block device, char dev , dir , etc blab l
 
     void* fs_spec_dat;
 
@@ -28,6 +28,8 @@ typedef struct siegfried_dir{
 
     siegfried_file *files;
     unsigned long num_files;
+	unsigned long inode;
+	char name[256];
 
 }siegfried_dir;
 
@@ -48,16 +50,7 @@ typedef siegfried_file* (*diskman_fopen_t) (unsigned long disk_id, char *path);
 
 #define DISKMAN_FWRITE_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
 #define DISKMAN_FREAD_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
-#define DISKMAN_FOPEN_FUNC(name) siegfried_file* name (unsigned long disk_id, char *path);
-
-typedef struct diskman_fs_driver_funcs{
-
-    diskman_open_dir_t opendir;
-    diskman_fread_t fread;
-	diskman_fwrite_t fwrite;
-	diskman_fopen_t fgetin;
-
-} diskman_fs_driver_funcs;
+#define DISKMAN_FOPEN_FUNC(name) siegfried_file* name (unsigned long disk_id, char *path)
 
 typedef struct diskman_ent{
     struct diskman_ent *next;
@@ -70,7 +63,10 @@ typedef struct diskman_ent{
     diskman_read_func_t read_func;
     diskman_write_func_t write_func;
 
-    diskman_fs_driver_funcs *fs_driver;
+     diskman_open_dir_t fopendir;
+    diskman_fread_t fread;
+	diskman_fwrite_t fwrite;
+	diskman_fopen_t fopen;
 
     void *fs_disk_info;
 
@@ -96,3 +92,5 @@ enum fs_types{
 #include "diskman_gpt.h"
 
 #include "extfs.h"
+
+#endif

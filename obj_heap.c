@@ -2,6 +2,7 @@
 #include "page.h"
 #include "debug.h"
 #include "draw.h"
+#include "idt.h"
 
 /**  Durand's Amazing Super Duper Memory functions.  */
 
@@ -18,6 +19,7 @@
 #define USE_CASE4
 #define USE_CASE5
 
+//#define DEBUG
 
 /** This macro will conveniently align our pointer upwards */
 #define ALIGN( ptr )													\
@@ -112,6 +114,7 @@ unsigned long getblks(){return blks;}
 
 void* liballoc_alloc(int sz){
 	++blks;
+	
 	return page_find_and_alloc(sz);
 
 }
@@ -262,6 +265,9 @@ static struct liballoc_major *allocate_new_page( unsigned int size )
 
 void *PREFIX(k_obj_alloc)(unsigned long req_size)
 {
+
+	//dbgnumout_hex((unsigned long) __builtin_return_address(0));
+	//while(1){}
 	int startedBet = 0;
 	unsigned long long bestSize = 0;
 	void *p = 0;
@@ -609,6 +615,9 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 
 	liballoc_unlock();		// release the lock
 
+	//draw_string("WARN: RETURNING 0 LIBALLOC");
+	//while(1){}
+
 	#ifdef DEBUG
 	printf( "All cases exhausted. No memory available.\n");
 	FLUSH();
@@ -665,12 +674,10 @@ void PREFIX(k_obj_free)(void *ptr)
 		   )
 		{
 			l_possibleOverruns += 1;
-			#if defined DEBUG || defined INFO
-			printf( "liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
-								min->magic,
-								LIBALLOC_MAGIC );
-			FLUSH();
-			#endif
+			draw_string( "liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n");
+			draw_hex(min->magic);
+			draw_hex(LIBALLOC_MAGIC);
+		//	FLUSH();
 
 
 		}
@@ -678,24 +685,20 @@ void PREFIX(k_obj_free)(void *ptr)
 
 		if ( min->magic == LIBALLOC_DEAD )
 		{
-			#if defined DEBUG || defined INFO
-			printf( "liballoc: ERROR: multiple PREFIX(k_obj_free)() attempt on %x from %x.\n",
-									ptr,
-									__builtin_return_address(0) );
-			FLUSH();
-			#endif
+			draw_string( "liballoc: ERROR: multiple PREFIX(k_obj_free)() attempt on %x from (first address in stack trace).\n");
+			draw_hex((unsigned long )ptr);
+			//FLUSH();
 		}
 		else
 		{
-			#if defined DEBUG || defined INFO
-			printf( "liballoc: ERROR: Bad PREFIX(k_obj_free)( %x ) called from %x\n",
-								ptr,
-								__builtin_return_address(0) );
-			FLUSH();
-			#endif
+			draw_string( "liballoc: ERROR: Bad PREFIX(k_obj_free)( %x ) called from (first address in stack trace)\n");
+								draw_hex((unsigned long)ptr);
+	//		FLUSH();
 		}
-		dbgconout("SHIT! invalid magic ");
-		dbgnumout_hex(min->magic);
+
+		
+		idt_print_stacktrace(__builtin_frame_address(0));
+		//while(1){}
 		// being lied to...
 		liballoc_unlock();		// release the lock
 		return;
@@ -777,6 +780,7 @@ void* PREFIX(k_obj_calloc)(unsigned long nobj, unsigned long size)
 
 
 
+
 void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 {
 	void *ptr;
@@ -813,6 +817,7 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 				((min->magic & 0xFF) == (LIBALLOC_MAGIC & 0xFF))
 			   )
 			{
+				
 				l_possibleOverruns += 1;
 				#if defined DEBUG || defined INFO
 				printf( "liballoc: ERROR: Possible 1-3 byte overrun for magic %x != %x\n",
@@ -863,6 +868,8 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 	// If we got here then we're reallocating to a block bigger than us.
 	ptr = PREFIX(k_obj_alloc)( size );					// We need to allocate new memory
 	liballoc_memcpy( ptr, p, real_size );
+	draw_string("RELA_SIZE:");
+	draw_hex(real_size);
 	PREFIX(k_obj_free)( p );
 
 	return ptr;

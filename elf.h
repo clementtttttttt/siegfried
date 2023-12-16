@@ -35,7 +35,7 @@ typedef struct elf_head{
     unsigned short sect_tab_num_ents;
     unsigned short sect_tab_name_idx;
 	
-	elf_prog_head_ent prog_tab[];
+	elf_prog_head_ent prog_tab[0];
 
 }__attribute__((packed)) elf_head;
 

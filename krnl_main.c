@@ -49,6 +49,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     page_flush();
 
     unsigned int sz = m_info_old[0];
+    
     m_info = k_obj_alloc(sz);
     mem_cpy(m_info, m_info_old, sz);
 

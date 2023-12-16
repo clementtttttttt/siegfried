@@ -1,5 +1,7 @@
 union pml4e;
+#include "diskman.h"
 
+#pragma once
 typedef struct tss_t{
 
     unsigned int rsvd;
@@ -106,6 +108,7 @@ typedef struct task{
     char *name;
     union pml4e *page_tab;
     struct task *next;
+    siegfried_dir dir;
     unsigned long tid;
     unsigned long errno;
     unsigned long state;

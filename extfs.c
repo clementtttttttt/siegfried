@@ -3,6 +3,8 @@
 #include "obj_heap.h"
 #include "klib.h"
 #include "rtc.h"
+#include "errno.h"
+#include "tasks.h"
 
 extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x){
 
@@ -152,6 +154,74 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
 
 }
 
+DISKMAN_FREAD_FUNC(extfs_fread){
+	
+	return extfs_read_inode_contents(f->disk, f->inode, buf, bytes, off);
+	 
+}
+
+DISKMAN_FOPEN_FUNC(extfs_fopen){
+		siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
+		str_tok_result res = {0,0};
+		
+		unsigned curr_inode;
+		switch(path[0]){
+			case '/':
+				++path;
+				curr_inode = EXTFS_ROOTDIR_INODE;
+				break;
+			default:
+				//TODO: curr_inode = curr_task->dir->inode
+				break;
+				
+			
+		}
+				
+		str_tok(path, '/', &res);
+		
+		str_tok_result name_res;
+		draw_hex(0xffeedd);
+		char name[256];
+		do{
+				
+				mem_set(name, 0, 256);
+				mem_cpy(name , path+res.off, res.sz);
+				
+				void *f_ptr;
+				extfs_inode *f_info = extfs_read_inode_struct(diskman_find_ent(disk_id), curr_inode, &f_ptr);
+				
+				if(!(f_info->types_n_perm & 0x4000)){ //not dir
+					k_obj_free(f);
+					k_obj_free(f_info);
+					return (siegfried_file*)-ENOTDIR;
+				}
+				
+				k_obj_free(f_info);
+				
+				if((curr_inode = extfs_find_finode_from_dir(diskman_find_ent(disk_id),curr_inode, name)) == 0){
+					k_obj_free(f);
+					return (siegfried_file*)-ENOENT;//not dir
+				}
+			
+			name_res = res;
+			str_tok(path, '/', &res);
+		
+		}
+		while(res.sz != 0);
+		
+		void *f_ptr;
+		
+		extfs_inode *ins = extfs_read_inode_struct(diskman_find_ent(disk_id), curr_inode, &f_ptr);
+		
+		//f->inode = curr_task->dir.inode;
+		f->inode = curr_inode;
+		mem_cpy(f->name, path+name_res.off, str_len(path+name_res.off));
+		f->disk = diskman_find_ent(disk_id);
+		
+		k_obj_free(ins);
+		return f;
+}
+
 void extfs_free_blk_list(extfs_blk_list *l){
 
     while(l){
@@ -205,9 +275,14 @@ long
 		extfs_disk_info *inf = d->fs_disk_info;
 		
 		void *f_ptr = NULL;
+		
+		
 		        extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_ino,&f_ptr);
-		        
-		   
+		if(!(inode_tab->types_n_perm & 0x4000)){ //not a dir        
+
+			return 0;
+		}
+		
         if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
 
             ret= d->read_func(d->inode, ((extfs_inode*)((unsigned long)inode_tab))->blk_data_ptrs[0]*(inf->blksz_bytes), 512*2, parent);
@@ -251,7 +326,9 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
 
         }*/
-        extfs_read_dir_dirents(d, dir_inode,  root_dirents);
+        if(extfs_read_dir_dirents(d, dir_inode,  root_dirents) == 0){
+			return 0;
+		}
         
        
 
@@ -321,15 +398,14 @@ void extfs_enum(diskman_ent *d){
             inf->bgdt_sz_b = sizeof(extfs_bgrp_desc);
         }
 
+			//set rw functions in struct
+        d->fopen = extfs_fopen;
+		d->fread = extfs_fread;
 
         extfs_bgrp_desc * bd = k_obj_alloc(512);
 
         extfs_read_inodes_blk_desc(d, EXTFS_ROOTDIR_INODE, bd); //root inode = 2
 			
-
-	draw_string("BGD DEBUG:");
-	draw_hex(bd->blk_inode_tab);
-
 
 
         extfs_dirent * root_dirents = k_obj_alloc(4096);

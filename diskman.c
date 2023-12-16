@@ -17,7 +17,7 @@ diskman_ent *diskman_new_ent(){
     diskman_ent *ret;
 
     if(disks == 0){
-        ret = disks = k_obj_calloc(sizeof(diskman_ent), 1);
+        ret = disks = k_obj_alloc(sizeof(diskman_ent));
     }
     else{
         ret = disks;
@@ -25,7 +25,7 @@ diskman_ent *diskman_new_ent(){
             ret = ret->next;
         }
 
-        ret->next = k_obj_calloc(sizeof(diskman_ent),1);
+        ret->next = k_obj_alloc(sizeof(diskman_ent));
 
         ret = ret->next;
     }
@@ -57,7 +57,7 @@ void diskman_setup(){
     diskman_ent *i = disks;
 
     char *detect_sect=k_obj_alloc( 1024);
-
+   	
     while(i){
         if(i->ispart){
             i=i->next;
@@ -90,4 +90,6 @@ void diskman_setup(){
 
         i = i->next;
     }
+    
+    k_obj_free(detect_sect);
 }

@@ -78,7 +78,6 @@ unsigned short io_cmdid_c;
 void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
 
 
-    void *buf_io = k_pageobj_alloc(&page_heap, 4096);
 
     nvme_sub_queue_ent cmd;
 
@@ -87,7 +86,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     cmd.cint0.cid = ++io_cmdid_c;
     cmd.cint0.opcode = opcode;
     cmd.nsid = in->id;
-    cmd.prp1 = (unsigned long)buf_io;
+    cmd.prp1 = (unsigned long)page_lookup_paddr(buf);
 
     void* prp2_vm = k_pageobj_alloc(&page_heap, 4096);
 
@@ -130,16 +129,16 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     //FIXME!!!!!: proper handling of ios with more than 4 sects or smth
 
     if(num_sects >= (4096 / 512)){
-        mem_cpy((void*)((unsigned long)buf), buf_io, 4096 );
-        mem_cpy((void*)((unsigned long)buf + 4096), prp2_vm, num_sects * 512 - 4096);
+       // mem_cpy((void*)((unsigned long)buf), buf_io, 4096 );
+        //mem_cpy((void*)((unsigned long)buf + 4096), prp2_vm, num_sects * 512 - 4096);
     }else{
-                mem_cpy((void*)((unsigned long)buf), buf_io, num_sects*512 );
+//                mem_cpy((void*)((unsigned long)buf), buf_io, num_sects*512 );
 
     }
 
     
     k_pageobj_free(&page_heap, prp2_vm);
-    k_pageobj_free(&page_heap, buf_io);
+  //  k_pageobj_free(&page_heap, buf_io);
 
 }
 
@@ -181,19 +180,20 @@ DISKMAN_WRITE_FUNC(nvme_write_disk){
 
 DISKMAN_READ_FUNC(nvme_read_disk){
     nvme_disk *disk = nvme_find_disk_from_inode(id);
-
 	
 
     if(disk == 0) return 0;
    
     
-    unsigned long buf_sz = num_bytes + 512 + (off_bytes%512?512:0);
+    unsigned long buf_sz = num_bytes  + (off_bytes%512?512:0);
+    
+    buf_sz += 512- (buf_sz %512); //round up
 
- 	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz/4096  + 4096);
+ 	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz);
 	
     nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, rdbuf);
 
-    mem_cpy(buf, ((char*)rdbuf)+(off_bytes%512), num_bytes);
+    mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
 	
     k_pageobj_free(&page_heap,rdbuf);
 
@@ -431,14 +431,14 @@ void nvme_setup(){
 
     pci_dev_ent* it = 0;
 
-    while((it = pci_get_next_dev_ent(it)) != 0){
-        draw_string("==PCI DEVICE DETECTION==");
+      while((it = pci_get_next_dev_ent(it)) != 0){
+  /*      draw_string("==PCI DEVICE DETECTION==");
         draw_string("VENDOR+DEV:");
         draw_hex(it->vendor);
         draw_hex(it->devid);
         draw_string("CLASS+SUBCLASS:");
         draw_hex(it->cl);
-        draw_hex(it->subcl);
+        draw_hex(it->subcl);*/
 	if(it->cl == 1 && it->subcl == 8){
             nvme_setup_pci_dev(it);
         }

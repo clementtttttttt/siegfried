@@ -4,7 +4,7 @@
 .globl stack_top
 
 stack_bottom:
-.skip 65536
+.skip 2048
 stack_top:
 .skip 1024
 
