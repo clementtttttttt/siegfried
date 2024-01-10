@@ -143,7 +143,7 @@ drivers_setup();
 
     do{
 
-        if(mem_cmp(&krnl_cmdline[res.off], "root=", str_len("root="))){
+        if(!mem_cmp(&krnl_cmdline[res.off], "root=", str_len("root="))){
             unsigned long i=0;
             for(i=0; krnl_cmdline[res.off+i] != '=' && krnl_cmdline[res.off+i] != 0; ++i);
             ++i;

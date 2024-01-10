@@ -334,7 +334,7 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
         while(root_dirents->inode){
 
-            if(str_len(name) == str_len(root_dirents->name) && mem_cmp(name, root_dirents->name, str_len(name))){
+            if(str_len(name) == str_len(root_dirents->name) && !mem_cmp(name, root_dirents->name, str_len(name))){
 					
 			return root_dirents->inode;
 
@@ -445,7 +445,7 @@ void extfs_enum(diskman_ent *d){
             draw_hex(root_dirents->ent_sz);*/
 
 
-            if(mem_cmp("testdir", root_dirents->name, str_len("testdir"))){
+            if(!mem_cmp("testdir", root_dirents->name, str_len("testdir"))){
 
 			
 		

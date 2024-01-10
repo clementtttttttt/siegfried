@@ -72,7 +72,7 @@ void diskman_setup(){
         //create partition drives			
 
 
-        if(mem_cmp(&detect_sect[512], "EFI PART", 8)){
+        if(!mem_cmp(&detect_sect[512], "EFI PART", 8)){
 			
             diskman_gpt_enum(i);
         }

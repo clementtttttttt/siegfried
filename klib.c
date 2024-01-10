@@ -114,14 +114,14 @@ void klib_clear_var_cache(void *v){
 
     asm("clflush %0"::"m"(v));
 }
-//return 0 when not same
 
-int mem_cmp(char *l, void *r, unsigned long sz){
-	unsigned char *ul = (unsigned char*)l;
-	unsigned char *ur = r;
-	for(unsigned long i=0;i < sz && (*ul == *ur);++i);
-	return (*ul==*ur);
+int mem_cmp(const void *vl, const void *vr, size_t n)
+{
+	const unsigned char *l=vl, *r=vr;
+	for (; n && *l == *r; n--, l++, r++);
+	return n ? *l-*r : 0;
 }
+
 
 unsigned long atoi_w_sz(char *str, unsigned long sz){
     unsigned long tot = 0;

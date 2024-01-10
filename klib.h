@@ -4,7 +4,7 @@
 
 void mem_cpy(void *dest, void *src, unsigned long n);
 void *mem_set(void *dest, unsigned int val, unsigned long sz);
-int mem_cmp(char *l, void *r, unsigned long sz);
+int mem_cmp(const void *vl, const void *vr, unsigned long n);
 unsigned long str_len(char *in);
 void halt_and_catch_fire();
 

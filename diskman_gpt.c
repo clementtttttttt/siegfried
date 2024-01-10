@@ -103,7 +103,7 @@ asm("sti");
         gpt_partent *ent = (gpt_partent*)&esect[0];
 
         __int128 cmp_z = 0;
-        if(mem_cmp(ent->type_guid, (char*)&cmp_z, 16)){
+        if(!mem_cmp(ent->type_guid, (char*)&cmp_z, 16)){
             continue;
         }
 

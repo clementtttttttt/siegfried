@@ -34,7 +34,7 @@ int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
     //extfs_read_inode_contents(diskman_find_ent(disk_inode), in, header, 512, 0);
     d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
 	
-    if(!mem_cmp("\x7f\ELF", header->magic,4)){
+    if(mem_cmp("\x7f\ELF", header->magic,4)){
 		draw_string("invalid elf file");
 		
 		k_obj_free(header);

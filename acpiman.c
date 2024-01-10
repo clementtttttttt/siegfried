@@ -22,7 +22,7 @@ acpi_sdt_header *acpiman_get_tab(char* magic){
     unsigned long ptrs = (sys_xsdt_addr->sz - sizeof(acpi_sdt_header))/8;
 
     for(unsigned long i=0;i<ptrs;++i){
-        if(mem_cmp(sys_xsdt_addr->tabs_ptr[i]->magic, magic,4)){
+        if(!mem_cmp(sys_xsdt_addr->tabs_ptr[i]->magic, magic,4)){
 			if(!acpiman_isvalid(sys_xsdt_addr->tabs_ptr[i], sys_xsdt_addr->tabs_ptr[i]->sz)){
 					draw_string("INVALID ACPI TABLE");
 					while(1){}
@@ -38,7 +38,7 @@ void acpiman_setup(void* rsdp){
 
 
 
-    if(!mem_cmp(sys_rsdp_desc.first.magic, "RSD PTR ", 8)){
+    if(mem_cmp(sys_rsdp_desc.first.magic, "RSD PTR ", 8)){
         draw_string("BAD RSDP MAGIC: ");
         sys_rsdp_desc.first.magic[7] = 0;
         draw_string(sys_rsdp_desc.first.magic);
@@ -82,7 +82,7 @@ void acpiman_setup(void* rsdp){
         return;
     }
 
-    if(!mem_cmp(sys_xsdt_addr->magic, "XSDT", 4)){
+    if(mem_cmp(sys_xsdt_addr->magic, "XSDT", 4)){
         draw_string("DODGY XSDT: BAD MAGIC");
         return;
     }
