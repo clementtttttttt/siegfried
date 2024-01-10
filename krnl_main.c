@@ -131,8 +131,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     pci_enum();
 
-
-    drivers_setup();
+drivers_setup();
 
 
     draw_string("CMDLINE=\"");

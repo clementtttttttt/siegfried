@@ -117,20 +117,20 @@ void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, u
   //  return tmp;
 }
 
-unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
+inline unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0xa) & 0xff;
 }
 
-unsigned char pci_get_sec(unsigned char bus, unsigned char dev, unsigned char func){
+inline unsigned char pci_get_sec(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0x18) >> 8;
 }
 
-unsigned char pci_get_cl(unsigned char bus, unsigned char dev, unsigned char func){
+inline unsigned char pci_get_cl(unsigned char bus, unsigned char dev, unsigned char func){
 
     return pci_read_conw(bus, dev, func, 0xa) >> 8;
 }
 
-unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char func){
+inline unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char func){
 
     return pci_read_conw(bus, dev, func, 0xe) & 0xff;
 }
@@ -142,7 +142,7 @@ unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned cha
     return pci_read_conw(bus, dev, func, 0);
 }
 
- void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
+void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
     unsigned char base;
     unsigned char sub;
     unsigned char secondaryBus;
@@ -169,9 +169,11 @@ unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned cha
 
     e -> vendor = vendor;
     e -> devid = devid;
+	
+    if(vendor == 0x8086 && devid == 0x467f)
+    draw_hex(pci_read_conw(bus,dev,func,0xc) >> 8);
 
-
-     if ((base == 0x6) && (sub == 0x4)) {
+    if ((base == 0x6) && (sub == 0x4)) {
          secondaryBus = pci_get_sec(bus, dev, func);
          pci_enum_bus(secondaryBus);
      }

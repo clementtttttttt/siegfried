@@ -254,9 +254,9 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     draw_string("PGSZ=");
     draw_hex(1 << (12+(NVME_CTRL_PGSZ(bar0->ctrl_conf_raw))));
     
-    
-
-
+    draw_string("VER=");
+    draw_hex(bar0->version);
+	
     //wiat for csts.rdy
     while(!(bar0->ctrl_stat & 1)){
         if(bar0->ctrl_stat & 0b10){
