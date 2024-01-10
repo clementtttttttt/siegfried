@@ -23,7 +23,10 @@ acpi_sdt_header *acpiman_get_tab(char* magic){
 
     for(unsigned long i=0;i<ptrs;++i){
         if(mem_cmp(sys_xsdt_addr->tabs_ptr[i]->magic, magic,4)){
-
+			if(!acpiman_isvalid(sys_xsdt_addr->tabs_ptr[i], sys_xsdt_addr->tabs_ptr[i]->sz)){
+					draw_string("INVALID ACPI TABLE");
+					while(1){}
+			}
             return sys_xsdt_addr->tabs_ptr[i];
         }
     }

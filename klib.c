@@ -119,8 +119,8 @@ void klib_clear_var_cache(void *v){
 int mem_cmp(char *l, void *r, unsigned long sz){
 	unsigned char *ul = (unsigned char*)l;
 	unsigned char *ur = r;
-	for(unsigned long i=0;i < sz && ((*ul - *ur) == 0);++i);
-	return !(*ul-*ur);
+	for(unsigned long i=0;i < sz && (*ul == *ur);++i);
+	return (*ul==*ur);
 }
 
 unsigned long atoi_w_sz(char *str, unsigned long sz){

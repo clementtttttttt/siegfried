@@ -3,7 +3,7 @@
 #include "io.h"
 #include "obj_heap.h"
 #include "draw.h"
-
+#include "acpiman.h"
 pci_dev_ent *pci_root = 0;
 
 pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in){
@@ -209,6 +209,33 @@ void pci_enum_bus(unsigned char bus) {
 
 void pci_enum(){
 
+	acpi_mcfg *mcfg_tab =  (acpi_mcfg*)acpiman_get_tab("MCFG");
+	int bridges_num;
+	
+	draw_string_w_sz((char*)mcfg_tab, mcfg_tab->header.sz);
+	draw_string("MCFG TAB ADDR: ");
+	draw_hex((unsigned long) mcfg_tab);
+
+	draw_string("MCFG BRIDGE NUMS:");
+	
+	
+	draw_hex((bridges_num = (mcfg_tab->header.sz - 44 )/ 16));
+	
+	draw_string("MCFG SIZE: ");
+	draw_hex(mcfg_tab->header.sz);
+	
+	for(int i=0; i < bridges_num; ++i){
+		draw_string("BRIDGE ");
+		draw_hex(i);
+		
+		draw_string("MCFG ECAM ADDR: ");
+		draw_hex((unsigned long)mcfg_tab->bridges[i].ecam_addr);
+			
+	draw_string("MCFG ENDBUS: ");
+	draw_hex((unsigned long) mcfg_tab->bridges[i].end_bus);
+	}
+
+    while(1){}
     unsigned char bus;
     
 

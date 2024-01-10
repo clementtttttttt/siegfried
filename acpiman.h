@@ -17,6 +17,7 @@ typedef struct acpi_rsdp_desc{
 
 }__attribute__((packed)) acpi_rsdp_desc ;
 
+
 typedef struct acpi_sdt_header{
     char magic[4];
     unsigned int sz;
@@ -43,6 +44,24 @@ typedef struct acpi_xsdt{
     acpi_sdt_header *tabs_ptr[0];
 
 }__attribute__((packed))acpi_xsdt;
+
+typedef struct acpi_mcfg_bridges_struct{
+
+	void *ecam_addr;
+	unsigned short seg_num;
+	unsigned char start_bus;
+	unsigned char end_bus;
+	unsigned int rsvd;
+
+} __attribute__((packed)) acpi_mcfg_bridges_struct;
+
+typedef struct acpi_mcfg{
+	acpi_sdt_header header;
+
+	unsigned char rsvd[8];
+	acpi_mcfg_bridges_struct bridges[0];
+
+}__attribute__((packed)) acpi_mcfg;
 
 typedef struct acpi_madt{
     acpi_sdt_header header;
