@@ -235,7 +235,6 @@ void pci_enum(){
 	draw_hex((unsigned long) mcfg_tab->bridges[i].end_bus);
 	}
 
-    while(1){}
     unsigned char bus;
     
 
