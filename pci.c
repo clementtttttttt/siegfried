@@ -116,7 +116,7 @@ unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned cha
     pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
 
     
-    volatile unsigned short* addr = (volatile unsigned short*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+    volatile unsigned short* addr = (volatile unsigned short*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  ((((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12)));
  
 	return *addr;
 }
@@ -166,7 +166,7 @@ void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, u
       pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
 
     
-    volatile unsigned int* addr = (volatile unsigned int*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+    volatile unsigned int* addr = (volatile unsigned int*) ((unsigned long) offset + (unsigned long)e->ecam_addr  + ( (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12)));
     *addr = in;
 }
 
@@ -332,7 +332,7 @@ void pci_enum(){
 		draw_string("MCFG ENDBUS: ");
 		draw_hex((unsigned long) mcfg_tab->bridges[i].end_bus);
 		
-		it->ecam_addr = page_map_paddr_mmio((unsigned long) mcfg_tab->bridges[i].ecam_addr, 1);
+		it->ecam_addr = page_map_paddr_mmio((unsigned long) mcfg_tab->bridges[i].ecam_addr, ((mcfg_tab->bridges[i].end_bus - mcfg_tab->bridges[i].start_bus) << 20) / 2097152);
 		it->start_bus = mcfg_tab->bridges[i].start_bus;
 		it->end_bus = mcfg_tab->bridges[i].end_bus;
 		

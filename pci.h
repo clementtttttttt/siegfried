@@ -20,7 +20,7 @@ typedef struct pci_bridge_ent{
 	struct pci_bridge_ent* next;
 	unsigned char start_bus;
 	unsigned char end_bus;
-	void* ecam_addr;
+	volatile void* ecam_addr;
 	
 } pci_bridge_ent;
 
