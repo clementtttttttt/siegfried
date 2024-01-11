@@ -4,7 +4,10 @@
 #include "obj_heap.h"
 #include "draw.h"
 #include "acpiman.h"
+#include "page.h"
 pci_dev_ent *pci_root = 0;
+
+pci_bridge_ent * pci_bridge_root = 0;
 
 pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in){
     if(in == 0){
@@ -38,8 +41,25 @@ pci_dev_ent* pci_new_dev_ent(){
     }
 }
 
+pci_bridge_ent* pci_find_bridge_from_ent(unsigned char bus){
+		pci_bridge_ent * root = pci_bridge_root;
+		
+		while(root){
+			if(root->ecam_addr == 0){
+					return NULL;
+			}
+			if(bus >= root->start_bus  && bus <= root->end_bus ){
+				//found it
+				return root;
+			}
+			
+			root = root->next;
+		}
+		return NULL;
+}
+
 void pci_write_conw(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset, unsigned short in) {
-    unsigned int address;
+  /*  unsigned int address;
     unsigned int lbus  = (unsigned int)bus;
     unsigned int lslot = (unsigned int)slot;
     unsigned int lfunc = (unsigned int)func;
@@ -57,11 +77,22 @@ void pci_write_conw(unsigned char bus, unsigned char slot, unsigned char func, u
     // Read in the data
     // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
     io_outl(0xcfc, old);
+    *
+    */ 
+    
+    
+    pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
 
+    
+    volatile unsigned short* addr = (volatile unsigned short*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+    *addr = in;
+ 
 }
 
 unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset) {
-    unsigned int address;
+    /*
+     * 
+     * unsigned int address;
     unsigned int lbus  = (unsigned int)bus;
     unsigned int lslot = (unsigned int)slot;
     unsigned int lfunc = (unsigned int)func;
@@ -77,10 +108,21 @@ unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned cha
     // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
     tmp = (unsigned short)((io_inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
     return tmp;
+    *
+    *
+    * 
+    */
+    
+    pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
+
+    
+    volatile unsigned short* addr = (volatile unsigned short*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+ 
+	return *addr;
 }
 
 unsigned int pci_read_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset) {
-    unsigned int address;
+  /*  unsigned int address;
     unsigned int lbus  = (unsigned int)bus;
     unsigned int lslot = (unsigned int)slot;
     unsigned int lfunc = (unsigned int)func;
@@ -93,11 +135,17 @@ unsigned int pci_read_coni(unsigned char bus, unsigned char slot, unsigned char 
     io_outl(0xCF8, address);
     // Read in the data
     // (offset & 2) * 8) = 0 will choose the first word of the 32-bit register
-    return io_inl(0xcfc);
+    return io_inl(0xcfc);*/
+        pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
+
+    
+    volatile unsigned int* addr = (volatile unsigned int*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+ 
+	return *addr;
 }
 
-void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset, unsigned long in) {
-    unsigned int address;
+void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset, unsigned int in) {
+ /*   unsigned int address;
     unsigned int lbus  = (unsigned int)bus;
     unsigned int lslot = (unsigned int)slot;
     unsigned int lfunc = (unsigned int)func;
@@ -114,8 +162,31 @@ void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, u
     io_outl(0xcfc, in);
 
   //  (unsigned short)((io_inl(0xCFC) >> ((offset & 2) * 8)) & 0xFFFF);
-  //  return tmp;
+  //  return tmp;*/
+      pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
+
+    
+    volatile unsigned int* addr = (volatile unsigned int*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+    *addr = in;
 }
+
+unsigned long pci_read_bar(unsigned char bus, unsigned char dev, unsigned char func, unsigned char off){
+	unsigned long bar= pci_read_coni(bus, dev, func, off);
+	if(bar & 1){
+			//io
+			bar &= 0xfffffffc;
+	}
+	else{
+		//mem
+		unsigned char type = (bar >> 1) & 0b11;
+		if(type){//64bit
+				bar |= ((unsigned long)pci_read_coni(bus,dev,func,off+4)) << 32; //read in 4 bytes
+		}
+		bar &= 0xfffffffffffffff0; //get rid of stuff we dont need
+		
+	}
+	return bar;
+};
 
 inline unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0xa) & 0xff;
@@ -170,9 +241,32 @@ void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
     e -> vendor = vendor;
     e -> devid = devid;
 	
-    if(vendor == 0x8086 && devid == 0x467f)
-    draw_hex(pci_read_conw(bus,dev,func,0xc) >> 8);
-
+	//VMDEEE
+/*
+    if(vendor == 0x8086 && (devid == 0x467f || devid == 0x201d)){
+		unsigned char bits = pci_read_conw(bus, dev, func, 0x44) >> 8;
+		bits &= 0b11;
+		
+		unsigned char vmd_bus;
+		if(bits == 0) vmd_bus = 0;
+		if(bits == 0x1) vmd_bus = 128;
+		if(bits == 0b10) vmd_bus = 224;
+		
+		pci_bridge_ent* biter = pci_bridge_root;
+		while(biter->next && biter->ecam_addr){
+		
+			biter = biter->next;
+		}
+		
+		//biter->ecam_addr =  pci_read_coni(bus, dev, func, 0x10) | (((unsigned long)pci_read_coni(bus, dev, func, 0x14)) << 32); //assume 64bit bar, nvme is modern
+		//biter->ecam_addr &= 0xfffffffffffffff0;
+		
+		//if(biter->ec
+		
+		biter->start_bus = vmd_bus;
+		
+	}
+*/
     if ((base == 0x6) && (sub == 0x4)) {
          secondaryBus = pci_get_sec(bus, dev, func);
          pci_enum_bus(secondaryBus);
@@ -224,6 +318,10 @@ void pci_enum(){
 	draw_string("MCFG SIZE: ");
 	draw_hex(mcfg_tab->header.sz);
 	
+	pci_bridge_root = k_obj_alloc(sizeof(pci_bridge_ent));
+	
+	pci_bridge_ent *it = pci_bridge_root;
+	
 	for(int i=0; i < bridges_num; ++i){
 		draw_string("BRIDGE ");
 		draw_hex(i);
@@ -231,28 +329,27 @@ void pci_enum(){
 		draw_string("MCFG ECAM ADDR: ");
 		draw_hex((unsigned long)mcfg_tab->bridges[i].ecam_addr);
 			
-	draw_string("MCFG ENDBUS: ");
-	draw_hex((unsigned long) mcfg_tab->bridges[i].end_bus);
+		draw_string("MCFG ENDBUS: ");
+		draw_hex((unsigned long) mcfg_tab->bridges[i].end_bus);
+		
+		it->ecam_addr = page_map_paddr_mmio((unsigned long) mcfg_tab->bridges[i].ecam_addr, 1);
+		it->start_bus = mcfg_tab->bridges[i].start_bus;
+		it->end_bus = mcfg_tab->bridges[i].end_bus;
+		
+
+		it->next = k_obj_alloc(sizeof(pci_bridge_ent));
+		it = it -> next;
+		it->ecam_addr = 0;
+		
+		
 	}
-
-    unsigned char bus;
+    //unsigned char bus;
     
 
-    unsigned char type = pci_get_type(0,0,0);
+  //  unsigned char type = pci_get_type(0,0,0);
     
 
-    if((type&0x80) == 0){
         pci_enum_bus(0);
-    }
-    else{
-    	draw_string("PCI: found a multi bus system");
-        for (int function = 0; function < 8; function++) {
-             if (pci_get_vendor(0, 0, function) == 0xFFFF) continue;
-             bus = function;
-	     draw_string("PCI: scanning bus ");
-	     draw_hex(bus);
-             pci_enum_bus(bus);
-         }
-    }
+
 
 }

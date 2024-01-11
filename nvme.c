@@ -211,9 +211,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     pcicmdreg |= 1<<2;
     pci_write_coni(in->bus, in->dev, in->func, 0x4, pcicmdreg);
 
-    unsigned long bar0_p = pci_read_coni(in->bus, in->dev, in->func, 0x10) | (((unsigned long)pci_read_coni(in->bus, in->dev, in->func, 0x14)) << 32); //assume 64bit bar, nvme is modern
-
-    bar0_p &= 0xFFFFFFFFFFFFFFF0;
+    unsigned long bar0_p = pci_read_bar(in->bus, in->dev, in->func, 0x10);
 
     volatile nvme_bar0 *bar0 = page_map_paddr_mmio(bar0_p, 1);
 	
