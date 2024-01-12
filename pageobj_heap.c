@@ -12,7 +12,7 @@ void k_pageobj_init_heap(KHEAPSS *heap, unsigned long bsize) {
 
 void k_pageobj_heap_setup(){
 	k_pageobj_init_heap(&page_heap, 4096);
-    k_pageobj_add_heapblk(&page_heap,((((unsigned long)&_krnl_end ) & 0xfffffffffffff000) + 0x2000) , 0x3000000/2);
+    k_pageobj_add_heapblk(&page_heap,((((unsigned long)&_krnl_end +0x5000) & 0xfffffffffffff000)) , 0x400000);
 
 }
 

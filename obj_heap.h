@@ -85,7 +85,7 @@ void     *PREFIX(k_obj_alloc)(unsigned long);				//< The standard function.
 void     *PREFIX(k_obj_realloc)(void *, size_t);		//< The standard function.
 void     *PREFIX(k_obj_calloc)(size_t, size_t);		//< The standard function.
 void      PREFIX(k_obj_free)(void *);					//< The standard function.
-
+void k_obj_heap_setup();
 
 #ifdef __cplusplus
 }

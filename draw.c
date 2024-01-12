@@ -4,7 +4,7 @@
 #include "debug.h"
 #include "klib.h"
 
-static unsigned char * draw_fb_addr = (unsigned char*)0xfe000000000;
+static unsigned char * draw_fb_addr;
 static unsigned long draw_fb_paddr;
 static unsigned long w,h,bb, p;
 
@@ -174,12 +174,15 @@ void draw_setup(unsigned long fb_paddr,unsigned long fbw, unsigned long fbh, uns
     bb = fbb;
     p = fbp;
 
+
     for(unsigned long i=0;i<0x10;++i){
         page_alloc_dev((void*) (fb_paddr + 0x200000 * i), (void*) 0xFE000000000 + 0x200000 * i);
     }
+ 
+	draw_fb_addr = (unsigned char*)0xfe000000000;
+
     page_flush();
 
-    dbgnumout_hex(w*h/8);
     text_buf = k_obj_alloc(w*h/10);
     text_buf_2 = k_obj_alloc(w*h/10);
 

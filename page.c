@@ -4,6 +4,8 @@
 #include "draw.h"
 #include "klib.h"
 
+//page allocator 3000
+
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
 
 void page_switch_krnl_tab(){
@@ -25,6 +27,11 @@ static inline void set_paddr(void* in, unsigned long inaddr){
     return;
 }
 
+static inline void* get_paddr(void* in){
+    pml4e *t = in;
+
+    return (void*)(((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12);
+}
 
 static inline void set_paddr_pde(void* in, unsigned long inaddr){
     pde *t = in;
@@ -37,15 +44,17 @@ static inline void set_paddr_pde(void* in, unsigned long inaddr){
 
     t->paddrU = 0;
     t -> paddrU = (inaddr >> 19) & 0xff;
+    
+    dbgconout("PAGE MAP ADDR:");
+    dbgnumout_hex((unsigned long)get_paddr(t));
+    dbgnumout_hex(*(unsigned long*)in);
+    dbgnumout_hex(*(unsigned long*)0x200000);
+
 
     return;
 }
 
-static inline void* get_paddr(void* in){
-    pml4e *t = in;
 
-    return (void*)(((unsigned long)(t -> paddr) | (t -> paddrU << 28)) << 12);
-}
 
 unsigned char phys_mem_map[16777216];
     extern KHEAPSS page_heap;
@@ -121,7 +130,7 @@ void page_clone_krnl_tab(pml4e *dest){
 
 
 void page_init_map(){
-   // phys_mem_map = k_pageobj_alloc(&page_heap, );
+//    phys_mem_map = k_pageobj_alloc(&page_heap, 16777216);
 
     for(int i=0;i<16777216;++i){
         phys_mem_map[i] = 0;
@@ -580,6 +589,9 @@ void *page_map_paddr(unsigned long paddr,unsigned long pgs){
     unsigned long off = paddr & 0x1fffff;
     paddr &= ~((unsigned long)0x1FFFFF);
     unsigned long vaddr = page_virt_find_addr(pgs);
+    if(vaddr == 0xdead){
+	return (void*)0;
+    }
     for(unsigned long i=0;i<pgs*2097152; i += 2097152){
 
         page_alloc((void*)(paddr + i),(void*) (vaddr + i));
@@ -591,6 +603,10 @@ void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs){
     unsigned long off = paddr & 0x1fffff;
     paddr &= ~((unsigned long)0x1FFFFF);
     unsigned long vaddr = page_virt_find_addr(pgs);
+    if(vaddr == 0xdead){
+		return (void*)0;
+    }
+    
     for(unsigned long i=0;i<pgs*2097152; i += 2097152){
         page_alloc_mmio((void*)(paddr + i),(void*) (vaddr + i));
     }

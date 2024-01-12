@@ -25,14 +25,18 @@ extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode,
 extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode, void **free_ptr){
 
         extfs_inode *inode_tab = k_obj_alloc(512);
-        extfs_bgrp_desc *bd16x = k_obj_alloc(512);
+       	
+       	extfs_bgrp_desc *bd16x = k_obj_alloc(512);
 
-        extfs_bgrp_desc *bd = extfs_read_inodes_blk_desc(d, inode, bd16x);
+       
+	extfs_bgrp_desc *bd = extfs_read_inodes_blk_desc(d, inode, bd16x);
 
 
         extfs_disk_info *inf = d->fs_disk_info;
 
         unsigned long sz_s = inf -> blksz_bytes ;
+
+	
 
         //reads INODE ENTRY in INODE TABLE not BLOCK GROUP DESC
 
@@ -43,11 +47,13 @@ extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode, void *
 
         ,512, inode_tab);
 
+
+
         k_obj_free(bd16x);
 	
 		*free_ptr = inode_tab;
 		
-
+	
         //return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % (512/inf->inode_struct_sz_b))));
 		return inode_tab;
 }
@@ -278,7 +284,8 @@ long
 		
 		
 		        extfs_inode *inode_tab = extfs_read_inode_struct(d, dir_ino,&f_ptr);
-		if(!(inode_tab->types_n_perm & 0x4000)){ //not a dir        
+	
+	if(!(inode_tab->types_n_perm & 0x4000)){ //not a dir        
 
 			return 0;
 		}
@@ -353,9 +360,12 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
    
 
 void extfs_enum(diskman_ent *d){
-
+       
     void *chkbuf = k_obj_alloc(1024);
+    
+
     d->read_func(d->inode, 1024, 1024, chkbuf); //superblock at 1024 bytes offset, which is 2 512sz sectors
+    
 
     extfs_superblock *sb = chkbuf;
 
@@ -378,6 +388,8 @@ void extfs_enum(diskman_ent *d){
         draw_hex(sb->sb_blknum);
 
         d->fs_type = DISKMAN_FS_EXTFS;
+
+	
 
 
         extfs_disk_info *inf = d->fs_disk_info = k_obj_alloc(sizeof(extfs_disk_info));

@@ -72,7 +72,7 @@ struct liballoc_major
 	unsigned int size;					///< The number of pages in the block.
 	unsigned int usage;					///< The number of bytes used in the block.
 	struct liballoc_minor *first;		///< A pointer to the first allocated memory in the block.
-};
+}__attribute__((packed));
 
 
 /** This is a structure found at the beginning of all
@@ -87,14 +87,14 @@ struct	liballoc_minor
 	unsigned int magic;					///< A magic number to idenfity correctness.
 	unsigned int size; 					///< The size of the memory allocated. Could be 1 byte or more.
 	unsigned int req_size;				///< The size of memory requested.
-};
+}__attribute__((packed));
 
 
 static struct liballoc_major *l_memRoot = 0;	///< The root memory block acquired from the system.
 static struct liballoc_major *l_bestBet = 0; ///< The major with the most k_obj_free memory.
 
 static unsigned int l_pageSize  = 2097152;			///< The size of an individual page. Set up in liballoc_init.
-static unsigned int l_pageCount = 4;			///< The number of pages to request per chunk. Set up in liballoc_init.
+static unsigned int l_pageCount = 1;			///< The number of pages to request per chunk. Set up in liballoc_init.
 static unsigned long long l_allocated = 0;		///< Running total of allocated memory.
 static unsigned long long l_inuse	 = 0;		///< Running total of used memory.
 
@@ -162,45 +162,52 @@ static void* liballoc_memcpy(void* s1, const void* s2, unsigned long n)
 }
 
 
-#if defined DEBUG || defined INFO
-static void liballoc_dump()
+void liballoc_dump()
 {
-#ifdef DEBUG
+
 	struct liballoc_major *maj = l_memRoot;
 	struct liballoc_minor *min = 0;
-#endif
 
-	printf( "liballoc: ------ Memory data ---------------\n");
-	printf( "liballoc: System memory allocated: %i bytes\n", l_allocated );
-	printf( "liballoc: Memory in used (k_obj_alloc'ed): %i bytes\n", l_inuse );
-	printf( "liballoc: Warning count: %i\n", l_warningCount );
-	printf( "liballoc: Error count: %i\n", l_errorCount );
-	printf( "liballoc: Possible overruns: %i\n", l_possibleOverruns );
 
-#ifdef DEBUG
+	draw_string( "liballoc: ------ Memory data ---------------\n");
+	draw_string( "liballoc: System memory allocated in bytes: ");
+	draw_hex(l_allocated);
+
+	draw_string( "liballoc: Memory in used in BYTES(k_obj_alloc'ed): ");
+	draw_hex(l_inuse);
+
+	draw_string( "liballoc: Warning count: ");
+	draw_hex(l_warningCount);
+	draw_string( "liballoc: Error count: " );
+	draw_hex(l_errorCount);
+
+	draw_string( "liballoc: Possible overruns: ");
+	draw_hex(l_possibleOverruns );
+
+
 		while ( maj != 0 )
 		{
-			printf( "liballoc: %x: total = %i, used = %i\n",
-						maj,
-						maj->size,
-						maj->usage );
+			draw_string( "liballoc: ");
+			draw_hex((unsigned long)maj);
+			draw_string("size: ");
+			draw_hex((unsigned long)maj->size);
+			draw_string("usage: ");
+			draw_hex((unsigned long)maj->usage );
 
 			min = maj->first;
 			while ( min != 0 )
 			{
-				printf( "liballoc:    %x: %i bytes\n",
-							min,
-							min->size );
+				draw_string( "liballoc min: ");
+				draw_hex((unsigned long)min);
+				draw_string("size: ");
+				draw_hex((unsigned long)min->size );
 				min = min->next;
 			}
 
 			maj = maj->next;
 		}
-#endif
-
-	FLUSH();
 }
-#endif
+
 
 
 
@@ -615,8 +622,8 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 
 	liballoc_unlock();		// release the lock
 
-	//draw_string("WARN: RETURNING 0 LIBALLOC");
-	//while(1){}
+	draw_string("WARN: RETURNING 0 LIBALLOC");
+	while(1){}
 
 	#ifdef DEBUG
 	printf( "All cases exhausted. No memory available.\n");
@@ -696,9 +703,11 @@ void PREFIX(k_obj_free)(void *ptr)
 	//		FLUSH();
 		}
 
-		
+		draw_string("min->magic =");
+		draw_hex(min->magic);
+		liballoc_dump();
 		idt_print_stacktrace(__builtin_frame_address(0));
-		//while(1){}
+		while(1){}
 		// being lied to...
 		liballoc_unlock();		// release the lock
 		return;
