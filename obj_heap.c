@@ -7,9 +7,9 @@
 /**  Durand's Amazing Super Duper Memory functions.  */
 
 #define VERSION 	"1.1"
-#define ALIGNMENT	256ul//4ul				///< This is the byte alignment that memory must be allocated on. IMPORTANT for GTK and other stuff.
+#define ALIGNMENT	128ul//4ul				///< This is the byte alignment that memory must be allocated on. IMPORTANT for GTK and other stuff.
 
-#define ALIGN_TYPE		char ///unsigned char[16] /// unsigned short
+#define ALIGN_TYPE		unsigned char ///unsigned char[16] /// unsigned short
 #define ALIGN_INFO		sizeof(ALIGN_TYPE)*16	///< Alignment information is stored right before the pointer. This is the number of bytes of information stored there.
 
 
@@ -453,7 +453,7 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 			FLUSH();
 			#endif
 			liballoc_unlock();		// release the lock
-			return p;
+						return p;
 		}
 
 #endif
@@ -535,7 +535,10 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 						printf( "CASE 4.1: returning %x\n", p);
 						FLUSH();
 						#endif
+						
 						liballoc_unlock();		// release the lock
+						
+
 						return p;
 					}
 				}
@@ -705,7 +708,9 @@ void PREFIX(k_obj_free)(void *ptr)
 
 		draw_string("min->magic =");
 		draw_hex(min->magic);
-		liballoc_dump();
+		draw_string("&min->magic = ");
+		draw_hex((unsigned long) &min->magic);
+		//liballoc_dump();
 		idt_print_stacktrace(__builtin_frame_address(0));
 		while(1){}
 		// being lied to...

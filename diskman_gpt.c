@@ -92,6 +92,7 @@ asm("sti");
 
 	    char *esect = k_obj_alloc(head->parts_ent_sz);
 
+
     for(unsigned long i=0; i < head->num_parts; ++i){
 
       //z  //draw_hex(head->lba_part_ent*512+((i*head->parts_ent_sz)));
