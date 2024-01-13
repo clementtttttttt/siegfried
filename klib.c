@@ -26,38 +26,123 @@ unsigned long str_len(char *in){
 
 void inhibit_loop_to_libcall mem_cpy(void *dest, void *src, unsigned long n)
 {
-// Typecast src and dest addresses to (char *)
-        unsigned char *csrc = (unsigned char *)src;
-        unsigned char *cdest = (unsigned char *)dest;
-	
-	if(n % 8 == 0){
-		unsigned long n_64 = n/8;
-		unsigned long *d_64 = dest;
-		unsigned long *s_64 = src;
-		while(n_64--){
-			*d_64++ = *s_64++;
+	unsigned char *d = dest;
+	const unsigned char *s = src;
+
+#ifdef __GNUC__
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define LS >>
+#define RS <<
+#else
+#define LS <<
+#define RS >>
+#endif
+
+	typedef unsigned int __attribute__((__may_alias__)) u32;
+	unsigned int w, x;
+
+	for (; (long unsigned int)s % 4 && n; n--) *d++ = *s++;
+
+	if ((long unsigned int)d % 4 == 0) {
+		for (; n>=16; s+=16, d+=16, n-=16) {
+			*(u32 *)(d+0) = *(u32 *)(s+0);
+			*(u32 *)(d+4) = *(u32 *)(s+4);
+			*(u32 *)(d+8) = *(u32 *)(s+8);
+			*(u32 *)(d+12) = *(u32 *)(s+12);
 		}
-
-	}
-	else
-	if(n%4 == 0){
-        
-                unsigned long n_32 = n/4;
-                unsigned long *d_32 = dest;
-                unsigned long *s_32 = src;
-                while(n_32--){
-                        *d_32++ = *s_32++;
-                }
-
-
-	}
-	else{
-		// Copy contents of src[] to dest[]
-      		while(n--){
-			*cdest++ = *csrc++;
-		
+		if (n&8) {
+			*(u32 *)(d+0) = *(u32 *)(s+0);
+			*(u32 *)(d+4) = *(u32 *)(s+4);
+			d += 8; s += 8;
 		}
+		if (n&4) {
+			*(u32 *)(d+0) = *(u32 *)(s+0);
+			d += 4; s += 4;
+		}
+		if (n&2) {
+			*d++ = *s++; *d++ = *s++;
+		}
+		if (n&1) {
+			*d = *s;
+		}
+		return;
 	}
+
+	if (n >= 32) switch ((long unsigned int)d % 4) {
+	case 1:
+		w = *(u32 *)s;
+		*d++ = *s++;
+		*d++ = *s++;
+		*d++ = *s++;
+		n -= 3;
+		for (; n>=17; s+=16, d+=16, n-=16) {
+			x = *(u32 *)(s+1);
+			*(u32 *)(d+0) = (w LS 24) | (x RS 8);
+			w = *(u32 *)(s+5);
+			*(u32 *)(d+4) = (x LS 24) | (w RS 8);
+			x = *(u32 *)(s+9);
+			*(u32 *)(d+8) = (w LS 24) | (x RS 8);
+			w = *(u32 *)(s+13);
+			*(u32 *)(d+12) = (x LS 24) | (w RS 8);
+		}
+		break;
+	case 2:
+		w = *(u32 *)s;
+		*d++ = *s++;
+		*d++ = *s++;
+		n -= 2;
+		for (; n>=18; s+=16, d+=16, n-=16) {
+			x = *(u32 *)(s+2);
+			*(u32 *)(d+0) = (w LS 16) | (x RS 16);
+			w = *(u32 *)(s+6);
+			*(u32 *)(d+4) = (x LS 16) | (w RS 16);
+			x = *(u32 *)(s+10);
+			*(u32 *)(d+8) = (w LS 16) | (x RS 16);
+			w = *(u32 *)(s+14);
+			*(u32 *)(d+12) = (x LS 16) | (w RS 16);
+		}
+		break;
+	case 3:
+		w = *(u32 *)s;
+		*d++ = *s++;
+		n -= 1;
+		for (; n>=19; s+=16, d+=16, n-=16) {
+			x = *(u32 *)(s+3);
+			*(u32 *)(d+0) = (w LS 8) | (x RS 24);
+			w = *(u32 *)(s+7);
+			*(u32 *)(d+4) = (x LS 8) | (w RS 24);
+			x = *(u32 *)(s+11);
+			*(u32 *)(d+8) = (w LS 8) | (x RS 24);
+			w = *(u32 *)(s+15);
+			*(u32 *)(d+12) = (x LS 8) | (w RS 24);
+		}
+		break;
+	}
+	if (n&16) {
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+	}
+	if (n&8) {
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+	}
+	if (n&4) {
+		*d++ = *s++; *d++ = *s++; *d++ = *s++; *d++ = *s++;
+	}
+	if (n&2) {
+		*d++ = *s++; *d++ = *s++;
+	}
+	if (n&1) {
+		*d = *s;
+	}
+	return ;
+#endif
+
+	for (; n; n--) *d++ = *s++;
+	return ;
 }
 
 //make the compiler shut up

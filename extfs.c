@@ -186,13 +186,11 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 		str_tok(path, '/', &res);
 		
 		str_tok_result name_res;
-		draw_hex(0xffeedd);
 		char name[256];
 		do{
 				
 				mem_set(name, 0, 256);
 				mem_cpy(name , path+res.off, res.sz);
-				
 				void *f_ptr;
 				extfs_inode *f_info = extfs_read_inode_struct(diskman_find_ent(disk_id), curr_inode, &f_ptr);
 				
