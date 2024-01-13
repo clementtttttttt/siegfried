@@ -128,7 +128,7 @@ typedef struct nvme_ctrl_info{
     char serial[20];
     char model[40];
 
-    //fixme: complete nvme ctrl info
+    //FIXME: complete nvme ctrl info
 
 
 }__attribute__((packed)) nvme_ctrl_info;

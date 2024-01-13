@@ -48,7 +48,7 @@ pci_bridge_ent* pci_find_bridge_from_ent(unsigned char bus){
 			if(root->ecam_addr == 0){
 					return NULL;
 			}
-			if(bus >= root->start_bus  && bus <= root->end_bus ){
+			if(bus >= root->start_bus  && bus < root->end_bus ){
 				//found it
 				return root;
 			}
@@ -64,7 +64,7 @@ void pci_write_conw(unsigned char bus, unsigned char slot, unsigned char func, u
     unsigned int lslot = (unsigned int)slot;
     unsigned int lfunc = (unsigned int)func;
     //unsigned short tmp = 0;
-//TODO: implement pci_write_conw
+
     // Create configuration address as per Figure 1
     address = (unsigned int)((lbus << 16) | (lslot << 11) |
               (lfunc << 8) | (offset & 0xFC) | ((unsigned int)0x80000000));
@@ -121,6 +121,8 @@ unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned cha
 	return *addr;
 }
 
+
+
 unsigned int pci_read_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset) {
   /*  unsigned int address;
     unsigned int lbus  = (unsigned int)bus;
@@ -144,13 +146,38 @@ unsigned int pci_read_coni(unsigned char bus, unsigned char slot, unsigned char 
 	return *addr;
 }
 
+
+void pci_write_bar(unsigned short bus,unsigned char dev,unsigned char func,unsigned short off,unsigned long in)
+
+{
+
+  unsigned long bar;
+  
+  bar = pci_read_coni(bus, dev,func, off);
+  if ((bar & 1) == 0) {
+   		//mem
+		unsigned char type = (bar >> 1) & 0b11;
+		if(type){//64bit
+				pci_write_coni(bus, dev,func, off+4, in >> 32);//write in 4 bytes
+		}
+		pci_write_coni(bus, dev,func, off, in);
+  }
+  else {
+	  
+	  pci_write_coni(bus, dev, func, off, in);
+
+  }
+  return;
+}
+
+
 void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset, unsigned int in) {
  /*   unsigned int address;
     unsigned int lbus  = (unsigned int)bus;
     unsigned int lslot = (unsigned int)slot;
     unsigned int lfunc = (unsigned int)func;
     //unsigned short tmp = 0;
-//TODO: implement pci_write_conw
+
     // Create configuration address as per Figure 1
     address = (unsigned int)((lbus << 16) | (lslot << 11) |
               (lfunc << 8) | (offset & 0xFC) | ((unsigned int)0x80000000));
@@ -170,7 +197,7 @@ void pci_write_coni(unsigned char bus, unsigned char slot, unsigned char func, u
     *addr = in;
 }
 
-unsigned long pci_read_bar(unsigned char bus, unsigned char dev, unsigned char func, unsigned char off){
+unsigned long pci_read_bar(unsigned char bus, unsigned char dev, unsigned char func, unsigned short off){
 	unsigned long bar= pci_read_coni(bus, dev, func, off);
 	if(bar & 1){
 			//io
@@ -187,6 +214,25 @@ unsigned long pci_read_bar(unsigned char bus, unsigned char dev, unsigned char f
 	}
 	return bar;
 };
+
+unsigned long pci_read_bar_size(unsigned char bus, unsigned char dev, unsigned char func, unsigned short off){
+	unsigned short cmd = pci_read_conw(bus,dev, func, 4); //cmd
+	pci_write_conw(bus, dev, func, 4, cmd & ~(0b11)); //memory and io decode disable
+	
+	unsigned long old_bar = pci_read_bar(bus, dev, func, off);
+	
+	pci_write_bar(bus, dev, func, off, 0xffffffffffffffff);
+	
+	unsigned long sz = pci_read_bar(bus, dev, func, off);
+	sz = ~sz + 1;
+	sz &= 0xffffffff; //FIXME: doesnt work properly when 64 bit
+	
+	pci_write_bar(bus, dev, func, off, old_bar);//fix bar
+	pci_write_conw(bus, dev, func, 4, cmd); //fix cmd
+	
+	
+	return sz;
+}
 
 inline unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0xa) & 0xff;
@@ -213,7 +259,7 @@ unsigned short pci_get_vendor(unsigned char bus, unsigned char dev, unsigned cha
     return pci_read_conw(bus, dev, func, 0);
 }
 
-void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
+void pci_enum_func(unsigned short bus, unsigned char dev, unsigned char func) {
     unsigned char base;
     unsigned char sub;
     unsigned char secondaryBus;
@@ -242,7 +288,7 @@ void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
     e -> devid = devid;
 	
 	//VMDEEE
-/*
+
     if(vendor == 0x8086 && (devid == 0x467f || devid == 0x201d)){
 		unsigned char bits = pci_read_conw(bus, dev, func, 0x44) >> 8;
 		bits &= 0b11;
@@ -253,27 +299,40 @@ void pci_enum_func(unsigned char bus, unsigned char dev, unsigned char func) {
 		if(bits == 0b10) vmd_bus = 224;
 		
 		pci_bridge_ent* biter = pci_bridge_root;
-		while(biter->next && biter->ecam_addr){
+		while(biter->ecam_addr){
 		
 			biter = biter->next;
 		}
 		
-		//biter->ecam_addr =  pci_read_coni(bus, dev, func, 0x10) | (((unsigned long)pci_read_coni(bus, dev, func, 0x14)) << 32); //assume 64bit bar, nvme is modern
+		
+		biter->ecam_addr = (volatile void*)pci_read_bar(bus, dev, func, 0x10);
+		biter->ecam_addr = (volatile void*) page_map_paddr_mmio((unsigned long)biter->ecam_addr, pci_read_bar_size(bus, dev, func, 0x10) / 0x200000);
+		//map it
+		
 		//biter->ecam_addr &= 0xfffffffffffffff0;
 		
 		//if(biter->ec
 		
 		biter->start_bus = vmd_bus;
+		biter->end_bus = vmd_bus + (unsigned long)pci_read_bar_size(bus, dev, func, 0x10) / (1 << 20);
+		
+		for(unsigned short i = vmd_bus; i< biter->end_bus;++i){
+				pci_enum_bus(i);
+		}
+		
+		biter->next = k_obj_alloc(sizeof(pci_bridge_ent*));
+		biter->next->ecam_addr = 0;
+		
 		
 	}
-*/
+
     if ((base == 0x6) && (sub == 0x4)) {
          secondaryBus = pci_get_sec(bus, dev, func);
          pci_enum_bus(secondaryBus);
      }
  }
 
-void pci_enum_dev(unsigned char bus, unsigned char device) {
+void pci_enum_dev(unsigned short bus, unsigned char device) {
      unsigned char function = 0;
 
      unsigned short vendor = pci_get_vendor(bus, device, function);
@@ -291,7 +350,7 @@ void pci_enum_dev(unsigned char bus, unsigned char device) {
 }
 
 
-void pci_enum_bus(unsigned char bus) {
+void pci_enum_bus(unsigned short bus) {
      unsigned char device;
 
      for (device = 0; device < 32; device++) {

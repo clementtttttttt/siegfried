@@ -49,7 +49,7 @@ int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
 		k_obj_free(header);
 
 	header = header2;
-	//TODO: realloc acting up : header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
+	header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
 
 	d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 

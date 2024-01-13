@@ -212,9 +212,16 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     pci_write_coni(in->bus, in->dev, in->func, 0x4, pcicmdreg);
 
     unsigned long bar0_p = pci_read_bar(in->bus, in->dev, in->func, 0x10);
+    draw_string("NVME BDF=");
+    draw_hex(in->bus);
+    draw_hex(in->dev);
+    draw_hex(in->func);
+    draw_string("END NVME BDF\n");
 
     volatile nvme_bar0 *bar0 = page_map_paddr_mmio(bar0_p, 1);
 	
+	draw_string("NVME bar sz = ");
+	draw_hex(pci_read_bar_size(in->bus, in->dev, in->func, 0x10));
 
     nvme_ctrl *curr = nvme_new_ctrl();
 
