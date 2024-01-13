@@ -1,6 +1,7 @@
 #include "pci.h"
 #include "debug.h"
 #include "io.h"
+#include "idt.h"
 #include "obj_heap.h"
 #include "draw.h"
 #include "acpiman.h"
@@ -288,6 +289,10 @@ void pci_enum_func(unsigned short bus, unsigned char dev, unsigned char func) {
     e -> devid = devid;
 	
 	//VMDEEE
+    if(bus == 0xe1){
+	draw_string("adding nvme\n");
+	
+    }
 
     if(vendor == 0x8086 && (devid == 0x467f || devid == 0x201d)){
 		unsigned char bits = pci_read_conw(bus, dev, func, 0x44) >> 8;
@@ -316,9 +321,9 @@ void pci_enum_func(unsigned short bus, unsigned char dev, unsigned char func) {
 		biter->start_bus = vmd_bus;
 		biter->end_bus = vmd_bus + (unsigned long)pci_read_bar_size(bus, dev, func, 0x10) / (1 << 20);
 		
-		for(unsigned short i = vmd_bus; i< biter->end_bus;++i){
-				pci_enum_bus(i);
-		}
+		
+		
+			pci_enum_bus(vmd_bus);
 		
 		biter->next = k_obj_alloc(sizeof(pci_bridge_ent*));
 		biter->next->ecam_addr = 0;

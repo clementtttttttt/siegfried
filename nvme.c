@@ -212,6 +212,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     pci_write_coni(in->bus, in->dev, in->func, 0x4, pcicmdreg);
 
     unsigned long bar0_p = pci_read_bar(in->bus, in->dev, in->func, 0x10);
+    draw_string("IN PTR=");
+    draw_hex((unsigned long)in);
     draw_string("NVME BDF=");
     draw_hex(in->bus);
     draw_hex(in->dev);
