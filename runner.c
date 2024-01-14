@@ -7,7 +7,7 @@
 #include "page.h"
 #include "tasks.h"
 
-int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
+int runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env){
 
     diskman_ent *d;
     if(!(d = diskman_find_ent(disk_inode))){
@@ -23,14 +23,13 @@ int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
 
     
     if((long)f <= 0){
-			draw_string("sfinit not found\n");
+			draw_string("runner: exec file not found\n");
 			return 0;
     }
 
     elf_head *header = k_obj_alloc(sizeof(elf_head));
 	
-	draw_string("INIT INODE: ");
-	draw_hex(f->inode);
+	
     //extfs_read_inode_contents(diskman_find_ent(disk_inode), in, header, 512, 0);
     d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
 	
@@ -55,8 +54,27 @@ int runner_spawn_from_file_at_root(unsigned long disk_inode, char *name){
 
        task* t=task_start_func((void*)header->entry_addr);
 	    t -> tf -> rip = (unsigned long) header->entry_addr;
-	    
+	
+	unsigned long argc=0;
+	if(argv != 0){ //handle nullptr
+		while(argv[argc]) ++argc;
+	}
+	else argc = 0;
 
+	if(argv == 0){
+		argv = k_obj_alloc(sizeof(char*));
+		*argv = 0; //set to 0, REMINDER: DO NOT FORGET TO FREE THIS WHEN EXITS 
+	}
+
+	t->tf->rdi = argc; //argc first argument
+	t->tf->rsi = (unsigned long) argv; //argv second argument
+
+	if(env == 0){ //handle null env
+		env = k_obj_alloc(sizeof(char*));
+		*env = 0;
+	}
+
+	t->env = env;
 
     for(int i=0; i < header->prog_tab_num_ents; ++i){
 			switch(header->prog_tab[i].seg_type){

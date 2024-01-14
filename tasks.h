@@ -112,6 +112,8 @@ typedef struct task{
     unsigned long tid;
     unsigned long errno;
     unsigned long state;
+    char ** env;
+    char ** argv;
 }task;
 
 extern task *curr_task;

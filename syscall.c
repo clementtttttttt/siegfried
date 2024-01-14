@@ -36,6 +36,8 @@ void syscall_sleep(unsigned long in1){
 
 extern diskman_ent *disks;
 
+
+
 void syscall_diskman_read(unsigned long disk_inode, unsigned long off_sects, unsigned long num_sects, void* buf){
 
     diskman_ent *e = diskman_find_ent(disk_inode);
@@ -45,6 +47,44 @@ void syscall_diskman_read(unsigned long disk_inode, unsigned long off_sects, uns
     }
 
 }
+
+void syscall_diskman_write(unsigned long disk_inode, unsigned long off_sects, unsigned long num_sects, void* buf){
+
+    diskman_ent *e = diskman_find_ent(disk_inode);
+
+    if(e != 0){
+    e -> write_func(disk_inode, off_sects, num_sects, page_lookup_paddr_tab(curr_task -> page_tab, buf));
+    }
+
+}
+
+siegfried_file *syscall_open(unsigned long disk_inode, char* path){
+
+    diskman_ent *e = diskman_find_ent(disk_inode);
+
+    if(e != 0){
+		return e -> fopen (disk_inode, path);
+    }
+    return (siegfried_file*)-EINVAL;
+    
+
+}
+unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsigned long sz_bytes, unsigned long attrs){
+
+
+    if(f != 0){
+		return f->disk -> fread (f,buf, off, sz_bytes, attrs);
+    }
+    return -EINVAL;
+    
+
+}
+
+unsigned long syscall_spawn(unsigned long disk_inode, char *path, char** argv, char** env){
+	
+	return 0;
+}
+
 
 void syscall_diskman_get_next_ent(syscall_disk_ent *e){
     if(e == 0){
@@ -72,7 +112,7 @@ void syscall_exit(unsigned long code){
 		task_exit(code);
 }
 
-void (*syscall_table[200])() = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn};
 
 unsigned long  syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4){
 	

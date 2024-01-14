@@ -84,8 +84,12 @@ fcw: .short 0x037f
 _start:
 
 	.code32
+	
 	//fix stack
 	movl $stack_top, %esp
+
+	pushl $0
+	popfl
 
 	//save eax&ebx
 	movl %eax, eax_keep
