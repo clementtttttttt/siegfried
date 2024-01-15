@@ -17,7 +17,7 @@ task *curr_task;
 
 extern tss_t tss;
 extern KHEAPSS page_heap;
-#define TASK_STACK_SZ 8192
+#define TASK_STACK_SZ 1048576-128 //account for red zone
 
 atomic_int sched_lock;
 
@@ -148,7 +148,7 @@ void tasks_setup(){
 
     asm("cli");
     mem_set(&tss, 0, sizeof(tss));
-
+    curr_task = 0;
     tss.rsp_0 = (unsigned long)k_obj_alloc(16384);
     tss.iopb = 0xffff;
     tasking_enabled = 1; 

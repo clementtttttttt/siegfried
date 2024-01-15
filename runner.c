@@ -6,8 +6,9 @@
 #include "obj_heap.h"
 #include "page.h"
 #include "tasks.h"
+#include "errno.h"
 
-int runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env){
+int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env){
 
     diskman_ent *d;
     if(!(d = diskman_find_ent(disk_inode))){
@@ -24,6 +25,8 @@ int runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** 
     
     if((long)f <= 0){
 			draw_string("runner: exec file not found\n");
+			//if(curr_task)
+			//	curr_task->errno = ENOENT;	
 			return 0;
     }
 

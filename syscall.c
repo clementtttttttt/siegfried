@@ -80,7 +80,7 @@ unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsi
 
 }
 
-unsigned long syscall_spawn(unsigned long disk_inode, char *path, char** argv, char** env){
+unsigned long syscall_spawn(char *path, char** argv, char** env, unsigned long attrs){
 	
 	return 0;
 }
@@ -114,11 +114,14 @@ void syscall_exit(unsigned long code){
 
 void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn};
 
-unsigned long  syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4){
+unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	
 	unsigned long retval = -ENOSYS;
     if(syscall_table[func]){
-        asm("cli; callq *%0; ":"=a"(retval):"r"(syscall_table[func]), "D"(i1), "S"(i2), "d"(i3), "c"(i4) : "rbx");
+    	unsigned long i5_r8 = i5;
+	unsigned long i6_r9 = i6;
+        asm("cli; mov %5, %%r8; mov %6, %%r9; callq *%0; ":"=a"(retval):"r"(syscall_table[func]), "D"(i1), "S"(i2), "d"(i3), "c"(i4), "m"(i5_r8), "m"(i6_r9): "rbx", "r8", "r9");
+
 	
 	}
     else{

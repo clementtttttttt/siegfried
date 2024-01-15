@@ -140,7 +140,7 @@ idt_syscall_handler_s:
 
     call syscall_main
 
-	movq %rax, rax_save
+    movq %rax, rax_save
 
     movq $2f, rip_save
     jmp idt_load_regs
