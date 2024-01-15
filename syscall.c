@@ -36,6 +36,17 @@ void syscall_sleep(unsigned long in1){
 
 extern diskman_ent *disks;
 
+unsigned long syscall_diskman_get_root(){
+	extern unsigned long krnl_init_inode;
+		
+		return krnl_init_inode; //just returns
+}
+
+unsigned long syscall_get_tid(){
+		
+		return curr_task->tid; //just returns
+}
+
 
 
 void syscall_diskman_read(unsigned long disk_inode, unsigned long off_sects, unsigned long num_sects, void* buf){
@@ -81,6 +92,8 @@ unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsi
 }
 
 unsigned long syscall_spawn(char *path, char** argv, char** env, unsigned long attrs){
+	//parse path
+	
 	
 	return 0;
 }
@@ -112,7 +125,7 @@ void syscall_exit(unsigned long code){
 		task_exit(code);
 }
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	
