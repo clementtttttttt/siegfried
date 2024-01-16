@@ -1,1 +1,1 @@
-int runner_spawn_task(unsigned long disk_inode, char *path, char** argv, char** env);
+int runner_spawn_task(unsigned long disk_inode, char *path, char** argv, char** env, unsigned long attrs);

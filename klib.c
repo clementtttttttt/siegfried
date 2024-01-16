@@ -218,6 +218,16 @@ unsigned long atoi_w_sz(char *str, unsigned long sz){
     return tot;
 }
 
+unsigned long find_num_len(char *str){
+	char *old=str;
+	while(*str >= '0' && *str <='9'){
+		++str;
+	}
+
+    return str - old;
+
+}
+
 void str_tok(char *str, char delim, str_tok_result *off){
 
     if(off->off > str_len(str) || str_len(str) == 0){off->off = 0; off->sz = 0; return;}

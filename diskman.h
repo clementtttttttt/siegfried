@@ -39,6 +39,20 @@ typedef struct siegfried_file* (*diskman_fopen_t) (unsigned long disk_id, char *
 #define DISKMAN_FREAD_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
 #define DISKMAN_FOPEN_FUNC(name) siegfried_file* name (unsigned long disk_id, char *path)
 
+typedef struct siegfried_stat{
+	
+	unsigned long	perms;
+	unsigned long 	inode;
+	unsigned long	disk_inode;
+	unsigned long	links;
+	unsigned long	uid;
+	unsigned long	gid;
+	unsigned long	size;
+	unsigned long	atime_in_ms;
+	unsigned long	mtime_in_ms;
+	unsigned long	ctime_in_ms;
+} siegfried_stat;
+
 typedef struct diskman_ent{
     struct diskman_ent *next;
 

@@ -10,7 +10,7 @@
 
 
 
-int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env){
+int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env, unsigned long attrs){
 
     diskman_ent *d;
     if(!(d = diskman_find_ent(disk_inode))){

@@ -8,6 +8,7 @@
 #include "page.h"
 #include "klib.h"
 #include "syscall.h"
+#include "runner.h"
 
 #include "errno.h"
 void idt_syscall_handler_s();
@@ -69,7 +70,19 @@ void syscall_diskman_write(unsigned long disk_inode, unsigned long off_sects, un
 
 }
 
-siegfried_file *syscall_open(unsigned long disk_inode, char* path){
+unsigned long parse_path(char** path){
+		unsigned long disk_inode = syscall_diskman_get_root();
+		
+		if(mem_cmp(path, "//", 2) == 0){
+			*path += 2;
+			atoi_w_sz(*path, find_num_len(*path));
+			*path += find_num_len(*path);
+		}
+		return disk_inode;
+}
+
+siegfried_file *syscall_open(char* path){
+	unsigned long disk_inode = parse_path(&path);
 
     diskman_ent *e = diskman_find_ent(disk_inode);
 
@@ -80,6 +93,20 @@ siegfried_file *syscall_open(unsigned long disk_inode, char* path){
     
 
 }
+
+siegfried_stat *syscall_stat(char* path){
+	unsigned long disk_inode = parse_path(&path);
+
+    diskman_ent *e = diskman_find_ent(disk_inode);
+
+    if(e != 0){
+		//return e -> fopen (disk_inode, path);
+    }
+    return (siegfried_stat*)-EINVAL;
+    
+
+}
+
 unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsigned long sz_bytes, unsigned long attrs){
 
 
@@ -91,11 +118,13 @@ unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsi
 
 }
 
+
 unsigned long syscall_spawn(char *path, char** argv, char** env, unsigned long attrs){
 	//parse path
 	
+	unsigned long disk_inode = parse_path(&path);
+	return runner_spawn_task(disk_inode, path, argv, env, attrs);
 	
-	return 0;
 }
 
 
@@ -125,7 +154,7 @@ void syscall_exit(unsigned long code){
 		task_exit(code);
 }
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

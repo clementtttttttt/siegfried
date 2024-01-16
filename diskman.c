@@ -8,7 +8,7 @@
 
 diskman_ent *disks = 0;
 
-unsigned long inode = 0;
+unsigned long inode = 0; //inode start at one
 
 
 

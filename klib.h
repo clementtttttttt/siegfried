@@ -16,6 +16,7 @@ typedef struct str_tok_result{
 void str_tok(char *str, char delim, str_tok_result *off);
 unsigned long atoi_w_sz(char *str, unsigned long sz);
 void klib_clear_var_cache(void *v);
+unsigned long find_num_len(char *str);
 
 #define HAVE_SIZE_T
 typedef unsigned long size_t;
