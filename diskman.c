@@ -3,6 +3,7 @@
 #include "draw.h"
 #include "pageobj_heap.h"
 #include "klib.h"
+#include "devfs.h"
 
 //handles partition schemes and disks, makes disk partition devices as well
 
@@ -52,11 +53,14 @@ diskman_ent *diskman_find_ent(unsigned long inode){
 char detect_sect[1024];
 
 void diskman_setup(){
-
+	//devfs
+	devfs_setup();
 
     diskman_ent *i = disks;
 
     char *detect_sect=k_obj_alloc( 1024);
+   	
+   	
    	
     while(i){
         if(i->ispart){
