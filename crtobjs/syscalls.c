@@ -11,11 +11,19 @@
 
 #include "syscalls.h"
 
-static siegfried_file *fds[4096] = {0};
+static syscall_siegfried_file *fds[4096] = {0};
 static unsigned long lowest_fd = 1;
 
-void _exit(int stat){
-	syscall1(sys_exit, stat);
+int _sys_errno= 0;
+
+int *__errno(){
+	return &_sys_errno;
+}
+
+
+void _exit(int st){
+	syscall1(sys_exit, (void*)(unsigned long)st);
+	while(1){}
 }
 
 int close_(int file){
@@ -43,11 +51,15 @@ int fork(){ //we havent fork
 }
 int fstat(int file, struct stat *st){
 	syscall_siegfried_stat statstruct;
-	return syscall2(sys_stat, fds[lowest_fd], st);	
+	int retval = syscall2(sys_stat, fds[lowest_fd], &statstruct);	
  	
+ 	st->st_dev = statstruct.disk_inode;
+ 	st->st_ino = statstruct.inode;
+ 	
+ 	return retval;
 }
 int getpid(){
-	return syscall0(syscall_get_tid);
+	return syscall0(sys_get_tid);
 }
 int isatty(int file);
 int kill(int pid, int sig);
@@ -61,4 +73,4 @@ clock_t times(struct tms *buf);
 int unlink(char *name);
 int wait(int *status);
 int write(int file, char *ptr, int len);
-int gettimeofday(struct timeval *p, struct timezone *z);
+int gettimeofday(struct timeval  *__restrict p, void *__restrict z);

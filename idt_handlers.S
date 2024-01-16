@@ -21,12 +21,14 @@ tmp_r15: .quad 0
 rip_save: .quad 0
 rax_save: .quad 0
 
+
 apic_ack_int:
     movq apic_addr, %rdi
     movl $0, 0xb0(%rdi)
     ret
 
 idt_save_regs:
+
     pushq %rdi
     pushq %rsi
     pushq %rdx
@@ -43,16 +45,24 @@ idt_save_regs:
     pushq %rbp
     pushq %rax
 
+
     xorq %rax, %rax
     movw %ds, %ax
     pushq %rax
+	
+	subq $8, %rsp //fix align
+	
 
     pushq rip_save
     ret
 
 
 idt_load_regs:
+	
 
+    addq $8, %rsp //fix align
+    
+    
     popq %rax
     movw %ax, %ds
 
@@ -71,6 +81,8 @@ idt_load_regs:
     popq %rdx
     popq %rsi
     popq %rdi
+
+
 
     pushq rip_save
     ret
@@ -174,7 +186,9 @@ idt_gpf_handler_s:
     movq %rsp, %rdi
 
     call idt_gpf_handler
-
+	
+    cli
+    hlt
     jmp .
 
 idt_df_handler_s:

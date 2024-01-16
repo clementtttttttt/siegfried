@@ -61,7 +61,8 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     if(curr_task){
 		draw_string("\nERR: userland PF");
 		curr_task->tf = (void*)(((unsigned long)fr));
-
+		idt_print_stacktrace((unsigned long*)fr->rbp);
+	
         task_exit(139);
     }
     dbgconout("PAGE FAULT: ERRCODE=");

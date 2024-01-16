@@ -129,7 +129,6 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     
     syscall_setup();
 
-    kb_setup();
 
     rtc_setup();
 

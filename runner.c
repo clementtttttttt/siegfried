@@ -11,18 +11,22 @@
 
 
 int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env, unsigned long attrs){
+	
+	pml4e *old = page_get_curr_tab();
 
+	
     diskman_ent *d;
     if(!(d = diskman_find_ent(disk_inode))){
         draw_string("invalid inode number\n");
         return 0;
     }
-    
+ 
+
+
     siegfried_file *f = d->fopen(disk_inode, name);
-    
+    page_switch_krnl_tab(); //krnl stuff
     
    // unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(disk_inode),EXTFS_ROOTDIR_INODE, name);
-
     
     if((long)f <= 0){
 			draw_string("runner: exec file not found\n");
@@ -123,6 +127,10 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	}
 	
 	d->fclose(f);
+
+	page_switch_tab(old);
+	draw_string("TID=");
+	draw_hex(t->tid);
 
     return t->tid;
 }

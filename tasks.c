@@ -11,13 +11,13 @@
 
 unsigned char tasking_enabled = 0;
 
-task *tasks;
+task *tasks=0;
 
-task *curr_task;
+task *curr_task=0;
 
 extern tss_t tss;
 extern KHEAPSS page_heap;
-#define TASK_STACK_SZ 1048576-128 //account for red zone
+#define TASK_STACK_SZ 1048576 //account for red zone
 
 atomic_int sched_lock;
 
@@ -97,7 +97,7 @@ task *task_new(){
     //make init task. tasking code inspired by xv6
 
     stack = curr->krnl_stack_base = k_obj_alloc(TASK_STACK_SZ);
-    stack += (TASK_STACK_SZ - sizeof(task_int_sframe));
+    stack += (TASK_STACK_SZ - sizeof(task_int_sframe)-512);
     curr->tf = (task_int_sframe*) stack;
 
     stack -= 8;
@@ -131,6 +131,8 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
 
         new->page_tab = k_pageobj_alloc(&page_heap, 4096 );
         page_clone_krnl_tab(new->page_tab);
+        draw_string("new page tab addr:");
+        draw_hex((unsigned long)new->page_tab);
 
         new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1)) + TASK_STACK_SZ;
 
@@ -182,7 +184,7 @@ void task_scheduler(){
 		
         while(1){
 	
-                if(curr_task == 0) continue; //continue while curr task is 0
+                if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
 
 				
                 if(curr_task->next == 0) {
@@ -191,23 +193,34 @@ void task_scheduler(){
                 else {
                         curr_task = curr_task->next;
                 }
-                
-                if(curr_task->state == T_DEAD){
-					if(curr_task->tid == 1){
-						
-						draw_string("\nTID 1 IS A ZOMBIE, triggering trap"); 
-						__builtin_trap();
-						while(1){}
+ 
+				if(curr_task->state == T_DEAD){
+
+					k_obj_free(curr_task->krnl_stack_base);
+					page_free_tab(curr_task->page_tab);
+			
+					if(curr_task == tasks){
+						tasks = curr_task->next;
 					}
+					else{
+						task *iter= tasks;
+
+						while(iter->next != curr_task)iter=iter->next;
+					
+						iter->next = curr_task->next;
+						}
+						
+					k_obj_free(curr_task);
+					curr_task = tasks;
 					continue;
 			
 				}
 
-                task_switch_tab(curr_task->page_tab);
 
-                task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ);
+                task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ-512);
 
-		
+		                task_switch_tab(curr_task->page_tab);
+
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
                 
                 page_switch_krnl_tab();
@@ -250,27 +263,15 @@ void task_dump_sframe(task_int_sframe *in){
 void task_exit(unsigned long code){
 
 
-	if(curr_task->tid == 1){
-						if(curr_task->tid == 1){
-						
-						draw_string("\nTID 1 (INIT) IS A ZOMBIE, printing stack trace and H&CFing \n"); 
-						task_dump_sframe(curr_task->tf);
-						idt_print_stacktrace((void*)curr_task->tf->rbp);
-						halt_and_catch_fire();
-					}	
-		
-	}
 	
 	page_switch_krnl_tab();
 
-	k_obj_free(curr_task->krnl_stack_base);
 		
 	curr_task->state = T_DEAD;
 
-	page_free_tab(curr_task->page_tab);
 
 	asm("sti");
-	while(!sched_lock){}
+	while(1){}
 }
 
 void task_yield(){
@@ -287,9 +288,10 @@ void task_yield(){
         }
 
         atomic_store(&sched_lock, 1);
-
+		
+		
         task_save_and_change_krnl_state(&curr_task->krnl_state, scheduler_state);
-
+		
 
 }
 

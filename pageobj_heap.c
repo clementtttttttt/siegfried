@@ -115,6 +115,7 @@ void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size) {
 
 		dbgnumout_hex((unsigned long)heap->fblock->size);
 	}
+	while(1){}
 	return (void*)0xDEADBEEF;
 	//	return k_pageobj_alloc(heap, size);
 }

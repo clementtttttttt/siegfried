@@ -28,6 +28,7 @@ typedef struct tss_t{
 
 typedef struct task_sframe{
 
+	unsigned long fix_align;
     unsigned long ds;
     unsigned long rax;
     unsigned long rbp;
@@ -55,6 +56,7 @@ typedef struct task_sframe{
 
 typedef struct task_trap_sframe{
 
+	unsigned long fix_align; //makes the struct aligned to 16 bytes very importante
     unsigned long ds;
     unsigned long rax;
     unsigned long rbp;

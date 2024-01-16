@@ -272,6 +272,8 @@ static struct liballoc_major *allocate_new_page( unsigned int size )
 
 void *PREFIX(k_obj_alloc)(unsigned long req_size)
 {
+	pml4e *old = page_get_curr_tab();
+	page_switch_krnl_tab();
 
 	//dbgnumout_hex((unsigned long) __builtin_return_address(0));
 	//while(1){}
@@ -303,6 +305,8 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 		FLUSH();
 		#endif
 		liballoc_unlock();
+			page_switch_tab(old);
+
 		return PREFIX(k_obj_alloc)(1);
 	}
 
@@ -356,7 +360,7 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 	maj->first = (struct liballoc_minor*)0xdeadbeef;
 
 	if(maj->first == oldtest){
-		dbgconout("OYYYYYY! OOM! HELP ME");
+		draw_string("OOM DETECTED");
 		while(1);
 	}
 
@@ -453,6 +457,8 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 			FLUSH();
 			#endif
 			liballoc_unlock();		// release the lock
+				page_switch_tab(old);
+
 						return p;
 		}
 
@@ -489,6 +495,8 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 			FLUSH();
 			#endif
 			liballoc_unlock();		// release the lock
+				page_switch_tab(old);
+
 			return p;
 		}
 
@@ -538,6 +546,7 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 						
 						liballoc_unlock();		// release the lock
 						
+	page_switch_tab(old);
 
 						return p;
 					}
@@ -582,6 +591,8 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 						#endif
 
 						liballoc_unlock();		// release the lock
+							page_switch_tab(old);
+
 						return p;
 					}
 				}	// min->next != 0
@@ -637,6 +648,8 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 	liballoc_dump();
 	FLUSH();
 	#endif
+	
+	page_switch_tab(old);
 	return 0;
 }
 

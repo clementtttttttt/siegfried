@@ -444,6 +444,8 @@ void page_unmap_vaddr(void *vaddr){
 unsigned long page_virt_find_addr(unsigned long pgs){
 
         pml4e *tab = page_get_curr_tab();
+        
+        page_switch_krnl_tab();
 
         for(unsigned long addr = 0; addr < 0xFFFFFFFFFFFF; addr += 2097152){
 
@@ -503,17 +505,20 @@ unsigned long page_virt_find_addr(unsigned long pgs){
             }
 
             if(mem_not_found == 0){
-
+				page_switch_tab(tab);
                 return addr;
             }
 
         }
+        page_switch_tab(tab);
         return 0xDEAD;
 }
 
 
 unsigned long page_virt_find_addr_user(pml4e *tab, unsigned long pgs){
-
+		pml4e *tee = page_get_curr_tab();
+		
+		page_switch_krnl_tab();
        
 
         for(unsigned long addr = 0; addr < 0xFFFFFFFFFFFF; addr += 2097152){
@@ -574,11 +579,14 @@ unsigned long page_virt_find_addr_user(pml4e *tab, unsigned long pgs){
             }
 
             if(mem_not_found == 0){
+				page_switch_tab(tee);
 
                 return addr;
             }
 
         }
+        
+        page_switch_tab(tee);
         return 0xDEAD;
 }
 
@@ -620,7 +628,9 @@ asm(".globl page_switch_tab;\
         ret;");
 
 void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pgs){
-        //page_switch_tab(tab);
+	pml4e *old_tab = page_get_curr_tab();
+	
+	page_switch_krnl_tab();
         unsigned long addr = vaddr;
 
     for(unsigned long i=0;i < 16777216*8 - pgs; ++i){
@@ -650,11 +660,12 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
 		page_switch_tab(tab);
         mem_set((void*)addr, 0, pgs * 2097152);
 
-		page_switch_krnl_tab();
-
+		page_switch_tab(old_tab);
+		
         return (void*)addr;
     }
 	//page_switch_krnl_tab();
+		page_switch_tab(old_tab);
 
     return (void*)0xDEAD;
 

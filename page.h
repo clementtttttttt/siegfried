@@ -101,3 +101,11 @@ void page_free_tab(pml4e *tab);
 
 void page_switch_tab(pml4e *tab);
 void page_switch_krnl_tab();
+
+inline static pml4e *page_get_curr_tab(){
+        pml4e *retval;
+        asm("mov %%cr3, %0":"=a"(retval));
+        
+        return retval;
+	
+}

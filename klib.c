@@ -2,6 +2,7 @@
 #include "klib.h"
 #include "debug.h"
 #include "kb.h"
+#include "apic.h"
 
 unsigned long str_len(char *in){
     char *old=in;
