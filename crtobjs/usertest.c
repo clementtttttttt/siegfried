@@ -1,9 +1,5 @@
-#include "syscall.h"
+#include "syscalls.h"
 
-int  test_function(){
-	
-
-}
 
 int main(){
 
@@ -15,7 +11,10 @@ int main(){
 
         
                 syscall2(2, (unsigned long)"LOADED FROM DISKKKKKKKKKK", 34);
-		test_function();
+
+	syscall2(2, (unsigned long)"siegfried syscall testing\n", sizeof("siegfried syscall testing\n"));
+	
+	unsigned long disk_root = syscall0(sys_disk_get_root);
 	
 
 	return 1;

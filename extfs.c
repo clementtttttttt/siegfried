@@ -160,10 +160,38 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
 
 }
 
+DISKMAN_FSTAT_FUNC(extfs_fstat){
+		void *free_ptr;
+		extfs_inode *in = extfs_read_inode_struct(f->disk, f->inode, &free_ptr);
+		
+		stat->perms = in->types_n_perm;
+		stat->inode = f->inode;
+		stat->disk_inode = f->disk->inode;
+		stat->links = in->hard_links_count;
+		stat->uid = in->uid;
+		stat->gid = in->gid;
+		stat->size = in->sz_in_bytes_l;
+		stat->atime_in_ms = in->time_access;
+		stat->mtime_in_ms = in->time_mod;
+		stat->ctime_in_ms = in->time_create;
+		
+		k_obj_free(in);
+		return 0;
+}
+
 DISKMAN_FREAD_FUNC(extfs_fread){
 	
 	return extfs_read_inode_contents(f->disk, f->inode, buf, bytes, off);
 	 
+}
+
+DISKMAN_FCLOSE_FUNC(extfs_fclose){
+		//cleanup stuff
+		if(!f){
+				return -EINVAL;
+		}
+		k_obj_free(f);
+		return 0;
 }
 
 DISKMAN_FOPEN_FUNC(extfs_fopen){
@@ -411,6 +439,8 @@ void extfs_enum(diskman_ent *d){
 			//set rw functions in struct
         d->fopen = extfs_fopen;
 		d->fread = extfs_fread;
+		d->fstat = extfs_fstat;
+		d->fclose = extfs_fclose;
 
         extfs_bgrp_desc * bd = k_obj_alloc(512);
 

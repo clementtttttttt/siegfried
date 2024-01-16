@@ -94,15 +94,27 @@ siegfried_file *syscall_open(char* path){
 
 }
 
-siegfried_stat *syscall_stat(char* path){
-	unsigned long disk_inode = parse_path(&path);
-
-    diskman_ent *e = diskman_find_ent(disk_inode);
-
-    if(e != 0){
-		//return e -> fopen (disk_inode, path);
+int syscall_close(siegfried_file *f){
+	if(!f) return -EINVAL;
+	
+	diskman_ent *e = f->disk;
+	if(e != 0){
+		return e -> fclose (f);
     }
-    return (siegfried_stat*)-EINVAL;
+    return -EINVAL;
+	
+}
+
+int syscall_stat(char* path, siegfried_stat *stat){
+
+    siegfried_file *f = syscall_open(path);
+
+    if((long)f > 0){
+		int ret= f->disk -> fstat (f, stat);
+		syscall_close(f);
+		return ret;
+    }
+    return -EINVAL;
     
 
 }
@@ -112,6 +124,18 @@ unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsi
 
     if(f != 0){
 		return f->disk -> fread (f,buf, off, sz_bytes, attrs);
+    }
+    return -EINVAL;
+    
+
+}
+
+
+unsigned long syscall_write(siegfried_file *f, void *buf, unsigned long off, unsigned long sz_bytes, unsigned long attrs){
+
+
+    if(f != 0){
+		return f->disk -> fwrite (f,buf, off, sz_bytes, attrs);
     }
     return -EINVAL;
     
@@ -151,10 +175,12 @@ void syscall_diskman_get_next_ent(syscall_disk_ent *e){
 
 
 void syscall_exit(unsigned long code){
+		draw_string("task exits with code");
+		draw_hex(code);
 		task_exit(code);
 }
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

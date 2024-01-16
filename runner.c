@@ -20,7 +20,6 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
     
     siegfried_file *f = d->fopen(disk_inode, name);
     
-    draw_hex((unsigned long)f);
     
    // unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(disk_inode),EXTFS_ROOTDIR_INODE, name);
 
@@ -122,6 +121,8 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 			}
 			
 	}
+	
+	d->fclose(f);
 
     return t->tid;
 }
