@@ -89,8 +89,9 @@ void diskman_setup(){
 
     //fs detection
     while(i){
-
-        extfs_enum(i);
+		if(i->fs_type == DISKMAN_FS_NULL){
+			extfs_enum(i);
+		}
 
         i = i->next;
     }

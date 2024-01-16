@@ -111,7 +111,7 @@ diskman_ent *diskman_find_ent(unsigned long inode);
 
 
 enum fs_types{
-    DISKMAN_FS_NULL, DISKMAN_FS_EXTFS, DISKMAN_FS_FAT
+    DISKMAN_FS_NULL, DISKMAN_FS_EXTFS, DISKMAN_FS_FAT,DISKMAN_FS_DEV
 };
 
 
