@@ -131,10 +131,8 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
 
         new->page_tab = k_pageobj_alloc(&page_heap, 4096 );
         page_clone_krnl_tab(new->page_tab);
-        draw_string("new page tab addr:");
-        draw_hex((unsigned long)new->page_tab);
 
-        new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1)) + TASK_STACK_SZ;
+        new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1)) + TASK_STACK_SZ-512; //
 
 
         return new;
@@ -200,6 +198,10 @@ void task_scheduler(){
 					page_free_tab(curr_task->page_tab);
 			
 					if(curr_task == tasks){
+						if(curr_task == 0){
+								draw_string("WE RAN OUT OF TASKS!");
+								while(1){}
+						}
 						tasks = curr_task->next;
 					}
 					else{
@@ -208,7 +210,7 @@ void task_scheduler(){
 						while(iter->next != curr_task)iter=iter->next;
 					
 						iter->next = curr_task->next;
-						}
+					}
 						
 					k_obj_free(curr_task);
 					curr_task = tasks;
@@ -217,9 +219,9 @@ void task_scheduler(){
 				}
 
 
-                task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ-512);
+                task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ-512-sizeof(task_int_sframe));
 
-		                task_switch_tab(curr_task->page_tab);
+		                page_switch_tab(curr_task->page_tab);
 
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
                 
@@ -292,7 +294,7 @@ void task_yield(){
 		
         task_save_and_change_krnl_state(&curr_task->krnl_state, scheduler_state);
 		
-
+	
 }
 
 void task_enter_krnl(){

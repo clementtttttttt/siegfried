@@ -580,6 +580,7 @@ unsigned long page_virt_find_addr_user(pml4e *tab, unsigned long pgs){
 
             if(mem_not_found == 0){
 				page_switch_tab(tee);
+				
 
                 return addr;
             }
@@ -640,7 +641,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
             continue;
         }
         
-        if((page_lookup_paddr_tab(tab, (void*)vaddr) > (void*)&_krnl_end) && page_lookup_pdei(tab, (void*)vaddr)->present){
+        if((page_lookup_paddr_tab(tab, (void*)vaddr) > (void*)&_krnl_end) && page_lookup_pdei(tab, (void*)vaddr)->present && page_lookup_pdei(tab, (void*)vaddr)->isuser){
 			return (void*)vaddr; // we mapped it already 
 		}
 
@@ -658,7 +659,16 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
         }
 
 		page_switch_tab(tab);
-        mem_set((void*)addr, 0, pgs * 2097152);
+        mem_set((void*)addr, 0xff, pgs * 2097152);
+		
+		for(unsigned long i=0; i<pgs*2097152/8;++i){
+				if(((unsigned long*)addr)[i] != 0xffffffffffffffff){
+						draw_string("MEMORY ERROR IN PAGE_FIND_AND_ALLOC_USER, addr=");
+						draw_hex((unsigned long)&((unsigned long*)addr)[i]);
+						halt_and_catch_fire();
+				}
+		}
+		        mem_set((void*)addr, 0, pgs * 2097152);
 
 		page_switch_tab(old_tab);
 		
@@ -667,6 +677,8 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
 	//page_switch_krnl_tab();
 		page_switch_tab(old_tab);
 
+	draw_string("OUT OF PAGES");
+	while(1){}
     return (void*)0xDEAD;
 
 }

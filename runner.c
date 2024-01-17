@@ -104,7 +104,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 			
 					void *seg_addr = page_map_paddr((unsigned long )page_lookup_paddr_tab(t->page_tab,page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1)), 1);
 					
-						mem_set(seg_addr, 0, header->prog_tab[i].mem_sz);
+						mem_set(seg_addr, 0x5a, header->prog_tab[i].mem_sz);
 
 			
 					//extfs_read_inode_contents(diskman_find_ent(disk_inode), in, seg_addr, header->prog_tab[i].f_sz, header->prog_tab[i].dat_off);
@@ -128,9 +128,11 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	
 	d->fclose(f);
 
-	page_switch_tab(old);
-	draw_string("TID=");
-	draw_hex(t->tid);
+		draw_string("TID=");
+		draw_hex(t->tid);
 
+	page_switch_tab(old);
+
+		
     return t->tid;
 }

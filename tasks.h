@@ -130,5 +130,4 @@ void task_exit(unsigned long);
 void task_enter_krnl();
 void task_exit_krnl();
 task *task_start_func(void *func);
-void init_loader_end();
-__attribute__((noinline, section(".init_loader"))) void init_loader();
+void task_dump_sframe(task_int_sframe *in);

@@ -189,6 +189,8 @@ for (; n; n--, s++) *s = c;
 }
 
 void halt_and_catch_fire(){
+	extern void* curr_task;
+	curr_task = 0;
 	draw_string("H&CF: press any key to reboot");
 	kb_wait_and_pop_char();
 	draw_string("H&CF: rebooting NOW");

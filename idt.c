@@ -3,6 +3,7 @@
 #include "draw.h"
 #include "tasks.h"
 #include "klib.h"
+#include "page.h"
 
 idt_desc idt_table[256];
 
@@ -58,12 +59,16 @@ void idt_pagefault_handler(task_trap_sframe *fr){
 
     draw_string("CR2=");
     draw_hex(idt_dump_cr2());
+    
+    	task_dump_sframe((task_int_sframe*)((unsigned long)fr + 8));
+
+    
     if(curr_task){
 		draw_string("\nERR: userland PF");
 		curr_task->tf = (void*)(((unsigned long)fr));
 		idt_print_stacktrace((unsigned long*)fr->rbp);
 	
-        task_exit(139);
+       // task_exit(139);
     }
     dbgconout("PAGE FAULT: ERRCODE=");
     dbgnumout_bin(fr->errcode);
@@ -75,8 +80,9 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     dbgconout("CR2: ");
     dbgnumout_hex(idt_dump_cr2());
 
-
     idt_print_stacktrace((unsigned long*)fr->rbp);
+
+	page_switch_tab(curr_task->page_tab);
 
     asm("cli;hlt;");
     while(1){
