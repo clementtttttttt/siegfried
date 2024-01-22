@@ -7,9 +7,9 @@
 //page allocator 3000
 
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
-
+void* krnl_tab_addr;
 void page_switch_krnl_tab(){
-		page_switch_tab(pml4_table);
+		page_switch_tab(krnl_tab_addr);
 	
 }
 
@@ -44,11 +44,7 @@ static inline void set_paddr_pde(void* in, unsigned long inaddr){
 
     t->paddrU = 0;
     t -> paddrU = (inaddr >> 19) & 0xff;
-    
-    dbgconout("PAGE MAP ADDR:");
-    dbgnumout_hex((unsigned long)get_paddr(t));
-    dbgnumout_hex(*(unsigned long*)in);
-    dbgnumout_hex(*(unsigned long*)0x200000);
+
 
 
     return;
@@ -68,7 +64,7 @@ void page_clone_page_tab(pml4e *dest, pml4e *src){
 
         if(dest[pml4i].present){
 
-            pdpte *pdpt_table_dest = page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096));
+            pdpte *pdpt_table_dest = (k_pageobj_alloc(&page_heap, 4096));
             set_paddr(&dest[pml4i],(unsigned long) pdpt_table_dest);
 
             pdpte *pdpt_table_src = (pdpte*)get_paddr(&src[pml4i]);
@@ -132,7 +128,7 @@ void page_clone_krnl_tab(pml4e *dest){
 
 void page_init_map(){
 //    phys_mem_map = k_pageobj_alloc(&page_heap, 16777216);
-
+	krnl_tab_addr = &pml4_table;
     for(int i=0;i<16777216;++i){
         phys_mem_map[i] = 0;
     }
@@ -154,7 +150,7 @@ void* page_lookup_paddr_tab(pml4e *tab, void* in){
 
     if(pdpt_table == 0){
         dbgconout("pdpt_table is 0");
-        return (void*)vir;
+        return (void*)0;
 
 
     }
@@ -164,7 +160,7 @@ void* page_lookup_paddr_tab(pml4e *tab, void* in){
     if(pdei_table == 0){
             dbgconout("pdpt_table is 0");
 
-        return (void*)vir;
+        return (void*)0;
     }
 
     return get_paddr(&pdei_table[pdei]) + off;
@@ -199,10 +195,7 @@ pde* page_lookup_pdei(pml4e *tab, void *in){
 	return &pdei_table[pdei];
 }
 
-void* page_lookup_vaddr(void* in_paddr){
-	//unsigned long pa = ((unsigned long)in_paddr) & ~(0x1000);
-	return 0;
-}
+
 
 void* page_lookup_paddr(void* in){
 
@@ -628,11 +621,13 @@ void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs){
     return (void*)(vaddr + off);
 }
 
-void page_switch_tab(pml4e *tab);
-asm(".globl page_switch_tab;\
-	page_switch_tab:\
-        movq %rdi, %cr3;\
-        ret;");
+void page_switch_tab(pml4e *tab){
+			tab = page_lookup_paddr(tab);
+		
+		asm volatile("\
+        movq %0, %%cr3;\
+        "::"r"(tab):);
+ }
 
 void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pgs){
 	pml4e *old_tab = page_get_curr_tab();
@@ -698,9 +693,11 @@ void *page_find_and_alloc(unsigned long pgs){
             continue;
         }
 
+		
+        unsigned long addr;
+			addr = page_virt_find_addr(pgs);
 
-        unsigned long addr = page_virt_find_addr(pgs);
-
+		
         for(unsigned long pi = 0; pi < pgs; ++pi){
             unsigned long off = i + pi;
 

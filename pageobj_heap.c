@@ -83,7 +83,7 @@ void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size) {
 		//		dbgnumout_hex(size);
 				b -> extended = 1;
 
-				unsigned long addr = (unsigned long) page_find_and_alloc(16);
+				unsigned long addr = (unsigned long) page_find_and_alloc(16 );
 
 				page_flush();
 
