@@ -131,8 +131,9 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
 
         new->page_tab = k_pageobj_alloc(&page_heap, 4096 );
         page_clone_krnl_tab(new->page_tab);
-
-        new -> tf -> rsp = ((unsigned long) page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1)) + TASK_STACK_SZ-512; //
+		
+		new->user_stack_base = page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1);
+        new -> tf -> rsp = ((unsigned long) new->user_stack_base)+ TASK_STACK_SZ-512; //
 
 
         return new;
@@ -195,7 +196,9 @@ void task_scheduler(){
 				if(curr_task->state == T_DEAD){
 
 					k_obj_free(curr_task->krnl_stack_base);
+					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
 					page_free_tab(curr_task->page_tab);
+					
 			
 					if(curr_task == tasks){
 						if(curr_task == 0){

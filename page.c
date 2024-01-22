@@ -68,7 +68,7 @@ void page_clone_page_tab(pml4e *dest, pml4e *src){
 
         if(dest[pml4i].present){
 
-            pdpte *pdpt_table_dest = k_pageobj_alloc(&page_heap, 4096);
+            pdpte *pdpt_table_dest = page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096));
             set_paddr(&dest[pml4i],(unsigned long) pdpt_table_dest);
 
             pdpte *pdpt_table_src = (pdpte*)get_paddr(&src[pml4i]);
@@ -121,6 +121,7 @@ void page_free_tab(pml4e *tab){
         }
 
     }
+    k_pageobj_free(&page_heap, tab);
 	
 }
 
@@ -196,6 +197,11 @@ pde* page_lookup_pdei(pml4e *tab, void *in){
     }
 
 	return &pdei_table[pdei];
+}
+
+void* page_lookup_vaddr(void* in_paddr){
+	//unsigned long pa = ((unsigned long)in_paddr) & ~(0x1000);
+	return 0;
 }
 
 void* page_lookup_paddr(void* in){
@@ -740,6 +746,32 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs){
     }
     page_flush();
 }
+
+void page_free_found_user(pml4e *tab, unsigned long in_vaddr, unsigned long pgs){
+    for(unsigned long i=0;i<pgs;++i){
+        unsigned long vir = in_vaddr + i*2097152;
+        unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
+        unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+        unsigned long pdei = (unsigned long)vir >> 21 & 0x1ff;
+
+        pde *pdei_table = (pde*) get_paddr(&(((pdpte*)get_paddr(&tab[pml4i]))[pdptei]));
+
+        unsigned long pa =(unsigned long) get_paddr(&pdei_table[pdei]);
+
+
+        //FIXME: remove 48bit hard limit.
+        pa &= 0xffffffffffff;
+
+
+        phys_mem_map[pa/2097152/8] &= ~(1 << ((pa/2097152)%8));
+
+
+        pdei_table[pdei].present = 0;
+
+    }
+    page_flush();
+}
+
 
 void page_flush(){
     asm inline("movq %0, %%rdx \n movq %%rdx, %%cr3"::"r" (&pml4_table):"rdx");

@@ -85,7 +85,7 @@ void pci_write_conw(unsigned char bus, unsigned char slot, unsigned char func, u
     pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
 
     
-    volatile unsigned short* addr = (volatile unsigned short*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+    volatile unsigned short* addr = ((volatile unsigned short*) ((((unsigned long) offset) + ((unsigned long)e->ecam_addr)  +  (((bus - e->start_bus)) << 20)) | (slot << 15) | (func << 12)));
     *addr = in;
  
 }
@@ -142,7 +142,7 @@ unsigned int pci_read_coni(unsigned char bus, unsigned char slot, unsigned char 
         pci_bridge_ent *e = pci_find_bridge_from_ent(bus);
 
     
-    volatile unsigned int* addr = (volatile unsigned int*) ((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20) | (slot << 15) | (func << 12));
+    volatile unsigned int* addr = (volatile unsigned int*) (((unsigned long) offset + (unsigned long)e->ecam_addr  +  (((bus - e->start_bus)) << 20)) | (slot << 15) | (func << 12));
  
 	return *addr;
 }

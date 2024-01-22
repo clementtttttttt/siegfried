@@ -106,6 +106,7 @@ enum task_states{
 typedef struct task{
     krnl_state *krnl_state; //stack + STACK_SZ - sizeof(krnl_state).
     void* krnl_stack_base;
+    void *user_stack_base;
     task_int_sframe *tf;
     char *name;
     union pml4e *page_tab;

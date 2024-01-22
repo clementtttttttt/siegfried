@@ -60,6 +60,9 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     draw_string("CR2=");
     draw_hex(idt_dump_cr2());
     
+    draw_string("CR3=");
+    draw_hex((unsigned long)page_get_curr_tab());
+
     	task_dump_sframe((task_int_sframe*)((unsigned long)fr + 8));
 
     
