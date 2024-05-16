@@ -77,16 +77,14 @@ unsigned short io_cmdid_c;
 //sector is 512
 void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opcode, unsigned long num_sects, void *buf){
 
-
-
     nvme_sub_queue_ent cmd;
-
+    
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));;
 
     cmd.cint0.cid = ++io_cmdid_c;
     cmd.cint0.opcode = opcode;
     cmd.nsid = in->id;
-    cmd.prp1 = (unsigned long)page_lookup_paddr(buf);
+    cmd.prp1 = (unsigned long)buf;
 
     void* prp2_vm = k_pageobj_alloc(&page_heap, 4096);
 
@@ -132,13 +130,12 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
        // mem_cpy((void*)((unsigned long)buf), buf_io, 4096 );
         //mem_cpy((void*)((unsigned long)buf + 4096), prp2_vm, num_sects * 512 - 4096);
     }else{
-//                mem_cpy((void*)((unsigned long)buf), buf_io, num_sects*512 );
+//           mem_cpy((void*)((unsigned long)buf), read_buf, num_sects*512 );
 
     }
 
     
     k_pageobj_free(&page_heap, prp2_vm);
-  //  k_pageobj_free(&page_heap, buf_io);
 
 }
 
@@ -190,8 +187,8 @@ DISKMAN_READ_FUNC(nvme_read_disk){
     buf_sz += 512- (buf_sz %512); //round up
 
  	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz);
-	
-    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, rdbuf);
+
+    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, page_lookup_paddr_tab(page_get_krnl_tab(), rdbuf));
 
     mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
 	

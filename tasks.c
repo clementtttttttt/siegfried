@@ -192,6 +192,7 @@ void task_scheduler(){
                 else {
                         curr_task = curr_task->next;
                 }
+			//	draw_hex((unsigned long)curr_task);
  
 				if(curr_task->state == T_DEAD){
 

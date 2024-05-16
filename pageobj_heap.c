@@ -13,7 +13,7 @@ void k_pageobj_init_heap(KHEAPSS *heap, unsigned long bsize) {
 void k_pageobj_heap_setup(){
 	k_pageobj_init_heap(&page_heap, 4096);
     k_pageobj_add_heapblk(&page_heap,((((unsigned long)&_krnl_end +0x5000) & 0xfffffffffffff000)) , 0x400000);
-
+	
 }
 
 int k_pageobj_add_heapblk(KHEAPSS *heap, unsigned long addr, unsigned long size) {
@@ -83,14 +83,14 @@ void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size) {
 		//		dbgnumout_hex(size);
 				b -> extended = 1;
 
-				unsigned long addr = (unsigned long) page_find_and_alloc(16 );
+				unsigned long addr = (unsigned long) page_find_and_alloc(2 );
 
 				page_flush();
 
 			//	dbgconout("CALL ADDBLOCK: ");
 			//	dbgnumout_hex(addr);
 
-				k_pageobj_add_heapblk(heap, addr, 2097152*16);
+				k_pageobj_add_heapblk(heap, addr, 2097152*2);
 
 			//	dbgconout("ADDBLOCK COMPLETE\r\n");
 

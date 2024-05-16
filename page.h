@@ -68,8 +68,8 @@ typedef union pde{
         unsigned char paddrU;
 
         unsigned short rsvd4 : 4;
-        unsigned short is_krnl_pg : 1;
         unsigned short avl6 : 6;
+        unsigned short is_krnl_pg : 1;
         unsigned short pkey : 4;
         unsigned short noexec : 1;
 
@@ -78,7 +78,10 @@ typedef union pde{
 
     unsigned long long raw;
 } pde;
+ pml4e *page_get_krnl_tab();
 
+void page_dump_pde(pde* in);
+pde* page_lookup_pdei(pml4e *tab, void *in);
 void page_clone_krnl_tab(pml4e *dest);
 void page_clone_page_tab(pml4e *dest, pml4e *src);
 

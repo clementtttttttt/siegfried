@@ -61,7 +61,15 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     draw_hex(idt_dump_cr2());
     
     draw_string("CR3=");
-    draw_hex((unsigned long)page_get_curr_tab());
+    draw_hex((unsigned long)curr_task->page_tab);
+    
+    draw_string("PADDR=");
+	draw_hex((unsigned long) page_lookup_paddr_tab(page_get_curr_tab(), (void*)idt_dump_cr2()));
+    
+    page_dump_pde(page_lookup_pdei(page_get_curr_tab(),(void*) idt_dump_cr2()));
+    
+    draw_string("usr stack=");
+    draw_hex((unsigned long)curr_task->user_stack_base);
 
     	task_dump_sframe((task_int_sframe*)((unsigned long)fr + 8));
 

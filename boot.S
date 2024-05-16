@@ -152,18 +152,17 @@ _start:
     movl %ebx, %cr0
 
 	//fill out tss seg
-	movl $tss, %edx
+	movl $tss, %eax
 	
-	movw %dx, .tss_addr_w16
-	shr $16, %edx
+	movw %ax, .tss_addr_w16
+	shr $16, %eax
 	
-	movb %dl, .tss_addr_b24
-	shr $8, %edx
+	movb %al, .tss_addr_b24
 	
-	movb %dl, .tss_addr_b32
-	shr $8, %edx
+	movb %ah, .tss_addr_b32
+	shr $16, %eax
 	
-	movw %dx, .tss_addr_i64
+	movw %ax, .tss_addr_i64
 
 	//load own gdt segs
 	lgdt gdtr

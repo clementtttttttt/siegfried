@@ -9,8 +9,7 @@
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
 void* krnl_tab_addr;
 void page_switch_krnl_tab(){
-		page_switch_tab(krnl_tab_addr);
-	
+	asm("movq %0, %%cr3"::"r"(krnl_tab_addr));
 }
 
 static inline void set_paddr(void* in, unsigned long inaddr){
@@ -23,6 +22,10 @@ static inline void set_paddr(void* in, unsigned long inaddr){
 
     t->paddrU = 0;
     t -> paddrU = inaddr >> 28 & 0xff;
+    
+	t->noexec = 0;
+	t->rsvd4 = 0;
+	t->rsvd = 0;
 
     return;
 }
@@ -35,7 +38,6 @@ static inline void* get_paddr(void* in){
 
 static inline void set_paddr_pde(void* in, unsigned long inaddr){
     pde *t = in;
-
     inaddr >>= 21;
 
     t -> paddr = inaddr & 0x7FFFF;
@@ -44,7 +46,11 @@ static inline void set_paddr_pde(void* in, unsigned long inaddr){
 
     t->paddrU = 0;
     t -> paddrU = (inaddr >> 19) & 0xff;
-
+    
+	t->noexec = 0;
+	t->rsvd4 = 0;
+	t->rsvd8 = 0;
+	t->pkey = 0;
 
 
     return;
@@ -60,7 +66,6 @@ void page_clone_page_tab(pml4e *dest, pml4e *src){
     //each pml4i ent represents 512gib
     for(unsigned long pml4i = 0; pml4i < 512; ++pml4i){
         dest[pml4i].raw = src[pml4i].raw;
-        dest[pml4i].isuser = 1; //just in case
 
         if(dest[pml4i].present){
 
@@ -166,6 +171,46 @@ void* page_lookup_paddr_tab(pml4e *tab, void* in){
     return get_paddr(&pdei_table[pdei]) + off;
 }
 
+void page_dump_pde(pde* in){
+	draw_string("==BEGIN PAGE TAB ENT DUMP==\n");
+	if(in->noexec) draw_string("XD ON\n");
+	
+
+
+	draw_string("PKEY=");
+	draw_hex(in->pkey);
+	draw_string("IS_KRNL_PG=");
+	draw_hex(in->is_krnl_pg);
+	draw_string("AVL6=");
+	draw_hex(in->avl6);
+	draw_string("RSVD4=");
+	draw_hex(in->rsvd4);
+	draw_string("VADDRU=");
+	draw_hex(in->paddrU);
+	draw_string("VADDR=");
+	draw_hex(in->paddr);
+	draw_string("RSVD8=");
+	draw_hex(in->rsvd8);
+		draw_string("attr_tab_or_rsvd=");
+	draw_hex(in->attr_tab_or_rsvd);
+		draw_string("CUSTOM3=");
+	draw_hex(in->custom3);
+	
+	draw_string("BITS: ");
+	if(in->glob) draw_string("GLOB ");
+	if(in->dirty) draw_string("DIRTY ");
+	if(in->isaccessed) draw_string("ACCESSED ");
+	if(in->nocache) draw_string("NOCACHE ");
+	if(in->write_through) draw_string("WRITETHRU ");
+	if(in->isuser) draw_string("USER ");
+	if(in->rw) draw_string("RW ");
+	if(in->present) draw_string("PRSNT ");
+
+	
+	
+	
+	draw_string("\n==END PAGE TAB ENT DUMP==");
+}
 
 pde* page_lookup_pdei(pml4e *tab, void *in){
 	
@@ -283,6 +328,7 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     tab[pml4i].present = 1;
     tab[pml4i].rw = 1;
     tab[pml4i].isuser = 1;
+    tab[pml4i].noexec = 0;
 
     pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
 
@@ -293,6 +339,7 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     pdpt_table[pdptei].rw = 1;
     pdpt_table[pdptei].isuser = 1;
     pdpt_table[pdptei].is_krnl_pg = 0;
+    pdpt_table[pdptei].noexec = 0;
 
 
     pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
@@ -305,6 +352,7 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     pdei_table[pdei].attr_tab_or_rsvd = 0;
     pdei_table[pdei].isuser = 1;
     pdei_table[pdei].is_krnl_pg = 0;
+    pdei_table[pdei].noexec = 0;
 
     //mark phys mem usage
     phys_mem_map[(unsigned long)phy / 2097152 / 8] |= (1 << (((unsigned long)phy/2097152)%8));
@@ -418,6 +466,11 @@ pml4e *page_get_curr_tab();
 asm("page_get_curr_tab:;\
         movq %cr3, %rax;\
         ret;");
+        
+        
+ pml4e *page_get_krnl_tab(){
+		return krnl_tab_addr;
+}
 
 void page_unmap_vaddr(void *vaddr){
 	
@@ -622,6 +675,7 @@ void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs){
 }
 
 void page_switch_tab(pml4e *tab){
+		page_switch_krnl_tab();
 			tab = page_lookup_paddr(tab);
 		
 		asm volatile("\
@@ -660,10 +714,10 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
         }
 
 		page_switch_tab(tab);
-        mem_set((void*)addr, 0xff, pgs * 2097152);
+        mem_set((void*)addr, 0xee, pgs * 2097152);
 		
 		for(unsigned long i=0; i<pgs*2097152/8;++i){
-				if(((unsigned long*)addr)[i] != 0xffffffffffffffff){
+				if(((unsigned long*)addr)[i] != 0xeeeeeeeeeeeeeeee){
 						draw_string("MEMORY ERROR IN PAGE_FIND_AND_ALLOC_USER, addr=");
 						draw_hex((unsigned long)&((unsigned long*)addr)[i]);
 						halt_and_catch_fire();

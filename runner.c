@@ -42,7 +42,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
     d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
 	
     if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
-		draw_string("invalid elf file");
+		draw_string("invalid elf file\n");
 		
 		k_obj_free(header);
 		k_obj_free(f);
@@ -51,15 +51,20 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 			    draw_string("number of loads: ");
 	    draw_hex(header->prog_tab_num_ents);
 	
-	void *header2 = k_obj_alloc(sizeof(elf_head) + header->prog_tab_num_ents*header->prog_tab_ent_sz);
-	mem_cpy(header2,header, sizeof(elf_head));
-		k_obj_free(header);
-
-	header = header2;
 	header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
+	
 
 	d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
+     
+    
+    if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
+		draw_string("second elf header check invalid? something's wrong\n");
+		
+		k_obj_free(header);
+		k_obj_free(f);
+		return 0;
+	}
        task* t=task_start_func((void*)header->entry_addr);
 	    t -> tf -> rip = (unsigned long) header->entry_addr;
 	
@@ -84,6 +89,8 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 
 	t->env = env;
 
+
+	draw_string("RUNNER: START OF ELF LOAD\n");
     for(int i=0; i < header->prog_tab_num_ents; ++i){
 			switch(header->prog_tab[i].seg_type){
 			
@@ -101,16 +108,20 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 			
 					draw_string("RUNNER: prog head f_sz = ");
 					draw_hex(header->prog_tab[i].f_sz);
-			
-					void *seg_addr = page_map_paddr((unsigned long )page_lookup_paddr_tab(t->page_tab,page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1)), 1);
+					
+					void *tab = page_get_curr_tab();
+					void *seg_addr = page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1);
+					page_switch_tab(t->page_tab);
+					
+					draw_string("RUNNER: program header #0 paddr = ");
+					draw_hex((unsigned long)page_lookup_paddr_tab(t->page_tab,(void*)header->prog_tab[i].vaddr));
 					
 						mem_set(seg_addr, 0x5a, header->prog_tab[i].mem_sz);
-
 			
 					//extfs_read_inode_contents(diskman_find_ent(disk_inode), in, seg_addr, header->prog_tab[i].f_sz, header->prog_tab[i].dat_off);
 					d->fread(f, seg_addr, header->prog_tab[i].dat_off, header->prog_tab[i].f_sz, 0);
 					
-					page_unmap_vaddr(seg_addr);
+					page_switch_tab(tab);
 			draw_string("RUNNER: successfully loaded prog head #");
 			draw_hex(i);
 				
@@ -125,6 +136,8 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 			}
 			
 	}
+	draw_string("RUNNER: program page table = ");
+	draw_hex((unsigned long) t->page_tab);
 	
 	d->fclose(f);
 
