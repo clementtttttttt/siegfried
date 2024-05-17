@@ -123,18 +123,17 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     }
 
-    if(acpitag != 0)
+    if(acpitag != 0){
         acpiman_setup(&acpitag->rsdp);
-
+	}
+	
     apic_setup();
-    
+
     syscall_setup();
 
 
     rtc_setup();
-
     timer_setup();
-
     pci_enum();
 
 drivers_setup();

@@ -50,6 +50,7 @@ fb_tag_start:
 
 .int fb_tag_end - fb_tag_start
 
+#resolution goes here
 .int 1280
 
 .int 720

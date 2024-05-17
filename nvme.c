@@ -188,7 +188,7 @@ DISKMAN_READ_FUNC(nvme_read_disk){
 
  	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz);
 
-    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, page_lookup_paddr_tab(page_get_krnl_tab(), rdbuf));
+    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, page_lookup_paddr(rdbuf));
 
     mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
 	

@@ -3,7 +3,7 @@
 #include "debug.h"
 #include "draw.h"
 #include "klib.h"
-
+#include "idt.h"
 //page allocator 3000
 
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
@@ -212,6 +212,35 @@ void page_dump_pde(pde* in){
 	draw_string("\n==END PAGE TAB ENT DUMP==");
 }
 
+
+pde* page_lookup_pdei_tab(pml4e *tab, void *in){
+	
+    unsigned long vir = (unsigned long) in;
+
+    unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
+    unsigned long pdptei = (unsigned long)vir >> 30 & 0x1ff;
+    unsigned long pdei = (unsigned long)vir >> 21 & 0x1ff;
+
+    pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
+
+    if(pdpt_table == 0){
+        dbgconout("pdpt_table is 0");
+        return (void*)0;
+
+
+    }
+
+    pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
+
+    if(pdei_table == 0){
+            dbgconout("pdpt_table is 0");
+
+        return (void*)0;
+    }
+
+	return &pdei_table[pdei];
+}
+
 pde* page_lookup_pdei(pml4e *tab, void *in){
 	
     unsigned long vir = (unsigned long) in;
@@ -243,8 +272,13 @@ pde* page_lookup_pdei(pml4e *tab, void *in){
 
 
 void* page_lookup_paddr(void* in){
+	
 
     unsigned long vir = (unsigned long) in;
+    extern int _krnl_end;
+    if( vir < ((unsigned long)&_krnl_end+0x400000)){
+			return in; //anything below krnl_end and heap is id mapped
+	}
     unsigned long off = vir & 0x1fffff;
 
     unsigned long pml4i = (unsigned long)vir >> 39 & 0x1ff;
@@ -255,6 +289,7 @@ void* page_lookup_paddr(void* in){
 
     if(pdpt_table == 0){
         dbgconout("pdpt_table is 0");
+		while(1){}
         return (void*)vir;
 
 
@@ -267,6 +302,7 @@ void* page_lookup_paddr(void* in){
 
         return (void*)vir;
     }
+
 
     return get_paddr(&pdei_table[pdei]) + off;
 }
@@ -657,6 +693,8 @@ extern int _krnl_end;
 void *page_map_paddr(unsigned long paddr,unsigned long pgs){
     unsigned long off = paddr & 0x1fffff;
     paddr &= ~((unsigned long)0x1FFFFF);
+
+    
     unsigned long vaddr = page_virt_find_addr(pgs);
     if(vaddr == 0xdead){
 	return (void*)0;
@@ -704,7 +742,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
             continue;
         }
         
-        if((page_lookup_paddr_tab(tab, (void*)vaddr) > (void*)&_krnl_end) && page_lookup_pdei(tab, (void*)vaddr)->present && page_lookup_pdei(tab, (void*)vaddr)->isuser){
+        if((page_lookup_paddr_tab(tab, (void*)vaddr) > (void*)&_krnl_end) && page_lookup_pdei_tab(tab, (void*)vaddr)->present && page_lookup_pdei_tab(tab, (void*)vaddr)->isuser){
 			page_switch_tab(old_tab);
 			return (void*)vaddr; // we mapped it already 
 		}

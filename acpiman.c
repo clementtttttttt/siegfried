@@ -67,7 +67,6 @@ void acpiman_setup(void* rsdp){
 
     sys_xsdt_addr = page_map_paddr(sys_rsdp_desc.xsdt_addr, 2);
 
-
     draw_string("XSDT PADDR: ");
     draw_hex(sys_rsdp_desc.xsdt_addr);
     draw_string("XSDT VADDR: ");
@@ -94,15 +93,20 @@ void acpiman_setup(void* rsdp){
         acpi_sdt_header *h = sys_xsdt_addr->tabs_ptr[i];
         draw_string("FOUND PTR AT ");
         draw_hex((unsigned long)h);
-        dbgnumout_hex((unsigned long)h);
-        h = sys_xsdt_addr->tabs_ptr[i] = page_map_paddr((unsigned long) h, 1);
+
+        if((((unsigned long)h) >> 21) != (((unsigned long)sys_rsdp_desc.xsdt_addr) >> 21) ) {
+				h = page_map_paddr((unsigned long) h, 1);
+		}
+		else {
+				h = (acpi_sdt_header*)( ((unsigned long)sys_xsdt_addr & (~0x1fffff)) + ((unsigned long)h & 0x1fffff));
+		}
+        sys_xsdt_addr->tabs_ptr[i] = h;
 
         draw_string("MAGIC IS ");
         char magic[5];
         mem_cpy(magic, h->magic, 4);
         draw_string(magic);
     }
-
 
 
 }
