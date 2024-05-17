@@ -44,7 +44,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 	k_pageobj_heap_setup();
 
     page_init_map();
-    for(unsigned long i=0;i<(((unsigned long)&_krnl_end+0x5000)/0x200000 + (0x400000/0x200000));++i){
+    for(unsigned long i=0;i<(((unsigned long)&_krnl_end+0x5000)/0x200000 + (0x400000/0x200000)+1);++i){
         page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
     }
     extern int _krnl_end;
@@ -52,6 +52,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     //page_map_paddr(0, (((unsigned long)&_krnl_end+0x5000))/0x200000+(0x1000000/0x200000));
     //while(1){}
     page_flush(); 
+
     //while(1){}
     unsigned int sz = m_info_old[0];
     

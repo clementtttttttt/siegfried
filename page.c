@@ -278,7 +278,8 @@ void page_alloc(void *phy, void *vir){
 
 
     if(pml4_table[pml4i].present == 0){
-        set_paddr(&pml4_table[pml4i], (unsigned long)k_pageobj_alloc(&page_heap, 4096));
+		unsigned long paddr = (unsigned long)page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096));
+        set_paddr(&pml4_table[pml4i], paddr);
     }
     pml4_table[pml4i].present = 1;
     pml4_table[pml4i].rw = 1;
@@ -290,7 +291,8 @@ void page_alloc(void *phy, void *vir){
     pdpte *pdpt_table = (pdpte*) get_paddr(&pml4_table[pml4i]);
 
     if(get_paddr(&pdpt_table[pdptei]) == 0 || pdpt_table[pdptei].present == 0){
-        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096)));
+		unsigned long paddr = (unsigned long)page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096));
+        set_paddr(&pdpt_table[pdptei],paddr);
     }
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
@@ -306,7 +308,7 @@ void page_alloc(void *phy, void *vir){
     pdei_table[pdei].rw = 1;
     pdei_table[pdei].ps = 1;
     pdei_table[pdei].attr_tab_or_rsvd = 0;
-    pdei_table[pdei].isuser = 1;
+    pdei_table[pdei].isuser = 0;
     pdei_table[pdei].is_krnl_pg = 1;
 
     //mark phys mem usage
@@ -323,7 +325,9 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
 
 
     if(tab[pml4i].present == 0){
-        set_paddr(&tab[pml4i], (unsigned long)k_pageobj_alloc(&page_heap, 4096));
+				unsigned long paddr = (unsigned long)page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096));
+
+        set_paddr(&tab[pml4i], paddr);
     }
     tab[pml4i].present = 1;
     tab[pml4i].rw = 1;
@@ -333,7 +337,9 @@ void page_alloc_tab(pml4e *tab, void *phy, void *vir){
     pdpte *pdpt_table = (pdpte*) get_paddr(&tab[pml4i]);
 
     if(get_paddr(&pdpt_table[pdptei]) == 0 || pdpt_table[pdptei].present == 0){
-        set_paddr(&pdpt_table[pdptei],(unsigned long) page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096)));
+				unsigned long paddr = (unsigned long)page_lookup_paddr(k_pageobj_alloc(&page_heap, 4096));
+
+        set_paddr(&pdpt_table[pdptei],paddr);
     }
     pdpt_table[pdptei].present = 1;
     pdpt_table[pdptei].rw = 1;
@@ -513,8 +519,9 @@ unsigned long page_virt_find_addr(unsigned long pgs){
                 unsigned long pdptei = targ2 >> 30 & 0x1ff;
                 unsigned long pdei = targ2 >> 21 & 0x1ff;
 
-                if(tab[pml4i].present == 0){
+                if(pml4_table[pml4i].present == 0){
                     if(pgs < 512*512){
+						page_switch_tab(tab);
                         return addr;
                     }
                     else{
@@ -528,6 +535,7 @@ unsigned long page_virt_find_addr(unsigned long pgs){
 
                 if(pdpt_table[pdptei].present == 0){
                     if(pgs < 512){
+						page_switch_tab(tab);
 
                         return addr;
                     }
@@ -697,6 +705,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
         }
         
         if((page_lookup_paddr_tab(tab, (void*)vaddr) > (void*)&_krnl_end) && page_lookup_pdei(tab, (void*)vaddr)->present && page_lookup_pdei(tab, (void*)vaddr)->isuser){
+			page_switch_tab(old_tab);
 			return (void*)vaddr; // we mapped it already 
 		}
 
