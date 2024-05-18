@@ -38,7 +38,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
-	qemu-system-x86_64 -S -s -cdrom sf.iso -machine q35   -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 2048 -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu Skylake-Client -monitor stdio -no-reboot
+	qemu-system-x86_64 -S -s -cdrom sf.iso -machine q35   -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 2048 -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu Skylake-Client -monitor stdio 
 
 clean:
 	rm obj -rf -

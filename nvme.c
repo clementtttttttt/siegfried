@@ -107,7 +107,6 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     if((++in->ctrl->io_tail_i) == 0x40){
 
         in->ctrl->io_tail_i = 0;
-    	in->ctrl->phase = !in->ctrl->phase;
     }
 
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
@@ -115,6 +114,11 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 	
     while(in->ctrl->icq_vaddr[old_iotail_i].phase == in->ctrl->phase){
 	
+    }
+    
+    if((in->ctrl->io_tail_i) == 0x0){
+
+    	in->ctrl->phase = !in->ctrl->phase;
     }
 
      in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
@@ -189,6 +193,7 @@ DISKMAN_READ_FUNC(nvme_read_disk){
  	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz);
 
     nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, page_lookup_paddr(rdbuf));
+
 
     mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
 	

@@ -145,7 +145,6 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 		draw_hex(t->tid);
 
 	page_switch_tab(old);
-	
 		
     return t->tid;
 }

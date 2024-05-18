@@ -64,7 +64,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     draw_hex((unsigned long)curr_task->page_tab);
     
     draw_string("RIP PADDR=");
-	draw_hex((unsigned long) page_lookup_paddr_tab(page_get_curr_tab(), (void*)fr->rip));
+	draw_hex((unsigned long) page_lookup_paddr_tab(curr_task->page_tab, (void*)fr->rip));
     
     page_dump_pde(page_lookup_pdei(page_get_curr_tab(),(void*) idt_dump_cr2()));
     

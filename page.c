@@ -155,6 +155,7 @@ void* page_lookup_paddr_tab(pml4e *tab, void* in){
 
     if(pdpt_table == 0){
         dbgconout("pdpt_table is 0");
+        while(1){}
         return (void*)0;
 
 
@@ -164,6 +165,7 @@ void* page_lookup_paddr_tab(pml4e *tab, void* in){
 
     if(pdei_table == 0){
             dbgconout("pdpt_table is 0");
+        while(1){}
 
         return (void*)0;
     }
