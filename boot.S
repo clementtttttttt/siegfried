@@ -184,8 +184,9 @@ _start:
 
 	.code64
 
-	//enable sse for fast code
 
+
+	//enable sse for fast code
 	fninit
 	fldcw (fcw)
 
@@ -198,6 +199,8 @@ _start:
 	btsq $10, %rax
 	movq %rax,%cr4
 
+	
+	
 	//set pat for framebuffer pages
 
 	movl $0x277, %ecx

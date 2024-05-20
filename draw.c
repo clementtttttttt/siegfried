@@ -103,8 +103,33 @@ static inline void draw_char_at_fbptr(unsigned char in, unsigned char *restrict 
     
     unsigned char *restrict comp_byte_ptr = font_bits + (font_start_y)*font_width/8 + font_start_x;
 
+    if(x_inc == 4){
+		for(long y = is_special?-2:0; y < 10; ++y){
 
-    for(long y = is_special?-2:0; y < 10; ++y){
+        
+
+        for(unsigned long x=0; x<8; ++x){
+            fb_it += 4;
+            if (y < 8 && y >= 0&& !(*comp_byte_ptr & (1<<x)) && in){
+                			*(unsigned int*)fb_it = 0xffffffff;
+
+                
+            }
+	    else{
+			*(unsigned int*)fb_it = 0;
+	    }
+
+	    	    
+
+      	}
+			if(y >= 0)
+				comp_byte_ptr += font_width/8;
+
+			fb_it += y_inc;
+		}
+	}
+	else{
+				for(long y = is_special?-2:0; y < 10; ++y){
 
         
 
@@ -114,28 +139,23 @@ static inline void draw_char_at_fbptr(unsigned char in, unsigned char *restrict 
                 fb_it[0] = 0xff;              // BLUE
                 fb_it[1] = 0xff;   // GREEN
                 fb_it[2] = 0xff;  // RED
-                if(x_inc == 4){
-                    fb_it[3] = 0xff;
-                }
+                
             }
 	    else{
 		fb_it[0] = 0x0;
 		fb_it[1] = 0x0;
 		fb_it[2] = 0x0;
-		if(x_inc == 4){
-			fb_it[3] = 0x0;
-		}
 	    }
 
 	    	    
 
       	}
-	if(y >= 0)
-	comp_byte_ptr += font_width/8;
+		if(y >= 0)
+			comp_byte_ptr += font_width/8;
 
         fb_it += y_inc;
-    }
-
+		}
+	}
    
 
 }

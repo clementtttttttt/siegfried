@@ -29,6 +29,21 @@ void idt_print_stacktrace(unsigned long *stack){
 
     draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315END STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
 }
+void idt_print_stacktrace_depth(unsigned long *stack, int depth){
+    draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315BEGIN STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
+
+    draw_string("STACK=");
+    draw_hex((unsigned long)stack);
+
+   // stack = __builtin_frame_address(0);
+
+    for(int i=0;stack != 0 && i<depth; ++i){
+            draw_hex(stack[1]);
+            stack = (unsigned long*) stack[0];
+    }
+
+    draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315END STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
+}
 
 unsigned long idt_dump_cr2();
 asm("idt_dump_cr2: movq %cr2, %rax; retq");
@@ -93,7 +108,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
 
     idt_print_stacktrace((unsigned long*)fr->rbp);
 
-	page_switch_tab(curr_task->page_tab);
+	page_switch_krnl_tab();
 
     asm("cli;hlt;");
     while(1){

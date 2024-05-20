@@ -1,4 +1,4 @@
-CFLAGS=-fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O2 -Wall -Wextra -g -m64  -mno-red-zone -fno-builtin -fno-builtin-memcpy -nostdlib -static -Werror -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8
+CFLAGS=-fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O2 -Wall -Wextra -g -mno-red-zone -fno-builtin -fno-builtin-memcpy -nostdlib -static -Werror -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
@@ -38,7 +38,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
-	qemu-system-x86_64 -S -s -cdrom sf.iso -machine q35   -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 2048 -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu Skylake-Client -monitor stdio 
+	qemu-system-x86_64 -S -enable-kvm -s -cdrom sf.iso -machine q35   -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 512 -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu Skylake-Client -monitor stdio 
 
 clean:
 	rm obj -rf -

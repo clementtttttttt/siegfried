@@ -82,6 +82,9 @@ task *task_new(){
 
     if(tasks == 0){
         curr = tasks = k_obj_alloc(sizeof(task));
+        if(curr == 0) {
+				idt_print_stacktrace(__builtin_frame_address(0));
+		}
         curr->next = 0;
     }
     else{
@@ -98,6 +101,7 @@ task *task_new(){
 
     stack = curr->krnl_stack_base = k_obj_alloc(TASK_STACK_SZ);
     stack += (TASK_STACK_SZ - sizeof(task_int_sframe)-512);
+    
     curr->tf = (task_int_sframe*) stack;
 
     stack -= 8;
@@ -178,11 +182,11 @@ volatile int task_in_krnl = 0;
 
 void task_scheduler(){
 	
-	page_switch_krnl_tab();
 		sched_lock = 1;
 		
         while(1){
-	
+	                page_switch_krnl_tab();
+
                 if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
 
 				
@@ -195,18 +199,20 @@ void task_scheduler(){
 			//	draw_hex((unsigned long)curr_task);
  
 				if(curr_task->state == T_DEAD){
-
-					k_obj_free(curr_task->krnl_stack_base);
-					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
-					page_free_tab(curr_task->page_tab);
-					
-			
 					if(curr_task == tasks){
 						if(curr_task == 0){
 								draw_string("WE RAN OUT OF TASKS!");
+								draw_hex((unsigned long)curr_task);
+								draw_hex((unsigned long)tasks);
+
 								while(1){}
 						}
-						tasks = curr_task->next;
+						
+						if(curr_task->next != 0){
+							tasks = curr_task->next;
+						}
+						
+	
 					}
 					else{
 						task *iter= tasks;
@@ -215,9 +221,16 @@ void task_scheduler(){
 					
 						iter->next = curr_task->next;
 					}
-						
-					k_obj_free(curr_task);
-					curr_task = tasks;
+					k_obj_free(curr_task->krnl_stack_base);
+					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
+					page_free_tab(curr_task->page_tab);
+			
+
+					task *nxt = curr_task->next;
+					if(curr_task != tasks){
+						k_obj_free(curr_task);
+					}
+					if(nxt == 0) curr_task = tasks;
 					continue;
 			
 				}
@@ -229,7 +242,6 @@ void task_scheduler(){
 
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
                 
-                page_switch_krnl_tab();
         }
 
 }
