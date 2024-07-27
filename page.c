@@ -522,11 +522,6 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 
 }
 
-pml4e *page_get_curr_tab();
-asm("page_get_curr_tab:;\
-        movq %cr3, %rax;\
-        ret;");
-        
         
  pml4e *page_get_krnl_tab(){
 		return krnl_tab_addr;
@@ -782,15 +777,17 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
 
 
 		volatile unsigned long *test_ptr = (volatile unsigned long*)addr;
-		for(unsigned long i=0; i<pgs*2097152/8;++i){
+		for(unsigned long i=0; i<pgs*2097152/8-1;++i){
 				test_ptr[i] = i+3;
+				test_ptr[i+1] = i -9;
 
-
-				if(test_ptr[i] != i+3){
-						draw_string("MEMORY ERROR IN PAGE_FIND_AND_ALLOC_USER\nVADDR=");
+				if(test_ptr[i] != (i+3) || test_ptr[i+1] != (i-9)){
+						draw_string("MEMORY ERROR IN PAGE_FIND_AND_ALLOC_USER, PROBABLY OUT OF MEMORY?\nVADDR=");
 						draw_hex((unsigned long)&(test_ptr)[i]);
 						draw_string("PADDR=");
 						draw_hex((unsigned long)page_lookup_paddr_tab(tab, (void*)&test_ptr[i]));
+						draw_string("PADDR IN MIBS=");
+						draw_dec((unsigned long)page_lookup_paddr_tab(tab, (void*)&test_ptr[i])/1048576);
 						page_switch_krnl_tab();
 						idt_print_stacktrace_depth(__builtin_frame_address(0), 3);
 						halt_and_catch_fire();
@@ -918,4 +915,12 @@ void page_free_found_user(pml4e *tab, unsigned long in_vaddr, unsigned long pgs)
 void page_flush(){
     asm inline("movq %0, %%rdx \n movq %%rdx, %%cr3"::"r" (&pml4_table):"rdx");
 
+}
+
+pml4e *page_get_curr_tab(){
+        pml4e *retval;
+        asm("mov %%cr3, %0":"=a"(retval));
+        
+        return retval;
+	
 }

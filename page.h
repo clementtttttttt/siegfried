@@ -105,10 +105,4 @@ void page_free_tab(pml4e *tab);
 void page_switch_tab(pml4e *tab);
 void page_switch_krnl_tab();
 void page_free_found_user(pml4e *tab, unsigned long in_vaddr, unsigned long pgs);
-inline static pml4e *page_get_curr_tab(){
-        pml4e *retval;
-        asm("mov %%cr3, %0":"=a"(retval));
-        
-        return retval;
-	
-}
+pml4e *page_get_curr_tab();

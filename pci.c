@@ -235,20 +235,20 @@ unsigned long pci_read_bar_size(unsigned char bus, unsigned char dev, unsigned c
 	return sz;
 }
 
-inline unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
+inline static unsigned char pci_get_sub(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0xa) & 0xff;
 }
 
-inline unsigned char pci_get_sec(unsigned char bus, unsigned char dev, unsigned char func){
+inline static unsigned char pci_get_sec(unsigned char bus, unsigned char dev, unsigned char func){
     return pci_read_conw(bus, dev, func, 0x18) >> 8;
 }
 
-inline unsigned char pci_get_cl(unsigned char bus, unsigned char dev, unsigned char func){
+inline static unsigned char pci_get_cl(unsigned char bus, unsigned char dev, unsigned char func){
 
     return pci_read_conw(bus, dev, func, 0xa) >> 8;
 }
 
-inline unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char func){
+inline static unsigned char pci_get_type(unsigned char bus, unsigned char dev, unsigned char func){
 
     return pci_read_conw(bus, dev, func, 0xe) & 0xff;
 }

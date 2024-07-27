@@ -296,3 +296,22 @@ void draw_hex(unsigned long in){
 
     draw_swap_textbuf();
 }
+
+
+void draw_dec(unsigned long in){
+	char temp[20]={0};
+
+    for(int i=0;i<20;++i){
+       temp[i] = in % 10;
+       in /= 10;
+    }
+    
+    for(int i=19;i>=0;--i){
+		draw_append_text_buf(temp[i] + '0');
+	}
+    draw_append_text_buf('\n');
+
+    draw_swap_textbuf();
+}
+
+

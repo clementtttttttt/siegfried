@@ -103,11 +103,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					draw_string("RUNNER: program herader #0 memsz = ");
 					draw_hex(header->prog_tab[i].mem_sz);
 			
-					draw_string("RUNNER: prog head type = ");
-					draw_hex(header->prog_tab[i].seg_type);
-			
-					draw_string("RUNNER: prog head f_sz = ");
-					draw_hex(header->prog_tab[i].f_sz);
+
 					
 					void *tab = page_get_curr_tab();
 					void *seg_addr = page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1);

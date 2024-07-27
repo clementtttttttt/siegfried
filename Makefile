@@ -1,4 +1,4 @@
-CFLAGS=-fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O2 -Wall -Wextra -g -mno-red-zone -fno-builtin -fno-builtin-memcpy -nostdlib -static -Werror -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8
+CFLAGS=-fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O0 -Wall -Wextra -g -mno-red-zone -fno-builtin -fno-builtin-memcpy -nostdlib -static -Werror -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
@@ -17,10 +17,10 @@ OBJECTS_S=$(patsubst %.S, %.o, $(SOURCES_S))
 OBJECTS2=$(addprefix obj/,$(OBJECTS))
 OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
 
-all: sfkrnl.elf
+all: sfkrnl.elf Makefile
 
 sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
-	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O2 -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
+	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding -O3 -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
 	@echo CCLD\($(CC)\) $@
 
 obj/%.o : %.c | obj
@@ -38,7 +38,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
-	qemu-system-x86_64 -S -enable-kvm -s -cdrom sf.iso -machine q35   -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -m 512 -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu Skylake-Client -monitor stdio 
+	qemu-system-x86_64 -S -enable-kvm -s -cdrom sf.iso -machine q35  -m 4096 -d guest_errors,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu Skylake-Client -monitor stdio 
 
 clean:
 	rm obj -rf -
@@ -48,5 +48,5 @@ install: sfkrnl.elf
 	cp sfkrnl.elf /boot
 
 
-dump: 
-	objdump -D -g -l sfkrnl.elf > dump
+dump: sfkrnl.elf 
+	objdump -S -D -g -l sfkrnl.elf > dump
