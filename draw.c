@@ -180,8 +180,8 @@ void draw_swap_textbuf(){
 	    ++text_buf_ptr;
 	    ++text_buf_ptr_2;
             fb_it += x_inc*8;
-		}
-		fb_it += p*9;
+	}
+	fb_it += p*9;
 	
     }
 }
@@ -210,6 +210,10 @@ void draw_setup(unsigned long fb_paddr,unsigned long fbw, unsigned long fbh, uns
 
     tw = fbw/8;
     th = fbh /10;
+    
+    mem_set(text_buf,0,w*h/10);
+    mem_set(text_buf_2,0,w*h/10);
+
 
 }
 
@@ -221,7 +225,6 @@ void draw_scroll_text_buf(){
     //mem_set(text_buf_2 + tw * (th - 1),0, tw);
 
     //mem_set((void*)((unsigned long)draw_fb_addr + p*h - p*8), 0, p);
-    draw_swap_textbuf();
 
 
 }
@@ -229,13 +232,13 @@ void draw_increment_line(){
     tcurx = 0;
     if((tcury+1) >= th){
         draw_scroll_text_buf();
+
     }
     else{
 
         ++tcury;
 
     }
-
 }
 
 void draw_append_text_buf(const char c){
@@ -264,10 +267,10 @@ void draw_append_text_buf(const char c){
 }
 
 void draw_string(const char* str){
-    --str;
-
-    while(*(++str)){
+    
+    while(*str){
         draw_append_text_buf(*str);
+    	++str;
     }
     draw_swap_textbuf();
 
@@ -306,7 +309,7 @@ void draw_dec(unsigned long in){
        in /= 10;
     }
     
-    for(int i=19;i>=0;--i){
+    	for(int i=19;i>=0;--i){
 		draw_append_text_buf(temp[i] + '0');
 	}
     draw_append_text_buf('\n');

@@ -78,6 +78,13 @@ typedef union pde{
 
     unsigned long long raw;
 } pde;
+
+
+typedef struct page_avail_mem_struct{
+		unsigned long paddr, len;
+		struct page_avail_mem_struct *next;
+		
+} page_available_mem_ent;
  pml4e *page_get_krnl_tab();
 
 void page_dump_pde(pde* in);
@@ -101,6 +108,8 @@ void *page_map_paddr_dev(unsigned long paddr,unsigned long pgs);
 void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs);
 void *page_lookup_paddr(void* vir);
 void page_free_tab(pml4e *tab);
+void page_mark_physmemmap(unsigned long paddr);
+void page_mark_available_mem_range(unsigned long paddr, unsigned long len);
 
 void page_switch_tab(pml4e *tab);
 void page_switch_krnl_tab();

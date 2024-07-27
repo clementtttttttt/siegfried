@@ -99,6 +99,23 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
             }
             break;
 
+			case MULTIBOOT_TAG_TYPE_MMAP:{
+				struct multiboot_tag_mmap *mmap_tag = (void*) tag_ptr;
+				if(mmap_tag->entry_version == 1){}
+				multiboot_memory_map_t * ents = mmap_tag->entries;
+				
+				while((unsigned long)ents < ((unsigned long)mmap_tag->size + (unsigned long)mmap_tag)){
+					
+					if(ents->type == MULTIBOOT_MEMORY_AVAILABLE){
+							page_mark_available_mem_range(ents->addr, ents->len);
+					}
+					
+					ents = (multiboot_memory_map_t*)((unsigned long)ents + mmap_tag->entry_size);
+				}
+
+					
+			}
+
             case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
 
 
@@ -122,6 +139,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         tag_ptr = (struct multiboot_tag*) ((unsigned long long)tag_ptr +  ((tag_ptr->size + 7) & ~7));
 
     }
+
 
     if(acpitag != 0){
         acpiman_setup(&acpitag->rsdp);
@@ -167,7 +185,6 @@ drivers_setup();
 
     }
     while(res.sz != 0);
-
 
     //load tasks and init loader	
     tasks_setup();

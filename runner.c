@@ -135,12 +135,14 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	draw_string("RUNNER: program page table = ");
 	draw_hex((unsigned long) t->page_tab);
 	
+		page_switch_tab(old);
+
+	
 	d->fclose(f);
 
 		draw_string("TID=");
 		draw_hex(t->tid);
 
-	page_switch_tab(old);
 		
     return t->tid;
 }

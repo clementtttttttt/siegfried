@@ -14,6 +14,23 @@ struct stackframe {
   unsigned long eip;
 };
 
+
+void idt_print_stacktrace_con(unsigned long *stack){
+    dbgconout("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315BEGIN STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
+
+    dbgconout("STACK=");
+    dbgnumout_hex((unsigned long)stack);
+
+   // stack = __builtin_frame_address(0);
+
+    while(stack != 0){
+            dbgnumout_hex(stack[1]);
+            stack = (unsigned long*) stack[0];
+    }
+
+    dbgconout("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315END STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
+}
+
 void idt_print_stacktrace(unsigned long *stack){
     draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315BEGIN STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
 

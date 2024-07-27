@@ -175,8 +175,8 @@ void syscall_diskman_get_next_ent(syscall_disk_ent *e){
 
 
 void syscall_exit(unsigned long code){
-		draw_string("task exits with code");
-		draw_hex(code);
+		//draw_string("task exits with code");
+		//draw_hex(code);
 		task_exit(code);
 }
 

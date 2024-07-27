@@ -4,12 +4,35 @@
 #include "draw.h"
 #include "klib.h"
 #include "idt.h"
+#include "obj_heap.h"
 //page allocator 3000
 
 pml4e pml4_table[512] __attribute__ ((aligned (4096)));
 void* krnl_tab_addr;
 void page_switch_krnl_tab(){
 	asm("movq %0, %%cr3"::"r"(krnl_tab_addr));
+}
+
+page_available_mem_ent *avail_mem_root = 0;
+
+void page_mark_available_mem_range(unsigned long addr, unsigned long len){
+		page_available_mem_ent *it;
+		
+		if(avail_mem_root == 0){
+				it = avail_mem_root = k_obj_alloc(sizeof(page_available_mem_ent));
+		}
+		else{
+			it = avail_mem_root;
+			while(it->next){
+					it=it->next;
+			}	
+			it->next = k_obj_alloc(sizeof(page_available_mem_ent));
+			it=it->next;
+		}
+		it->len = len;
+		it->paddr = addr;
+		it->next = 0;
+		
 }
 
 static inline void set_paddr(void* in, unsigned long inaddr){
@@ -170,8 +193,7 @@ void* page_lookup_paddr_tab(pml4e *tab, void* in){
     pde *pdei_table = (pde*) get_paddr(&pdpt_table[pdptei]);
 
     if(pdei_table == 0){
-            dbgconout("pdpt_table is 0");
-        while(1){}
+
 
         return (void*)0;
     }
@@ -366,7 +388,7 @@ void page_alloc(void *phy, void *vir){
     pdei_table[pdei].is_krnl_pg = 1;
 
     //mark phys mem usage
-    phys_mem_map[(unsigned long)phy / 2097152 / 8] |= (1 << (((unsigned long)phy/2097152)%8));
+	page_mark_physmemmap((unsigned long)phy);
 
 
 }
@@ -518,10 +540,28 @@ void page_alloc_mmio(void *phy, void *vir){
 
 
 static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
+	page_available_mem_ent *it = avail_mem_root;
+	while(it){
+		if(paddr > it->paddr && paddr < (it->paddr+it->len)){
+
+			break; //found
+		}
+
+		it=it->next;
+	}
+	if(!it){
+		 return 0xff; //unavailable
+	 }
+	
+	
     return phys_mem_map[paddr/2097152/8] & (1<<((paddr/2097152)%8));
 
 }
 
+void page_mark_physmemmap(unsigned long paddr){
+    phys_mem_map[(unsigned long)paddr / 2097152 / 8] |= (1 << (((unsigned long)paddr/2097152)%8));
+	
+}
         
  pml4e *page_get_krnl_tab(){
 		return krnl_tab_addr;
@@ -755,7 +795,10 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
             continue;
         }
         
-        if((page_lookup_paddr_tab(tab, (void*)vaddr) > (void*)&_krnl_end) && page_lookup_pdei_tab(tab, (void*)vaddr)->present && page_lookup_pdei_tab(tab, (void*)vaddr)->isuser){
+        void *paddr = page_lookup_paddr_tab(tab, (void*)vaddr);
+        if((paddr > (void*)&_krnl_end )
+         && page_lookup_pdei_tab(tab, (void*)vaddr)->present
+         && page_lookup_pdei_tab(tab, (void*)vaddr)->isuser){
 			page_switch_tab(old_tab);
 			return (void*)vaddr; // we mapped it already 
 		}
@@ -777,7 +820,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
 
 
 		volatile unsigned long *test_ptr = (volatile unsigned long*)addr;
-		for(unsigned long i=0; i<pgs*2097152/8-1;++i){
+		for(unsigned long i=0; i<pgs*2097152/8/2-1;i+=2){
 				test_ptr[i] = i+3;
 				test_ptr[i+1] = i -9;
 
@@ -802,7 +845,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
 	//page_switch_krnl_tab();
 		page_switch_tab(old_tab);
 
-	draw_string("OUT OF PAGES");
+	draw_string("OUT OF MEMORY");
 	while(1){}
     return (void*)0xDEAD;
 
@@ -819,7 +862,7 @@ void *page_find_and_alloc(unsigned long pgs){
 
 		
         unsigned long addr;
-			addr = page_virt_find_addr(pgs);
+		addr = page_virt_find_addr(pgs);
 
 		
         for(unsigned long pi = 0; pi < pgs; ++pi){
@@ -832,12 +875,22 @@ void *page_find_and_alloc(unsigned long pgs){
 
             page_alloc((void*)(pi * 2097152 + i*2097152),(void*) (addr + pi*2097152));
         }
-		
-		for(unsigned long i=0; i<pgs*2097152/8;++i){
-				((unsigned long*)addr)[i] = i;
-				if(((unsigned long*)addr)[i] != i){
-						draw_string("MEMORY ERROR IN PAGE_FIND_AND_ALLOC, addr=");
-						draw_hex((unsigned long)&((unsigned long*)addr)[i]);
+        
+     		volatile unsigned long *test_ptr = (volatile unsigned long*)addr;
+
+		for(unsigned long i=0; i<pgs*2097152/8/2-1;i+=2){
+				test_ptr[i] = i+3;
+				test_ptr[i+1] = i -9;
+
+				if(test_ptr[i] != (i+3) || test_ptr[i+1] != (i-9)){
+						draw_string("MEMORY ERROR IN PAGE_FIND_AND_ALLOC_USER, PROBABLY OUT OF MEMORY?\nVADDR=");
+						draw_hex((unsigned long)&(test_ptr)[i]);
+						draw_string("PADDR=");
+						draw_hex((unsigned long)page_lookup_paddr((void*)&test_ptr[i]));
+						draw_string("PADDR IN MIBS=");
+						draw_dec((unsigned long)page_lookup_paddr((void*)&test_ptr[i])/1048576);
+						page_switch_krnl_tab();
+						idt_print_stacktrace_depth(__builtin_frame_address(0), 3);
 						halt_and_catch_fire();
 				}
 		}

@@ -268,10 +268,9 @@ static struct liballoc_major *allocate_new_page( unsigned int size )
 
 
 
-
-
-void *PREFIX(k_obj_alloc)(unsigned long req_size)
+void *PREFIX(k_obj_alloc_2)(unsigned long req_size)
 {
+	
 	pml4e *old = page_get_curr_tab();
 	page_switch_krnl_tab();
 
@@ -657,12 +656,20 @@ void *PREFIX(k_obj_alloc)(unsigned long req_size)
 
 
 
+void *PREFIX(k_obj_alloc)(unsigned long req_size){
+        void *tmp = k_obj_alloc_2(req_size);
+        
+        return tmp;
+}
 
 
 
 
 void PREFIX(k_obj_free)(void *ptr)
 {
+	void *old_tab = page_get_curr_tab();
+	
+	page_switch_krnl_tab();
 	struct liballoc_minor *min;
 	struct liballoc_major *maj;
 
@@ -676,7 +683,12 @@ void PREFIX(k_obj_free)(void *ptr)
 		#endif
 		return;
 	}
+	
 
+	if(page_get_curr_tab() != page_get_krnl_tab()){
+			draw_string("???");
+			while(1){}
+	}
 	UNALIGN( ptr );
 
 	liballoc_lock();		// lockit
@@ -785,6 +797,8 @@ void PREFIX(k_obj_free)(void *ptr)
 	#endif
 
 	liballoc_unlock();		// release the lock
+	
+	page_switch_tab(old_tab);
 }
 
 

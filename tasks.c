@@ -221,7 +221,8 @@ void task_scheduler(){
 					
 						iter->next = curr_task->next;
 					}
-					k_obj_free(curr_task->krnl_stack_base);
+					
+					//k_obj_free(curr_task->krnl_stack_base);
 					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
 					page_free_tab(curr_task->page_tab);
 			
@@ -285,11 +286,11 @@ void task_exit(unsigned long code){
 	page_switch_krnl_tab();
 
 		
-	curr_task->state = T_DEAD;
+	curr_task->state = T_DEAD; //notify scheduler that body of task needs to be clean up 
 
 
 	asm("sti");
-	while(1){}
+	while(1){} //hang around until scheduler cleans up
 }
 
 void task_yield(){
