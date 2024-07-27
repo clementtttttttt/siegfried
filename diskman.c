@@ -32,6 +32,7 @@ diskman_ent *diskman_new_ent(){
     }
 
     ret->inode = ++inode;
+    ret->fs_type = DISKMAN_FS_NULL;
     ret->next = 0;
 
     return ret;
@@ -61,13 +62,14 @@ void diskman_setup(){
     char *detect_sect=k_obj_alloc( 1024);
    	
    	
-   	
+	
     while(i){
         if(i->ispart){
             i=i->next;
             continue;
         }
 
+	
         mem_set(detect_sect, 0, 1024);
 
         i->read_func(i->inode, 0, 1024, detect_sect);
@@ -75,9 +77,7 @@ void diskman_setup(){
 
         //create partition drives			
 
-
         if(!mem_cmp(&detect_sect[512], "EFI PART", 8)){
-			
             diskman_gpt_enum(i);
         }
         //draw_string_w_sz(detect_sect, 1024);

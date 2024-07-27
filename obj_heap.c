@@ -658,7 +658,10 @@ void *PREFIX(k_obj_alloc_2)(unsigned long req_size)
 
 void *PREFIX(k_obj_alloc)(unsigned long req_size){
         void *tmp = k_obj_alloc_2(req_size);
-        
+       	if(tmp == 0){
+		draw_string("K_OBJ_ALLOOC: returning 0??\n");
+		while(1){}
+	}
         return tmp;
 }
 

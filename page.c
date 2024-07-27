@@ -540,6 +540,10 @@ void page_alloc_mmio(void *phy, void *vir){
 
 
 static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
+	if(page_get_curr_tab() != page_get_krnl_tab()){
+			draw_string("??");
+			while(1){}
+	}
 	page_available_mem_ent *it = avail_mem_root;
 	while(it){
 		if(paddr > it->paddr && paddr < (it->paddr+it->len)){
@@ -551,7 +555,7 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 	}
 	if(!it){
 		 return 0xff; //unavailable
-	 }
+	}
 	
 	
     return phys_mem_map[paddr/2097152/8] & (1<<((paddr/2097152)%8));
