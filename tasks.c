@@ -93,8 +93,6 @@ task *task_new(){
 
     task *curr;
     
-    draw_string("task_new: old, new=");
-    int old = get_tasks_list_len();
 
     if(tasks == 0){
         curr = tasks = k_obj_alloc(sizeof(task));
@@ -113,10 +111,7 @@ task *task_new(){
 
     }
 
-	int new = get_tasks_list_len();
 	
-	draw_hex(old);
-	draw_hex(new);
 
     //make init task. tasking code inspired by xv6
 
@@ -231,7 +226,6 @@ void task_scheduler(){
 					if(curr_task != tasks){
 						task *iter= tasks;
 	
-						int old = get_tasks_list_len();
 
 						while(iter->next != curr_task)iter=iter->next;
 
@@ -240,10 +234,7 @@ void task_scheduler(){
 					
 						iter->next = curr_task->next; //remove task from task list
 						
-												int new = get_tasks_list_len();
-						draw_string("sched: old,new =");
-						draw_hex(old);
-						draw_hex(new);
+
 						
 					}
 					
