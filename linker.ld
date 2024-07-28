@@ -4,7 +4,7 @@ ENTRY(_start)
 SECTIONS
 {
 
-	. = 1M;
+	. = 16M;	
 
 	_krnl_start = .;
 

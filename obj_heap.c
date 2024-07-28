@@ -837,6 +837,7 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 	if ( size == 0 )
 	{
 		PREFIX(k_obj_free)( p );
+		draw_string("K_OBJ_REALLOC WARNING: RETURNING 0\n");
 		return 0;
 	}
 
