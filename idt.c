@@ -109,7 +109,6 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     if(curr_task){
 		draw_string("\nERR: userland PF");
 		curr_task->tf = (void*)(((unsigned long)fr));
-		idt_print_stacktrace((unsigned long*)fr->rbp);
 	
        // task_exit(139);
     }
@@ -123,7 +122,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     dbgconout("CR2: ");
     dbgnumout_hex(idt_dump_cr2());
 
-    idt_print_stacktrace((unsigned long*)fr->rbp);
+    idt_print_stacktrace_depth((unsigned long*)fr->rbp,3);
 
 	page_switch_krnl_tab();
 
@@ -236,6 +235,7 @@ void idt_gpf_handler(task_trap_sframe *frame){
     if(curr_task){
 		draw_string("\nERR: userland GPF");
 		curr_task->tf = (void*)(((unsigned long)frame));
+		idt_print_stacktrace_depth((unsigned long*)frame->rbp,3);
 
         task_exit(139);
     }

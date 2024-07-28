@@ -152,6 +152,11 @@ void *memcpy(void *dest, void *src, unsigned long n){
 	return dest;
 }
 
+void *memset(void *dest, unsigned int c, unsigned long n){
+		mem_set(dest, c, n);
+		return dest;
+}
+
 void inhibit_loop_to_libcall *mem_set(void *dest, unsigned int c, unsigned long n){
   unsigned char *s = dest;
 	size_t k;

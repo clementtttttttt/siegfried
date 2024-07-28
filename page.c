@@ -170,6 +170,10 @@ void page_init_map(){
 
 void* page_lookup_paddr_tab(pml4e *tab, void* in){
 
+	if(tab == 0){
+			draw_string("tab is 0??");
+			while(1){}
+	}
     unsigned long vir = (unsigned long) in;
     unsigned long off = vir & 0x1fffff;
 

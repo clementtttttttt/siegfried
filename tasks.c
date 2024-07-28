@@ -21,6 +21,19 @@ extern KHEAPSS page_heap;
 
 atomic_int sched_lock;
 
+
+int get_tasks_list_len(){
+		task *task_it = tasks;
+		int i=0;
+		do{
+			++i;
+			task_it = task_it->next;
+		}
+		while(task_it != tasks);
+		return i;
+			
+}
+
 void task_set_tss(unsigned long in){
         tss.rsp_0 = in;
 }
@@ -79,23 +92,31 @@ task *task_new(){
     char *stack; //get rid of pointer arithmatic bullshit
 
     task *curr;
+    
+    draw_string("task_new: old, new=");
+    int old = get_tasks_list_len();
 
     if(tasks == 0){
         curr = tasks = k_obj_alloc(sizeof(task));
         if(curr == 0) {
 				idt_print_stacktrace(__builtin_frame_address(0));
 		}
-        curr->next = 0;
+        curr->next = tasks;
     }
     else{
         curr = tasks;
-        while(curr->next) curr = curr->next;
+        while(curr->next != tasks) curr = curr->next;
 
         curr->next = k_obj_alloc(sizeof(task));
         curr=curr->next;
-        curr->next = 0;
+        curr->next = tasks;
 
     }
+
+	int new = get_tasks_list_len();
+	
+	draw_hex(old);
+	draw_hex(new);
 
     //make init task. tasking code inspired by xv6
 
@@ -114,6 +135,8 @@ task *task_new(){
     curr->krnl_state->rip = (unsigned long) task_pre_init;
 
     curr -> tid = ++tid_counter;
+    
+    curr-> state = T_RUNNING;
 
     stack -= 8;
 
@@ -134,7 +157,13 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
         new -> tf -> rip = (unsigned long) func;
 
         new->page_tab = k_pageobj_alloc(&page_heap, 4096 );
+
         page_clone_krnl_tab(new->page_tab);
+		
+		        if(new->page_tab == 0){
+			draw_string("new tab is 0?");
+			while(1){}
+		}
 		
 		new->user_stack_base = page_find_and_alloc_user(new -> page_tab, page_virt_find_addr_user(new->page_tab, 1),1);
         new -> tf -> rsp = ((unsigned long) new->user_stack_base)+ TASK_STACK_SZ-512; //
@@ -180,6 +209,7 @@ krnl_state *scheduler_state;
 
 volatile int task_in_krnl = 0;
 
+
 void task_scheduler(){
 	
 		sched_lock = 1;
@@ -190,17 +220,52 @@ void task_scheduler(){
                 if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
 
 				
-                if(curr_task->next == 0) {
-                        curr_task = tasks;
-                }
-                else {
-                        curr_task = curr_task->next;
-                }
+
+                curr_task = curr_task->next;
+
+                
 			//	draw_hex((unsigned long)curr_task);
  
 				if(curr_task->state == T_DEAD){
+
+					if(curr_task != tasks){
+						task *iter= tasks;
+	
+						int old = get_tasks_list_len();
+
+						while(iter->next != curr_task)iter=iter->next;
+
+						
+						
+					
+						iter->next = curr_task->next; //remove task from task list
+						
+												int new = get_tasks_list_len();
+						draw_string("sched: old,new =");
+						draw_hex(old);
+						draw_hex(new);
+						
+					}
+					
+					if((unsigned long)curr_task->krnl_stack_base == 0xDEADBEEF){
+							draw_string("attempting to clean up a cleaned up task?\n");
+							draw_hex(curr_task==tasks);
+							while(1){}
+					}
+					//TODO: fix double free issues when this is uncommented
+					k_obj_free(curr_task->krnl_stack_base);
+					curr_task->krnl_stack_base =(void*) 0xDEADBEEF;
+					
+					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
+					page_free_tab(curr_task->page_tab);
+					
 					if(curr_task == tasks){
-						if(curr_task == 0){
+
+						
+						task *iter= tasks;
+						while(iter->next != tasks) iter = iter->next;
+
+						if(iter == tasks){
 								draw_string("WE RAN OUT OF TASKS!");
 								draw_hex((unsigned long)curr_task);
 								draw_hex((unsigned long)tasks);
@@ -208,30 +273,16 @@ void task_scheduler(){
 								while(1){}
 						}
 						
-						if(curr_task->next != 0){
-							tasks = curr_task->next;
-						}
-						
-	
+						iter->next = tasks->next;
+						tasks = tasks->next;
+						k_obj_free(curr_task);
+						curr_task = tasks;
 					}
 					else{
-						task *iter= tasks;
-
-						while(iter->next != curr_task)iter=iter->next;
-					
-						iter->next = curr_task->next;
-					}
-					
-					//k_obj_free(curr_task->krnl_stack_base);
-					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
-					page_free_tab(curr_task->page_tab);
-			
-
-					task *nxt = curr_task->next;
-					if(curr_task != tasks){
 						k_obj_free(curr_task);
-					}
-					if(nxt == 0) curr_task = tasks;
+					}	
+
+
 					continue;
 			
 				}

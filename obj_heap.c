@@ -122,6 +122,8 @@ void* liballoc_alloc(int sz){
 
 int liballoc_free(void* in,int sz){
 	--blks;
+
+	//idt_print_stacktrace_depth(__builtin_frame_address(0),2);
 	page_free_found((unsigned long)in, sz);
 	return 0;
 }
