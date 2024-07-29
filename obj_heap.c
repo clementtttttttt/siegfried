@@ -833,6 +833,8 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 	struct liballoc_minor *min;
 	unsigned int real_size;
 
+
+
 	// Honour the case of size == 0 => k_obj_free old and return 0
 	if ( size == 0 )
 	{
@@ -844,6 +846,9 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 	// In the case of a 0 pointer, return a simple k_obj_alloc.
 	if ( p == 0 ) return PREFIX(k_obj_alloc)( size );
 
+	
+	pml4e *old = page_get_curr_tab();
+	page_switch_krnl_tab();
 	// Unalign the pointer if required.
 	ptr = p;
 	UNALIGN(ptr);
@@ -896,6 +901,8 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 
 			// being lied to...
 			liballoc_unlock();		// release the lock
+			
+			page_switch_tab(old);
 			return 0;
 		}
 
@@ -907,6 +914,8 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 		{
 			min->req_size = size;
 			liballoc_unlock();
+						page_switch_tab(old);
+
 			return p;
 		}
 
@@ -915,9 +924,10 @@ void*   PREFIX(k_obj_realloc)(void *p, unsigned long size)
 	// If we got here then we're reallocating to a block bigger than us.
 	ptr = PREFIX(k_obj_alloc)( size );					// We need to allocate new memory
 	liballoc_memcpy( ptr, p, real_size );
-	draw_string("RELA_SIZE:");
+	draw_string("REALLOC REAL_SIZE:");
 	draw_hex(real_size);
 	PREFIX(k_obj_free)( p );
+			page_switch_tab(old);
 
 	return ptr;
 }

@@ -109,6 +109,7 @@ typedef struct task{
     void *user_stack_base;
     task_int_sframe *tf;
     char *name;
+    unsigned int magic;
     union pml4e *page_tab;
     struct task *next;
     siegfried_dir dir;

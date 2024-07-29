@@ -2,12 +2,14 @@
 .globl idt_pagefault_handler_s
 .globl idt_timer_handler_s
 .globl idt_gpf_handler_s
+.globl idt_debug_handler_s
 .globl idt_mce_handler_s
 .globl idt_rtc_handler_s
 .globl idt_df_handler_s
 .globl idt_syscall_handler_s
 .globl idt_spurious_handler_s
 .globl idt_kb_handler_s
+.globl idt_debug_handler_s
 .globl idt_div0_handler_s
 
 .globl idt_load_regs
@@ -176,6 +178,21 @@ idt_div0_handler_s:
     call idt_div0_handler
 
     jmp .
+
+idt_debug_handler_s:
+
+    movq $1f, rip_save
+    jmp idt_save_regs
+    1:
+
+    movq %rsp, %rdi
+
+    call idt_debug_handler
+	
+    cli
+    hlt
+    jmp .
+
 
 idt_gpf_handler_s:
 

@@ -186,7 +186,7 @@ DISKMAN_READ_FUNC(nvme_read_disk){
     if(disk == 0) return 0;
    
     
-    unsigned long buf_sz = num_bytes  + (off_bytes%512?512:0);
+    unsigned long buf_sz = num_bytes ;
     
     buf_sz += 512- (buf_sz %512); //round up
 

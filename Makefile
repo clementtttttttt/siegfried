@@ -1,4 +1,4 @@
-CFLAGS=-fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -Og -Wall -Wextra -g -mno-red-zone -fno-builtin -fno-builtin-memcpy -fno-builtin-memset -nostdlib -static -Werror -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
+CFLAGS=-fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O0 -Wall -Wextra -g -mno-red-zone -fno-builtin -fno-builtin-memcpy -fno-builtin-memset -nostdlib -static -Werror -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
@@ -20,7 +20,7 @@ OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
 all: sfkrnl.elf Makefile
 
 sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
-	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding  -Og -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
+	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding  -O0 -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
 	@echo CCLD\($(CC)\) $@
 
 obj/%.o : %.c | obj

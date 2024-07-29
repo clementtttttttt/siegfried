@@ -111,7 +111,7 @@ task *task_new(){
 
     }
 
-	
+	curr->magic =  0x1badb001;
 
     //make init task. tasking code inspired by xv6
 
@@ -156,7 +156,6 @@ task *task_start_func(void *func){ //note: requires func mapped to user space
         page_clone_krnl_tab(new->page_tab);
 		
 		        if(new->page_tab == 0){
-			draw_string("new tab is 0?");
 			while(1){}
 		}
 		
@@ -178,7 +177,6 @@ void tasks_setup(){
     asm("cli");
     mem_set(&tss, 0, sizeof(tss));
     curr_task = 0;
-    tss.rsp_0 = (unsigned long)k_obj_alloc(16384);
     tss.iopb = 0xffff;
     tasking_enabled = 1; 
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");

@@ -94,10 +94,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     
     draw_string("CR3=");
     draw_hex((unsigned long)curr_task->page_tab);
-    
-    draw_string("RIP PADDR=");
-	draw_hex((unsigned long) page_lookup_paddr_tab(curr_task->page_tab, (void*)fr->rip));
-    
+
     page_dump_pde(page_lookup_pdei(page_get_curr_tab(),(void*) idt_dump_cr2()));
     
     draw_string("usr stack=");
@@ -208,6 +205,27 @@ void idt_div0_handler(task_trap_sframe *frame){
     };
 }
 
+
+void idt_debug_handler(task_int_sframe *frame){
+
+    draw_string("DEBUG INTERRUPT: ");
+
+
+    draw_string("RIP=");
+    draw_hex(frame->rip);
+
+    draw_string("RCX=");
+    draw_hex(frame->rcx);
+
+    idt_print_stacktrace((unsigned long*)frame->rbp);
+
+    asm("cli;hlt;");
+    while(1){
+
+    };
+}
+
+
 void idt_gpf_handler(task_trap_sframe *frame){
 
 
@@ -261,6 +279,7 @@ void idt_mce_handler_s();
 void idt_spurious_handler_s();
 void idt_df_handler_s();
 void idt_div0_handler_s();
+void idt_debug_handler_s();
 
 void idt_set_addr(idt_desc* desc, unsigned long addr){
 
@@ -295,6 +314,7 @@ void idt_setup(){
 
     idt_set_trap_ent(0xe, idt_pagefault_handler_s);
     idt_set_trap_ent(0xd, idt_gpf_handler_s);
+    idt_set_trap_ent(1, idt_debug_handler_s);
     idt_set_trap_ent(0x12, idt_mce_handler_s);
     idt_set_trap_ent(0xff, idt_spurious_handler_s);
     idt_set_trap_ent(0x8, idt_df_handler_s);

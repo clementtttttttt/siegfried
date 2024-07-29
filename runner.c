@@ -7,6 +7,7 @@
 #include "page.h"
 #include "tasks.h"
 #include "errno.h"
+#include "debug.h"
 
 
 
@@ -50,17 +51,23 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	}
 			    draw_string("number of loads: ");
 	    draw_hex(header->prog_tab_num_ents);
+
+
 	
 	header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
-	
+
+	dbg_enable_breakpoint(0,0,BREAK_ON_WRITE, &header, BP_LEN_8);
+
+
 
 	d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
-     
+
+	dbg_disable_breakpoint(0,0);
     
     if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
 		draw_string("second elf header check invalid? something's wrong\n");
-		
+		draw_hex((unsigned long)header);
 		k_obj_free(header);
 		k_obj_free(f);
 		return 0;
@@ -68,6 +75,8 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
        task* t=task_start_func((void*)header->entry_addr);
 	    t -> tf -> rip = (unsigned long) header->entry_addr;
 	
+	dbg_enable_breakpoint(0,0,BREAK_ON_WRITE, &t->page_tab, BP_LEN_8);
+
 	unsigned long argc=0;
 	if(argv != 0){ //handle nullptr
 		while(argv[argc]) ++argc;
@@ -88,8 +97,12 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	}
 
 	t->env = env;
+	
 
 
+	draw_string("RUNNER: program page table = ");
+	draw_hex((unsigned long) t->page_tab);
+	
 	draw_string("RUNNER: START OF ELF LOAD\n");
     for(int i=0; i < header->prog_tab_num_ents; ++i){
 			switch(header->prog_tab[i].seg_type){
@@ -107,15 +120,18 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					
 					void *tab = page_get_curr_tab();
 					void *seg_addr = page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1);
+					
+					
 					page_switch_tab(t->page_tab);
 					
-					draw_string("RUNNER: program header #0 paddr = ");
-					draw_hex((unsigned long)page_lookup_paddr_tab(t->page_tab,(void*)header->prog_tab[i].vaddr));
 					
 						mem_set(seg_addr, 0x5a, header->prog_tab[i].mem_sz);
 			
+					draw_string("TEST: BEFORE=");
+					draw_hex((unsigned long)t->page_tab);
 					//extfs_read_inode_contents(diskman_find_ent(disk_inode), in, seg_addr, header->prog_tab[i].f_sz, header->prog_tab[i].dat_off);
 					d->fread(f, seg_addr, header->prog_tab[i].dat_off, header->prog_tab[i].f_sz, 0);
+					draw_hex((unsigned long)t->page_tab);
 					
 					page_switch_tab(tab);
 			draw_string("RUNNER: successfully loaded prog head #");
@@ -126,15 +142,13 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 				}
 				break;
 				default:
-					draw_string("RUNNER: WARN: unknown seg type ");
-					draw_hex(header->prog_tab[i].seg_type);
+			//		draw_string("RUNNER: WARN: unknown seg type ");
+				//	draw_hex(header->prog_tab[i].seg_type);
 				break;
 			}
 			
 	}
-	draw_string("RUNNER: program page table = ");
-	draw_hex((unsigned long) t->page_tab);
-	
+
 		page_switch_tab(old);
 
 	
@@ -142,6 +156,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 
 		draw_string("TID=");
 		draw_hex(t->tid);
+		dbg_disable_breakpoint(0,0);
 
 		
     return t->tid;

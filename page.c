@@ -16,6 +16,10 @@ void page_switch_krnl_tab(){
 page_available_mem_ent *avail_mem_root = 0;
 
 void page_mark_available_mem_range(unsigned long addr, unsigned long len){
+	
+		if(len < 0x200000){// TODO: there has to be a better way to deal with small mem chunks without this
+				return;
+		}
 		page_available_mem_ent *it;
 		
 		if(avail_mem_root == 0){
@@ -32,6 +36,13 @@ void page_mark_available_mem_range(unsigned long addr, unsigned long len){
 		it->len = len;
 		it->paddr = addr;
 		it->next = 0;
+		
+		dbgconout("ADDR=");
+		dbgnumout_hex(addr);
+				dbgconout("ADDR_end=");
+		dbgnumout_hex(addr+len);
+		
+
 		
 }
 
@@ -550,7 +561,7 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 	}
 	page_available_mem_ent *it = avail_mem_root;
 	while(it){
-		if(paddr > it->paddr && paddr < (it->paddr+it->len)){
+		if((paddr > it->paddr )&& ((paddr+0x200000) < (it->paddr+it->len))){
 
 			break; //found
 		}
