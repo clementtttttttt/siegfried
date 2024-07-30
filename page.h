@@ -86,7 +86,7 @@ typedef struct page_avail_mem_struct{
 		
 } page_available_mem_ent;
  pml4e *page_get_krnl_tab();
-
+void page_unmark_phys_mem_map(pml4e *tab, unsigned long in_vaddr, unsigned long pgs);
 void page_dump_pde(pde* in);
 pde* page_lookup_pdei(pml4e *tab, void *in);
 void page_clone_krnl_tab(pml4e *dest);

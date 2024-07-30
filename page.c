@@ -960,6 +960,15 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs){
     page_flush();
 }
 
+void page_unmark_phys_mem_map(pml4e *tab, unsigned long in_vaddr, unsigned long pgs){
+		unsigned long pa = (unsigned long)page_lookup_paddr_tab(tab, (void*)in_vaddr);
+		for(unsigned long i=0;i<pgs;++i){
+			
+			        phys_mem_map[(pa/2097152+i)/8] &= ~(1 << ((pa/2097152+i)%8));
+			        
+		}
+}
+
 void page_free_found_user(pml4e *tab, unsigned long in_vaddr, unsigned long pgs){
    			pml4e *old_phy = page_get_curr_tab();
 		page_switch_krnl_tab();
@@ -971,7 +980,7 @@ void page_free_found_user(pml4e *tab, unsigned long in_vaddr, unsigned long pgs)
 
         pde *pdei_table = (pde*) get_paddr(&(((pdpte*)get_paddr(&tab[pml4i]))[pdptei]));
 
-        unsigned long pa =(unsigned long) get_paddr(&pdei_table[pdei]);
+        unsigned long pa = (unsigned long) get_paddr(&pdei_table[pdei]);
 
 
         //FIXME: remove 48bit hard limit.
@@ -986,7 +995,6 @@ void page_free_found_user(pml4e *tab, unsigned long in_vaddr, unsigned long pgs)
     }
         page_switch_tab(old_phy);
 
-    page_flush();
 }
 
 

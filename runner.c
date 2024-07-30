@@ -56,15 +56,12 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	
 	header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
 
-	dbg_enable_breakpoint(0,0,BREAK_ON_WRITE, &header, BP_LEN_8);
 
 
-	draw_string("header addr=");
-	draw_hex((unsigned long)header);
+	
 	d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
 
-	dbg_disable_breakpoint(0,0);
     
     if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
 		draw_string("second elf header check invalid? something's wrong\n");
@@ -97,29 +94,32 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 
 	t->env = env;
 	
-
-
-	draw_string("RUNNER: program page table = ");
-	draw_hex((unsigned long) t->page_tab);
 	
-	draw_string("RUNNER: START OF ELF LOAD\n");
+	t->task_page_ents = header->prog_tab_num_ents;
+	t->task_page_ptr = k_obj_alloc(sizeof( struct task_page_ent)*t->task_page_ents);
+	
+
+	
     for(int i=0; i < header->prog_tab_num_ents; ++i){
 			switch(header->prog_tab[i].seg_type){
 			
 				case ELF_LOAD:
 				{
-					draw_string("RUNNER: loading prog head #");
+				//	draw_string("RUNNER: loading prog head #");
 					draw_hex(i);
-					draw_string("RUNNER: program header #0 vaddr = ");
-					draw_hex(header->prog_tab[i].vaddr);
-					draw_string("RUNNER: program herader #0 memsz = ");
-					draw_hex(header->prog_tab[i].mem_sz);
+				//	draw_string("RUNNER: program header #0 vaddr = ");
+			//		draw_hex(header->prog_tab[i].vaddr);
+			//		draw_string("RUNNER: program herader #0 memsz = ");
+			//		draw_hex(header->prog_tab[i].mem_sz);
 			
 
 					
 					void *tab = page_get_curr_tab();
 					void *seg_addr = page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1);
 					
+					t->task_page_ptr[i].addr = seg_addr;
+					t->task_page_ptr[i].pages = 1;
+
 					
 					page_switch_tab(t->page_tab);
 					
@@ -130,9 +130,6 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					d->fread(f, seg_addr, header->prog_tab[i].dat_off, header->prog_tab[i].f_sz, 0);
 					
 					page_switch_tab(tab);
-			draw_string("RUNNER: successfully loaded prog head #");
-			draw_hex(i);
-								draw_hex((unsigned long)t->page_tab);
 
 				
 				
