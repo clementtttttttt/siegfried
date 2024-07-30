@@ -45,7 +45,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 	k_pageobj_heap_setup();
 
     page_init_map();
-    page_alloc(0,0);
+	page_alloc(0,0);
     
     for(unsigned long i=((unsigned long)&_krnl_start / 0x200000); i<(((unsigned long)&_krnl_end)/0x200000 + 3);++i){
         page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
@@ -53,18 +53,19 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     extern int _krnl_end;
 
 
+
     //page_map_paddr(0, (((unsigned long)&_krnl_end+0x5000))/0x200000+(0x1000000/0x200000));
     //while(1){}
     page_flush(); 
 
     //while(1){}
-    unsigned int sz = m_info_old[0];
+
+	    unsigned int sz = m_info_old[0];
     
 
 	m_info = k_obj_alloc(sz);
     mem_cpy(m_info, m_info_old, sz);
-
-	
+    
     unsigned long long fbaddr, fbw, fbh, fbb, fbp;
 
         struct multiboot_tag_new_acpi *acpitag = 0;

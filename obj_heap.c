@@ -117,12 +117,6 @@ void* liballoc_alloc(int sz){
 	
 	void *tmp = page_find_and_alloc(sz);
 
-	draw_string("LIBALLOC_ALLOC ADDR=");
-	draw_hex((unsigned long) tmp);
-	if((unsigned long)tmp < 0x200000){
-			dbgconout("???");
-			while(1){}
-	}
 	
 	return tmp;
 }

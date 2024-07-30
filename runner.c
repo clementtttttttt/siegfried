@@ -76,8 +76,6 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
        task* t=task_start_func((void*)header->entry_addr);
 	    t -> tf -> rip = (unsigned long) header->entry_addr;
 	
-	dbg_enable_breakpoint(0,0,BREAK_ON_WRITE, &t->page_tab, BP_LEN_8);
-
 	unsigned long argc=0;
 	if(argv != 0){ //handle nullptr
 		while(argv[argc]) ++argc;
@@ -128,8 +126,6 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					
 						mem_set(seg_addr, 0x5a, header->prog_tab[i].mem_sz);
 			
-					draw_string("TEST: BEFORE=");
-					draw_hex((unsigned long)t->page_tab);
 					//extfs_read_inode_contents(diskman_find_ent(disk_inode), in, seg_addr, header->prog_tab[i].f_sz, header->prog_tab[i].dat_off);
 					d->fread(f, seg_addr, header->prog_tab[i].dat_off, header->prog_tab[i].f_sz, 0);
 					
@@ -158,7 +154,6 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 
 		draw_string("TID=");
 		draw_hex(t->tid);
-		dbg_disable_breakpoint(0,0);
 
 		
     return t->tid;
