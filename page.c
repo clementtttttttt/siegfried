@@ -559,7 +559,9 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 			draw_string("??");
 			while(1){}
 	}
+
 	page_available_mem_ent *it = avail_mem_root;
+	if(it){
 	while(it){
 		if((paddr > it->paddr )&& ((paddr+0x200000) < (it->paddr+it->len))){
 
@@ -570,6 +572,7 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 	}
 	if(!it){
 		 return 0xff; //unavailable
+	}
 	}
 	
 	
@@ -874,7 +877,7 @@ void *page_find_and_alloc(unsigned long pgs){
 
     for(unsigned long i=0;i < 16777216*8 - pgs; ++i){
 
-        if(page_physmemmap_is_used(i * 2097152)){
+        if(page_physmemmap_is_used(i * 2097152) != 0){
 
             continue;
         }
@@ -913,13 +916,16 @@ void *page_find_and_alloc(unsigned long pgs){
 						halt_and_catch_fire();
 				}
 		}
-    //    dbgconout("PFAA: RETURN ");
-      //  dbgnumout_hex(addr);
+        dbgconout("PFAA: RETURN ");
+        dbgnumout_hex(addr);
 		mem_set((void*)addr, 0, 0x200000*pgs);
 
         return (void*)addr;
     }
-    return (void*)0xDEAD;
+    
+    dbgconout("ERROR: CANNOT FIND MEM");
+
+	while(1){}
 
 }
 

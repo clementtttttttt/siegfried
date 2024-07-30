@@ -98,7 +98,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     cmd.cint10 = off_sects & 0xffffffff;
     cmd.cint11 = off_sects >> 32;
 
-    cmd.cint12 = (num_sects & 0xffffffff) - 1;
+    cmd.cint12 = (num_sects & 0xffff) - 1;
 
 
     mem_cpy((void*)(in->ctrl->isq_vaddr + in->ctrl->io_tail_i), &cmd, sizeof(nvme_sub_queue_ent));
@@ -179,6 +179,7 @@ DISKMAN_WRITE_FUNC(nvme_write_disk){
     return num_bytes;
 }
 
+//have to handle paging correctly
 DISKMAN_READ_FUNC(nvme_read_disk){
     nvme_disk *disk = nvme_find_disk_from_inode(id);
 	
@@ -192,7 +193,11 @@ DISKMAN_READ_FUNC(nvme_read_disk){
 
  	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz);
 
-    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, page_lookup_paddr(rdbuf));
+	void *paddr = page_lookup_paddr(rdbuf);
+	
+
+	
+    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, paddr);
 
 
     mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
@@ -389,10 +394,10 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
         ent->uuid_len = 0;
 
         draw_string("DISK SZ_IN_SECT=");
-        draw_hex(curr_disk->info->lba_format_sz & 0x7);
+        draw_hex(curr_disk->info->lba_format_sz & 0xf);
 
         draw_string("DISK LBA_SECT=");
-        curr_disk->sector_sz_in_bytes = 1 << (curr_disk->info->lba_format_supports[curr_disk->info->lba_format_sz & 0x7].lba_data_sz);
+        curr_disk->sector_sz_in_bytes = 1 << (curr_disk->info->lba_format_supports[curr_disk->info->lba_format_sz & 0xf].lba_data_sz);
         draw_hex(curr_disk->sector_sz_in_bytes);
 
         draw_string("DISK INODE=");

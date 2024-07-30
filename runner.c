@@ -59,7 +59,8 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	dbg_enable_breakpoint(0,0,BREAK_ON_WRITE, &header, BP_LEN_8);
 
 
-
+	draw_string("header addr=");
+	draw_hex((unsigned long)header);
 	d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
 
@@ -131,11 +132,12 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					draw_hex((unsigned long)t->page_tab);
 					//extfs_read_inode_contents(diskman_find_ent(disk_inode), in, seg_addr, header->prog_tab[i].f_sz, header->prog_tab[i].dat_off);
 					d->fread(f, seg_addr, header->prog_tab[i].dat_off, header->prog_tab[i].f_sz, 0);
-					draw_hex((unsigned long)t->page_tab);
 					
 					page_switch_tab(tab);
 			draw_string("RUNNER: successfully loaded prog head #");
 			draw_hex(i);
+								draw_hex((unsigned long)t->page_tab);
+
 				
 				
 				

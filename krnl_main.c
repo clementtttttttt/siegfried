@@ -61,7 +61,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
     unsigned int sz = m_info_old[0];
     
 
-    m_info = k_obj_alloc(sz);
+	m_info = k_obj_alloc(sz);
     mem_cpy(m_info, m_info_old, sz);
 
 	
@@ -149,6 +149,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
         acpiman_setup(&acpitag->rsdp);
 	}
 
+	
     apic_setup();
     
 

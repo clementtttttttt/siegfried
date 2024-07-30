@@ -115,8 +115,16 @@ unsigned long getblks(){return blks;}
 void* liballoc_alloc(int sz){
 	++blks;
 	
-	return page_find_and_alloc(sz);
+	void *tmp = page_find_and_alloc(sz);
 
+	draw_string("LIBALLOC_ALLOC ADDR=");
+	draw_hex((unsigned long) tmp);
+	if((unsigned long)tmp < 0x200000){
+			dbgconout("???");
+			while(1){}
+	}
+	
+	return tmp;
 }
 
 
@@ -660,8 +668,8 @@ void *PREFIX(k_obj_alloc_2)(unsigned long req_size)
 
 void *PREFIX(k_obj_alloc)(unsigned long req_size){
         void *tmp = k_obj_alloc_2(req_size);
-       	if(tmp == 0){
-		draw_string("K_OBJ_ALLOOC: returning 0??\n");
+       	if((unsigned long)tmp < 0x200000){
+		dbgconout("K_OBJ_ALLOOC: smaller than 0x200000??\n");
 		while(1){}
 	}
         return tmp;
