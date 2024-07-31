@@ -818,8 +818,7 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
         }
         
         void *paddr = page_lookup_paddr_tab(tab, (void*)vaddr);
-        if((paddr > (void*)&_krnl_end )
-         && page_lookup_pdei_tab(tab, (void*)vaddr)->present
+        if(page_lookup_pdei_tab(tab, (void*)vaddr)->present
          && page_lookup_pdei_tab(tab, (void*)vaddr)->isuser){
 			page_switch_tab(old_tab);
 			return (void*)vaddr; // we mapped it already 
@@ -960,8 +959,7 @@ void page_free_found(unsigned long in_vaddr, unsigned long pgs){
     page_flush();
 }
 
-void page_unmark_phys_mem_map(pml4e *tab, unsigned long in_vaddr, unsigned long pgs){
-		unsigned long pa = (unsigned long)page_lookup_paddr_tab(tab, (void*)in_vaddr);
+void page_unmark_phys_mem_map(unsigned long pa, unsigned long pgs){
 		for(unsigned long i=0;i<pgs;++i){
 			
 			        phys_mem_map[(pa/2097152+i)/8] &= ~(1 << ((pa/2097152+i)%8));

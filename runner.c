@@ -107,8 +107,9 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 				{
 				//	draw_string("RUNNER: loading prog head #");
 					draw_hex(i);
-				//	draw_string("RUNNER: program header #0 vaddr = ");
-			//		draw_hex(header->prog_tab[i].vaddr);
+					draw_string("RUNNER: program header #0 vaddr = ");
+					draw_hex(header->prog_tab[i].vaddr);
+
 			//		draw_string("RUNNER: program herader #0 memsz = ");
 			//		draw_hex(header->prog_tab[i].mem_sz);
 			
@@ -116,9 +117,12 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					
 					void *tab = page_get_curr_tab();
 					void *seg_addr = page_find_and_alloc_user(t->page_tab, header->prog_tab[i].vaddr,  1);
-					
-					t->task_page_ptr[i].addr = seg_addr;
+			
+			
+					t->task_page_ptr[i].addr = page_lookup_paddr_tab(t->page_tab,(void*)header->prog_tab[i].vaddr);
 					t->task_page_ptr[i].pages = 1;
+					draw_string("RUNNER: program header #0 paddr = ");
+					draw_hex(t->task_page_ptr[i].addr);
 
 					
 					page_switch_tab(t->page_tab);

@@ -120,6 +120,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
 					
 			}
+			break;
 
             case MULTIBOOT_TAG_TYPE_FRAMEBUFFER:
 

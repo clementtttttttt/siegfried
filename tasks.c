@@ -241,19 +241,25 @@ void task_scheduler(){
 							draw_hex(curr_task==tasks);
 							while(1){}
 					}
-					//TODO: fix double free issues when this is uncommented
 					k_obj_free(curr_task->krnl_stack_base);
 					curr_task->krnl_stack_base =(void*) 0xDEADBEEF;
+					
+					k_obj_free(curr_task->env);
+					
+			
 					
 					page_free_found_user(curr_task->page_tab, (unsigned long)curr_task->user_stack_base, 1);
 					
 					for(int i=0; i<curr_task->task_page_ents;++i){
-						//	page_free_found_user(curr_task->page_tab,(unsigned long)curr_task->task_page_ptr[i].addr, curr_task->task_page_ptr[i].pages);
-						page_unmark_phys_mem_map(curr_task->page_tab, (unsigned long)curr_task->task_page_ptr[i].addr, curr_task->task_page_ptr[i].pages);
+						//page_free_found_user(curr_task->page_tab,(unsigned long)curr_task->task_page_ptr[i].addr, curr_task->task_page_ptr[i].pages);
+						page_unmark_phys_mem_map((unsigned long)curr_task->task_page_ptr[i].addr, curr_task->task_page_ptr[i].pages);
 					}
 					k_obj_free(curr_task->task_page_ptr);
 					
 					
+					if(curr_task->page_tab == page_get_krnl_tab()){
+						while(1){}
+					}
 					page_free_tab(curr_task->page_tab);
 					
 
