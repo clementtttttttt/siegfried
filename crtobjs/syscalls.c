@@ -9,8 +9,9 @@
 #include <sys/time.h>
 #include <stdio.h>
 */
-#include <errno.h>
+
 #include "syscalls.h"
+#include <errno.h>
 
 static syscall_siegfried_file *fds[4096] = {0};
 static unsigned long lowest_fd = 1;
@@ -50,6 +51,8 @@ int execve(char *name, char **argv, char **env){
 int fork(){ //we havent fork
 	return -ENOSYS;
 }
+
+/*
 int fstat(int file, struct stat *st){
 	syscall_siegfried_stat statstruct;
 	int retval = syscall2(sys_stat, fds[lowest_fd], &statstruct);	
@@ -59,6 +62,8 @@ int fstat(int file, struct stat *st){
  	
  	return retval;
 }
+*/
+
 int getpid(){
 	return syscall0(sys_get_tid);
 }
@@ -68,9 +73,11 @@ int link(char *old, char *new);
 int lseek(int file, int ptr, int dir);
 int open(const char *name, int flags, ...);
 int read(int file, char *ptr, int len);
+/*
 caddr_t sbrk(int incr);
 int stat(const char *file, struct stat *st);
 clock_t times(struct tms *buf);
+*/
 int unlink(char *name);
 int wait(int *status);
 int write(int file, char *ptr, int len);
