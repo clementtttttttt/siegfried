@@ -19,7 +19,7 @@ extern tss_t tss;
 extern KHEAPSS page_heap;
 #define TASK_STACK_SZ 1048576 //account for red zone
 
-atomic_int sched_lock;
+char scheduler_started = 0;
 
 
 int get_tasks_list_len(){
@@ -37,6 +37,7 @@ int get_tasks_list_len(){
 void task_set_tss(unsigned long in){
         tss.rsp_0 = in;
 }
+
 
 void task_load_task_regs_and_spawn();
 asm("task_load_task_regs_and_spawn:;\
@@ -70,7 +71,6 @@ asm(".globl task_save_and_change_krnl_state;\
         popq %r11;\
         popq %rbp;\
         popq %rbx;\
-        movl $0, sched_lock;\
         retq;\
         ");
 
@@ -202,25 +202,8 @@ krnl_state *scheduler_state;
 
 volatile int task_in_krnl = 0;
 
-
-void task_scheduler(){
+void task_cleanup_zombie(){
 	
-		sched_lock = 1;
-		
-        while(1){
-	                page_switch_krnl_tab();
-
-                if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
-
-				
-
-                curr_task = curr_task->next;
-
-                
-			//	draw_hex((unsigned long)curr_task);
- 
-				if(curr_task->state == T_DEAD){
-
 					if(curr_task != tasks){
 						task *iter= tasks;
 	
@@ -285,20 +268,46 @@ void task_scheduler(){
 					}
 					else{
 						k_obj_free(curr_task);
+						curr_task=tasks;
+						
 					}	
 
+}
 
-					continue;
-			
+void task_scheduler(){
+		scheduler_started = 1;
+        while(1){
+		
+
+                if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
+
+
+				task *find_dead_it = tasks;
+				
+				
+				do{
+					if(find_dead_it->state == T_DEAD){
+							curr_task = find_dead_it;
+							task_cleanup_zombie();
+							break;
+					}
+					find_dead_it=find_dead_it->next;
 				}
+				while(find_dead_it != tasks);
 
 
+
+                curr_task = curr_task->next;
+                
+                
                 task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ-512-sizeof(task_int_sframe));
 
-		                page_switch_tab(curr_task->page_tab);
+				page_switch_tab(curr_task->page_tab);
 
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
                 
+				page_switch_krnl_tab();
+
         }
 
 }
@@ -335,6 +344,8 @@ void task_dump_sframe(task_int_sframe *in){
 
 }
 
+
+
 void task_exit(unsigned long code){
 
 
@@ -344,26 +355,25 @@ void task_exit(unsigned long code){
 		
 	curr_task->state = T_DEAD; //notify scheduler that body of task needs to be clean up 
 
-
-	asm("sti");
-	while(1){} //hang around until scheduler cleans up
+	while(1){
+		task_yield(); //yield loop just incase the scheduler didnt free the task
+	}
 }
 
 void task_yield(){
 
 
-        if(sched_lock){
-                return;
-        }
         if(curr_task == 0 ){
                 return;
         }
         if(scheduler_state == 0){
                 return;
         }
+        if(!scheduler_started){
+			return ;
+		} 
+        
 
-        atomic_store(&sched_lock, 1);
-		
 		
         task_save_and_change_krnl_state(&curr_task->krnl_state, scheduler_state);
 		

@@ -122,7 +122,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					t->task_page_ptr[i].addr = page_lookup_paddr_tab(t->page_tab,(void*)header->prog_tab[i].vaddr);
 					t->task_page_ptr[i].pages = 1;
 					draw_string("RUNNER: program header #0 paddr = ");
-					draw_hex(t->task_page_ptr[i].addr);
+					draw_hex((unsigned long)t->task_page_ptr[i].addr);
 
 					
 					page_switch_tab(t->page_tab);
@@ -153,9 +153,8 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	
 	d->fclose(f);
 
-		draw_string("TID=");
-		draw_hex(t->tid);
 
-		
+		task_yield();
+	k_obj_free(header);
     return t->tid;
 }

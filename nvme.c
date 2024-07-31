@@ -8,7 +8,7 @@
 #include "pageobj_heap.h"
 #include "klib.h"
 #include "diskman.h"
-
+#include "tasks.h"
 extern KHEAPSS page_heap;
 
 
@@ -111,9 +111,9 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
     //mmio_pokel(&in->ctrl->bar->io_sub_queue_tail_doorbell, in->ctrl->io_tail_i);
-	
     while(in->ctrl->icq_vaddr[old_iotail_i].phase == in->ctrl->phase){
-	
+
+
     }
     
     if((in->ctrl->io_tail_i) == 0x0){

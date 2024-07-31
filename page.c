@@ -817,7 +817,6 @@ void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pg
             continue;
         }
         
-        void *paddr = page_lookup_paddr_tab(tab, (void*)vaddr);
         if(page_lookup_pdei_tab(tab, (void*)vaddr)->present
          && page_lookup_pdei_tab(tab, (void*)vaddr)->isuser){
 			page_switch_tab(old_tab);
