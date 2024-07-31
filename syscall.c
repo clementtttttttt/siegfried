@@ -119,11 +119,11 @@ int syscall_stat(char* path, siegfried_stat *stat){
 
 }
 
-unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsigned long sz_bytes, unsigned long attrs){
+unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
 
 
     if(f != 0){
-		return f->disk -> fread (f,buf, off, sz_bytes, attrs);
+		return f->disk -> fread (f,buf, f->off, sz_bytes, attrs);
     }
     return -EINVAL;
     
@@ -131,11 +131,11 @@ unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long off, unsi
 }
 
 
-unsigned long syscall_write(siegfried_file *f, void *buf, unsigned long off, unsigned long sz_bytes, unsigned long attrs){
+unsigned long syscall_write(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
 
 
     if(f != 0){
-		return f->disk -> fwrite (f,buf, off, sz_bytes, attrs);
+		return f->disk -> fwrite (f,buf, f->off, sz_bytes, attrs);
     }
     return -EINVAL;
     
