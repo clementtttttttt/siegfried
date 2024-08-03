@@ -282,7 +282,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
 
     draw_string("NVME CTRL REENABLED\n");
 
-    //delete subm queue
+    //delete subm queue cmd
     nvme_sub_queue_ent cmd;
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));
    
@@ -291,7 +291,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint10 = 1;
     nvme_send_admin_cmd(curr, &cmd);
 
-    //delete cmpl queue
+    //delete cmpl queue cmd
     mem_set(&cmd, 0, sizeof(nvme_sub_queue_ent));
 
     cmd.cint0.opcode = 0x4;
@@ -306,7 +306,10 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint0.opcode = 5;
     cmd.cint0.cid = 1;
 
+	//zero cmpl queue 
     cmd.prp1 = (unsigned long) page_lookup_paddr((void*)(curr->icq_vaddr = k_pageobj_alloc(&page_heap, 4096)));
+	mem_set((void*)curr->icq_vaddr, 0, sizeof(nvme_cmpl_queue_ent) * 64);
+	
     cmd.cint11 = 0x00000001; //pc enabled
     cmd.cint10 = 0x003f0001; //queue id 1, 64 ents//
     cmd.nsid = 0;
@@ -321,6 +324,8 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     cmd.cint0.cid = 0x1;
 
     cmd.prp1 = (unsigned long) page_lookup_paddr( (void*)(curr->isq_vaddr = k_pageobj_alloc(&page_heap, 4096)));
+   	mem_set((void*)curr->isq_vaddr, 0, sizeof(nvme_cmpl_queue_ent) * 64);
+
     cmd.cint10 = 0x003f0001; //64 ents sz and queue id 1
     cmd.cint11 = 0x00010001; //cmpl queue id 1 continous 1
     cmd.nsid = 0;
