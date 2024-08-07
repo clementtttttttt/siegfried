@@ -567,7 +567,10 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 
 			break; //found
 		}
-
+		if(it == it->next){
+				draw_string("it==it->next");
+				while(1){}
+		}
 		it=it->next;
 	}
 	if(!it){

@@ -1,4 +1,4 @@
-CFLAGS=-Werror -fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -Og -Wall -Wextra -g -mno-red-zone -fno-builtin -fno-builtin-memcpy -fno-builtin-memset -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
+CFLAGS=-Werror -fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -Og -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static

@@ -94,6 +94,19 @@ siegfried_file *syscall_open(char* path){
 
 }
 
+siegfried_dir *syscall_open_dir(char* path){
+	unsigned long disk_inode = parse_path(&path);
+
+    diskman_ent *e = diskman_find_ent(disk_inode);
+
+    if(e != 0){
+		return e -> fopendir (disk_inode, path,0);
+    }
+    return (siegfried_dir*)-EINVAL;
+    
+
+}
+
 int syscall_close(siegfried_file *f){
 	if(!f) return -EINVAL;
 	
@@ -180,7 +193,7 @@ void syscall_exit(unsigned long code){
 		task_exit(code);
 }
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

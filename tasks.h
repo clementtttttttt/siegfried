@@ -107,6 +107,7 @@ struct task_page_ent{
 	unsigned short pages;
 	void *addr;
 };
+#undef errno
 
 typedef struct task{
     krnl_state *krnl_state; //stack + STACK_SZ - sizeof(krnl_state).
