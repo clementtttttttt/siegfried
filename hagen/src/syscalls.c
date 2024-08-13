@@ -58,6 +58,11 @@ int fstat(int file, struct stat *st){
 int getpid(){
 	return syscall0(sys_get_tid);
 }
+
+int opendir(){
+	
+}
+
 int isatty(int file);
 int kill(int pid, int sig);
 int link(char *old, char *new);

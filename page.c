@@ -562,20 +562,21 @@ static inline unsigned char page_physmemmap_is_used(unsigned long paddr){
 
 	page_available_mem_ent *it = avail_mem_root;
 	if(it){
-	while(it){
-		if((paddr > it->paddr )&& ((paddr+0x200000) < (it->paddr+it->len))){
+		
+		while(it){
+			if((paddr > it->paddr )&& ((paddr+0x200000) < (it->paddr+it->len))){
 
-			break; //found
-		}
-		if(it == it->next){
+				break; //found
+			}
+			if(it == it->next){
 				draw_string("it==it->next");
 				while(1){}
+			}
+			it=it->next;
 		}
-		it=it->next;
-	}
-	if(!it){
-		 return 0xff; //unavailable
-	}
+		if(!it){
+			return 0xff; //unavailable
+		}
 	}
 	
 	
@@ -799,8 +800,8 @@ void *page_map_paddr_mmio(unsigned long paddr,unsigned long pgs){
 }
 
 void page_switch_tab(pml4e *tab){
-		page_switch_krnl_tab();
-			tab = page_lookup_paddr(tab);
+
+//		tab = page_lookup_paddr(tab);
 		
 		asm volatile("\
         movq %0, %%cr3;\
