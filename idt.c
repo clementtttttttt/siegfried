@@ -46,6 +46,8 @@ void idt_print_stacktrace(unsigned long *stack){
 
     draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315END STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
 }
+
+//TODO: ADD SYMBOL READING
 void idt_print_stacktrace_depth(unsigned long *stack, int depth){
     draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315BEGIN STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
 

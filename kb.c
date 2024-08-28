@@ -138,6 +138,7 @@ void kb_handler(struct task_sframe *frame){
 				
 				task_dump_sframe(frame);
 				idt_print_stacktrace_depth((void*)frame->rbp,3);
+				
 		}	
     }
     kb_push_char(test);

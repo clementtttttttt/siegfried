@@ -75,17 +75,17 @@ typedef struct nvme_cmpl_queue_ent{
 #define NVME_CTRL_PGSZ(in) ((in & 0b11110000000) >> 7)
 typedef struct nvme_ctrl_conf_reg{
 
-    unsigned int enable : 1;
-    unsigned int rsvd : 3;
-    unsigned int sel : 3;
-    unsigned int pgsz : 4;
-    unsigned int ams : 3;
-    unsigned int shn : 2;
-    unsigned int iosqes : 4;
-    unsigned int iocqes : 4;
-    unsigned int rsvd2 : 8;
+    unsigned short enable : 1;
+    unsigned short rsvd : 3;
+    unsigned short sel : 3;
+    unsigned short pgsz : 4;
+    unsigned short ams : 3;
+    unsigned short shn : 2;
+    unsigned short iosqes : 4;
+    unsigned short iocqes : 4;
+    unsigned short rsvd2 : 8;
 
-}__attribute__((packed, aligned(4)))nvme_ctrl_conf_reg;
+}__attribute__((packed))nvme_ctrl_conf_reg;
 
 typedef struct nvme_bar0{
 
@@ -101,7 +101,7 @@ typedef struct nvme_bar0{
 
     unsigned int rsvd;
 
-    unsigned int ctrl_stat;
+    volatile unsigned int ctrl_stat;
     unsigned int nvm_reset;
     unsigned int queue_att;
     volatile nvme_sub_queue_ent * volatile sub_queue_addr; //ZERO OUT BIT 0, queue is hard coded to 64

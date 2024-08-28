@@ -247,7 +247,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
  //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
 
 
-    bar0->ctrl_conf_raw &= ~NVME_CTRL_ENABLE;
+    bar0->ctrl_conf.enable = 0;
 
     
     while((bar0->ctrl_stat & 1)){
@@ -262,8 +262,14 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     bar0->cmpl_queue_addr = (nvme_cmpl_queue_ent*) page_lookup_paddr((void*)curr->acq_vaddr);
 
     bar0->int_disable = 0xffffffff;
-    bar0->ctrl_conf_raw = 0x460001;
 
+    //bar0->ctrl_conf_raw = 0x460001; 
+    
+    bar0->ctrl_conf_raw = 0x460001; //reset it
+    
+    
+draw_string("TEST");
+draw_hex(bar0->ctrl_conf_raw);
  
     draw_string("PGSZ=");
     draw_hex(1 << (12+(NVME_CTRL_PGSZ(bar0->ctrl_conf_raw))));

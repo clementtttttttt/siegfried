@@ -1,3 +1,16 @@
+typedef struct {
+	unsigned int   sh_name;
+	unsigned int   sh_type;
+	unsigned long   sh_flags;
+	unsigned long sh_addr;
+    unsigned long  sh_offset;
+    unsigned long   sh_size;
+    unsigned int   sh_link;
+    unsigned int   sh_info;
+    unsigned long   sh_addralign;
+    unsigned long sh_entsize;
+           } elf_section_header;
+
 
 typedef struct elf_prog_head_ent{
 

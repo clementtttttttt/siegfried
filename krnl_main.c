@@ -17,6 +17,7 @@
 #include "kb.h"
 #include "tasks.h"
 #include "syscall.h"
+#include "elf.h"
 
 unsigned int* m_info;
 
@@ -28,6 +29,7 @@ char krnl_cmdline[4096];
 unsigned long krnl_init_inode;
 extern int _krnl_start;
 
+				void dbgconchar(char);
 
 void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
@@ -98,8 +100,19 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
             case MULTIBOOT_TAG_TYPE_ELF_SECTIONS:{
 
-          //      struct multiboot_tag_elf_sections *elfptr = (void* ) tag_ptr;
+                struct multiboot_tag_elf_sections *elfptr = (void* ) tag_ptr;
+				dbgconout("ELF SYMBOLS:\r\n");
+				
+				char *str_tab = (char*)((elf_section_header*)elfptr->sections)[elfptr->shndx].sh_addr;
 
+				for(unsigned int i=0;i<elfptr->num;++i){
+						elf_section_header * it = &((elf_section_header*)elfptr->sections)[i];
+						dbgconout(str_tab + it->sh_name);
+						dbgconout(":");
+						dbgnumout_hex((unsigned long)it->sh_addr);
+				}
+				
+				
 
             }
             break;
