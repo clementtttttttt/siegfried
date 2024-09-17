@@ -210,9 +210,6 @@ void task_cleanup_zombie(){
 
 						while(iter->next != curr_task)iter=iter->next;
 
-						
-						
-					
 						iter->next = curr_task->next; //remove task from task list
 						
 
