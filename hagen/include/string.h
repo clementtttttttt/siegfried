@@ -45,6 +45,7 @@ char*	strstr		(const char* s1, const char* s2);
 char*	strtok	(char* s1, const char* s2);
 void*	memset	(void* s, int c, size_t n);
 size_t	strlen		(const char* s)							__attribute__((pure));
+int strcoll ( const char * str1, const char * str2 );
 
  char *strerror(int errnum);
 
