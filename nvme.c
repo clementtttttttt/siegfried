@@ -86,7 +86,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     cmd.nsid = in->id;
     cmd.prp1 = (unsigned long)buf;
 
-    void* prp2_vm = k_pageobj_alloc(&page_heap, 4096);
+    char prp2_vm[4096];
 
     void* prp2 = page_lookup_paddr(prp2_vm);
 
@@ -139,7 +139,6 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     }
 
     
-    k_pageobj_free(&page_heap, prp2_vm);
 
 }
 

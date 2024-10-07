@@ -99,7 +99,23 @@ typedef struct extfs_bgrp_desc{
 	unsigned short bg_tab_lo;
 	unsigned short chksum;
 	
-    char padding[0x1c];
+    
+    unsigned int blk_blkbmp_h;
+    unsigned int blk_inodebmp_h;
+    unsigned int blk_inode_tab_h;
+    
+    unsigned short free_blks_in_grp_h;
+    unsigned short free_inodes_in_grp_h;
+    unsigned short dirs_in_grp_h;
+    
+    unsigned short flags_h;
+    
+    unsigned int exclude_bmp_h;
+    
+    unsigned short blk_blk_use_bmp_h;
+    unsigned short blk_inode_use_bmp_h;
+    
+    unsigned int rsvd;
 
 }__attribute__((packed))extfs_bgrp_desc;
 

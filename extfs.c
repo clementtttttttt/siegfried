@@ -6,7 +6,7 @@
 #include "errno.h"
 #include "tasks.h"
 
-extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x){
+extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_8x){
 
     extfs_disk_info *inf = d->fs_disk_info;
         unsigned long sz_s = inf -> blksz_bytes ;
@@ -16,20 +16,68 @@ extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode,
                     (((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)))  * inf->bgdt_sz_b /*16 blk descs in 1 sf sect */
                      + ((extfs_disk_info*)d->fs_disk_info)->blk_start * sz_s /*sb blk addr*/
                      + sz_s/*1 block offset*/
-                     , 512, descs_16x);
+                     , 512, descs_8x);
 
 
-    return (extfs_bgrp_desc*)((unsigned long)descs_16x + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b);
+    return (extfs_bgrp_desc*)((unsigned long)descs_8x + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b);
+}
+
+extfs_bgrp_desc* extfs_read_inodes_blk_desc_new(diskman_ent *d, unsigned long inode, extfs_bgrp_desc (*descs_8x)[8]){
+
+    extfs_disk_info *inf = d->fs_disk_info;
+        unsigned long sz_s = inf -> blksz_bytes ;
+        
+
+    d->read_func(d->inode,
+                    (((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)))  * inf->bgdt_sz_b /*16 blk descs in 1 sf sect */
+                     + ((extfs_disk_info*)d->fs_disk_info)->blk_start * sz_s /*sb blk addr*/
+                     + sz_s/*1 block offset*/
+                     , 512, descs_8x);
+
+
+    return (extfs_bgrp_desc*)((unsigned long)descs_8x + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b);
+}
+
+void extfs_read_inode_struct_new(extfs_inode * inode_tab,diskman_ent *d, unsigned long inode, void **free_ptr){
+
+       	
+       	extfs_bgrp_desc bd8x[8] ;
+
+
+	extfs_bgrp_desc *bd = extfs_read_inodes_blk_desc_new(d, inode, &bd8x);
+
+
+        extfs_disk_info *inf = d->fs_disk_info;
+
+        unsigned long sz_s = inf -> blksz_bytes ;
+
+	
+
+        //reads INODE ENTRY in INODE TABLE not BLOCK GROUP DESC
+
+        d->read_func(d->inode,
+
+        bd->blk_inode_tab*sz_s
+        + ((((inode-1) % inf->inodes_per_grp) * inf->inode_struct_sz_b) )
+
+        ,sizeof(inode_tab), inode_tab);
+
+
+
+		*free_ptr = inode_tab;
+		
+	
+        //return (extfs_inode *)((unsigned long)((unsigned long)inode_tab + inf->inode_struct_sz_b * ((inode - 1 ) % (512/inf->inode_struct_sz_b))));
 }
 
 extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode, void **free_ptr){
 
         extfs_inode *inode_tab = k_obj_alloc(512);
        	
-       	extfs_bgrp_desc *bd16x = k_obj_alloc(512);
+       	extfs_bgrp_desc bd8x[8];
 
        
-	extfs_bgrp_desc *bd = extfs_read_inodes_blk_desc(d, inode, bd16x);
+	extfs_bgrp_desc *bd = extfs_read_inodes_blk_desc_new(d, inode, &bd8x);
 
 
         extfs_disk_info *inf = d->fs_disk_info;
@@ -49,7 +97,6 @@ extfs_inode *extfs_read_inode_struct(diskman_ent *d, unsigned long inode, void *
 
 
 
-        k_obj_free(bd16x);
 	
 		*free_ptr = inode_tab;
 		
@@ -220,15 +267,16 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 				mem_set(name, 0, 256);
 				mem_cpy(name , path+res.off, res.sz);
 				void *f_ptr;
-				extfs_inode *f_info = extfs_read_inode_struct(diskman_find_ent(disk_id), curr_inode, &f_ptr);
+			
+				extfs_inode f_info;
+				draw_hex(sizeof(extfs_inode));
+				extfs_read_inode_struct_new(&f_info, diskman_find_ent(disk_id), curr_inode, &f_ptr);
 				
-				if(!(f_info->types_n_perm & 0x4000)){ //not dir
+				if(!(f_info.types_n_perm & 0x4000)){ //not dir
 					k_obj_free(f);
-					k_obj_free(f_info);
 					return (siegfried_file*)-ENOTDIR;
 				}
 				
-				k_obj_free(f_info);
 				
 				if((curr_inode = extfs_find_finode_from_dir(diskman_find_ent(disk_id),curr_inode, name)) == 0){
 					k_obj_free(f);
