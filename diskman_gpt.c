@@ -67,36 +67,36 @@ unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned
 
 void diskman_gpt_enum(diskman_ent *in){
 	
-    gpt_header *head = k_obj_alloc(sizeof(gpt_header));
+    gpt_header head;
 
-    mem_set(head, 0, sizeof(gpt_header));
+    mem_set(&head, 0, sizeof(gpt_header));
 
-    in->read_func(in->inode, 512, sizeof(gpt_header), head );
+    in->read_func(in->inode, 512, sizeof(gpt_header), &head );
 asm("sti");
 
     draw_string("FOUND GPT TAB: UUID=");
-    draw_string_w_sz(head->guid, 16);
+    draw_string_w_sz(head.guid, 16);
     draw_string("\n");
 
     in->uuid = k_obj_alloc(17);
-    mem_cpy(in->uuid, head->guid, 16);
+    mem_cpy(in->uuid, head.guid, 16);
     in->uuid_len = 16;
 
     draw_string("GPT PARTENT LBA=");
-    draw_hex(head->lba_part_ent);
+    draw_hex(head.lba_part_ent);
     draw_string("GPT NUMPART=");
-    draw_hex(head->num_parts);
+    draw_hex(head.num_parts);
 
     draw_string("PARTENT SZ=");
-    draw_hex(head->parts_ent_sz);
+    draw_hex(head.parts_ent_sz);
 
-	    char *esect = k_obj_alloc(head->parts_ent_sz);
+	    char *esect = k_obj_alloc(head.parts_ent_sz);
 
 
-    for(unsigned long i=0; i < head->num_parts; ++i){
+    for(unsigned long i=0; i < head.num_parts; ++i){
 
       //z  //draw_hex(head->lba_part_ent*512+((i*head->parts_ent_sz)));
-        in->read_func(in->inode, head->lba_part_ent*512 + (i * head->parts_ent_sz), head->parts_ent_sz, esect);
+        in->read_func(in->inode, head.lba_part_ent*512 + (i * head.parts_ent_sz), head.parts_ent_sz, esect);
 
 
 		        
@@ -146,7 +146,6 @@ asm("sti");
 
     }
 
-    k_obj_free(head);
     k_obj_free(esect);
     asm("cli");
 }
