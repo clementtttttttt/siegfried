@@ -3,7 +3,7 @@ ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
 
-#CC=clang --target=x86_64-pc-none-elf -march=x86-64
+CC=clang --target=x86_64-pc-none-elf -march=x86-64
 CC=x86_64-pc-none-elf-gcc
 
 SOURCES=$(wildcard *.c)

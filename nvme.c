@@ -227,7 +227,9 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
     draw_string("END NVME BDF\n");
 
     volatile nvme_bar0 *bar0 = page_map_paddr_mmio(bar0_p, 1);
-	
+
+    draw_string("NVME BAR0 PADDR = ");
+    draw_hex((unsigned long)bar0_p);
 	draw_string("NVME bar sz = ");
 	draw_hex(pci_read_bar_size(in->bus, in->dev, in->func, 0x10));
 
@@ -246,7 +248,7 @@ void nvme_setup_pci_dev(pci_dev_ent *in){
  //   curr -> asq_vaddr = (nvme_sub_queue_ent *) ((unsigned long)curr->acq_vaddr + 0x100000);
 
 
-    bar0->ctrl_conf.enable = 0;
+    bar0->ctrl_conf_raw = 0;
 
     
     while((bar0->ctrl_stat & 1)){

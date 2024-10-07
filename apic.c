@@ -90,8 +90,8 @@ void apic_setup(){
     apic_madt_ent_head *it = &madt->ents_start;
     unsigned long cpu_count = 0;;
     while((((unsigned long)it) - ((unsigned long)madt)) < madt->header.sz){
-        draw_string("FOUND APIC ENT TYPE ");
-        draw_hex(it->type);
+       // draw_string("FOUND APIC ENT TYPE ");
+        //draw_hex(it->type);
 
         apic_ioapic_ent *ce = (apic_ioapic_ent*) it;
         apic_override_ent *ove = (apic_override_ent*) it;
