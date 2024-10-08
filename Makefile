@@ -1,10 +1,9 @@
-CFLAGS=-Werror -fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O0 -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
+CFLAGS=-Werror -fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding -O3 -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
 ASFLAGS=$(CFLAGS)
 
-LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static
-
+LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static -O3
 CC=clang --target=x86_64-pc-none-elf -march=x86-64
-CC=x86_64-pc-none-elf-gcc
+#CC=x86_64-pc-none-elf-gcc
 
 SOURCES=$(wildcard *.c)
 HEADERS = $(wildcard *.h)
@@ -20,7 +19,7 @@ OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
 all: sfkrnl.elf Makefile
 
 sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
-	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding  -O0 -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
+	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding  -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
 	@echo CCLD\($(CC)\) $@
 
 obj/%.o : %.c | obj

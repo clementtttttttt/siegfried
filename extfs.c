@@ -6,7 +6,7 @@
 #include "errno.h"
 #include "tasks.h"
 #include "debug.h"
-
+#define MIN(x, y) (((x) < (y)) ? (x) : (y))
 extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_8x){
 
     extfs_disk_info *inf = d->fs_disk_info;
@@ -243,6 +243,7 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 				
 				if((curr_inode = extfs_find_finode_from_dir(diskman_find_ent(disk_id),curr_inode, name)) == 0){
 					k_obj_free(f);
+					
 					return (siegfried_file*)-ENOENT;//not dir
 				}
 			
@@ -378,7 +379,7 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
         while(root_dirents->inode){
 
-            if(str_len(name) == str_len(root_dirents->name) && !mem_cmp(name, root_dirents->name, str_len(name))){
+            if(str_len(name) == root_dirents->namelen_l && !mem_cmp(name, root_dirents->name, MIN(str_len(name),root_dirents->namelen_l))){
 					
 			return root_dirents->inode;
 
@@ -525,7 +526,7 @@ void extfs_enum(diskman_ent *d){
 			}
             */
 
-            //  draw_string_w_sz(root_dirents->name,root_dirents->ent_sz);
+             draw_string_w_sz(root_dirents->name,root_dirents->namelen_l);
             root_dirents = (void*)(((unsigned long)root_dirents) + root_dirents->ent_sz);
 
 

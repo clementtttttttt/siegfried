@@ -13,7 +13,7 @@ int main(){
 	syscall2(2, "LOADED FROM DISKKKKKKKKKK", (void*)20);
 
 		
-	execve("/sfinit", 0, 0);
+	execve("/sbin/sfinit", 0, 0);
 	
 
 	return 1;
