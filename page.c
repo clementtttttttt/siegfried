@@ -177,6 +177,8 @@ void page_init_map(){
     for(int i=0;i<512;++i){
         pml4_table[i].raw = 0;
     }
+    
+    
 }
 
 void* page_lookup_paddr_tab(pml4e *tab, void* in){

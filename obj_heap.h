@@ -19,7 +19,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
+void liballoc_dump();
 
 /** This is a boundary tag which is prepended to the
  * page or section of a page which we have allocated. It is

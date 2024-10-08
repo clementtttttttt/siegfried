@@ -5,6 +5,7 @@
 #include "rtc.h"
 #include "errno.h"
 #include "tasks.h"
+#include "debug.h"
 
 extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_8x){
 
@@ -22,7 +23,7 @@ extfs_bgrp_desc* extfs_read_inodes_blk_desc(diskman_ent *d, unsigned long inode,
     return (extfs_bgrp_desc*)((unsigned long)descs_8x + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b);
 }
 
-extfs_bgrp_desc* extfs_read_inodes_blk_desc_new(diskman_ent *d, unsigned long inode, extfs_bgrp_desc (*descs_8x)[8]){
+extfs_bgrp_desc* extfs_read_inodes_blk_desc_new(diskman_ent *d, unsigned long inode, extfs_bgrp_desc (*descs_8x)[]){
 
     extfs_disk_info *inf = d->fs_disk_info;
         unsigned long sz_s = inf -> blksz_bytes ;
@@ -209,7 +210,7 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 		siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
 		str_tok_result res = {0,0};
 		
-		unsigned curr_inode;
+		unsigned long curr_inode;
 		switch(path[0]){
 			case '/':
 				++path;
@@ -232,7 +233,6 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 				mem_cpy(name , path+res.off, res.sz);
 			
 				extfs_inode f_info;
-				draw_hex(sizeof(extfs_inode));
 				extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
 				
 				if(!(f_info.types_n_perm & 0x4000)){ //not dir
@@ -316,11 +316,10 @@ long
 		extfs_disk_info *inf = d->fs_disk_info;
 		
 		
-		
-		extfs_inode *inode_tab = k_obj_alloc(sizeof(extfs_inode));
-		extfs_read_inode_struct(inode_tab,d, dir_ino);
+		extfs_inode inode_tab;
+		extfs_read_inode_struct(&inode_tab,d, dir_ino);
 	
-	if(!(inode_tab->types_n_perm & 0x4000)){ //not a dir        
+	if(!(inode_tab.types_n_perm & 0x4000)){ //not a dir        
 
 			return 0;
 		}
@@ -329,10 +328,10 @@ long
 		
         if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
 
-            ret= d->read_func(d->inode, inode_tab->blk_data_ptrs[0]*(inf->blksz_bytes), 512*2, parent);
+            ret= d->read_func(d->inode, inode_tab.blk_data_ptrs[0]*(inf->blksz_bytes), 512*2, parent);
         }
         else{
-            extfs_extent_head *chk2 =  (extfs_extent_head*)inode_tab->blk_data_ptrs;
+            extfs_extent_head *chk2 =  (extfs_extent_head*)inode_tab.blk_data_ptrs;
 
             extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
 
@@ -350,7 +349,7 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
     if(d->fs_type != DISKMAN_FS_EXTFS){
         return 0;
-    }     extfs_dirent * root_dirents = k_obj_alloc(4096);
+    }     extfs_dirent * root_dirents = k_obj_alloc(8192);
 
 		/*
 
@@ -396,13 +395,13 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
 void extfs_enum(diskman_ent *d){
        
-    void *chkbuf = k_obj_alloc(1024);
-    
+
+	char chkbuf[1024];
 
     d->read_func(d->inode, 1024, 1024, chkbuf); //superblock at 1024 bytes offset, which is 2 512sz sectors
     
 
-    extfs_superblock *sb = chkbuf;
+    extfs_superblock *sb = (extfs_superblock*)chkbuf;
 
     //draw_hex(sb->gid_of_rsvd_blk );
 
@@ -532,7 +531,6 @@ void extfs_enum(diskman_ent *d){
     }
 
 	
-    k_obj_free(chkbuf);
 
 
 }

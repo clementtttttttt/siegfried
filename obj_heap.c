@@ -117,7 +117,7 @@ void* liballoc_alloc(int sz){
 	
 	void *tmp = page_find_and_alloc(sz);
 
-	
+
 	return tmp;
 }
 
@@ -264,7 +264,6 @@ static struct liballoc_major *allocate_new_page( unsigned int size )
 		printf( "liballoc: Total memory usage = %i KB\n",  (int)((l_allocated / (1024))) );
 		FLUSH();
 		#endif
-
 
 
       return maj;

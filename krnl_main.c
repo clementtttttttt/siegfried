@@ -48,12 +48,12 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
     page_init_map();
 	page_alloc(0,0);
-    
-    for(unsigned long i=((unsigned long)&_krnl_start / 0x200000); i<(((unsigned long)&_krnl_end)/0x200000 + 3);++i){
+
+    for(unsigned long i=((unsigned long)&_krnl_start / 0x200000); i<(((unsigned long)&_krnl_end)/0x200000 + 2);++i){
         page_alloc((void*) (0x200000 * i), (void*) ( 0x200000 * i));
     }
     extern int _krnl_end;
-
+	
 
 
     //page_map_paddr(0, (((unsigned long)&_krnl_end+0x5000))/0x200000+(0x1000000/0x200000));

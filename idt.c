@@ -4,6 +4,7 @@
 #include "tasks.h"
 #include "klib.h"
 #include "page.h"
+#include "obj_heap.h"
 
 idt_desc idt_table[256];
 
@@ -221,6 +222,8 @@ void idt_debug_handler(task_int_sframe *frame){
 
     idt_print_stacktrace((unsigned long*)frame->rbp);
 
+	//liballoc_dump();
+
     asm("cli;hlt;");
     while(1){
 
@@ -255,7 +258,7 @@ void idt_gpf_handler(task_trap_sframe *frame){
     if(curr_task){
 		draw_string("\nERR: userland GPF");
 		curr_task->tf = (void*)(((unsigned long)frame));
-		idt_print_stacktrace_depth((unsigned long*)frame->rbp,3);
+		idt_print_stacktrace_depth((unsigned long*)frame->rbp,8);
 
         task_exit(139);
     }

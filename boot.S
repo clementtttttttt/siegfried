@@ -4,10 +4,9 @@
 .globl stack_top
 
 stack_bottom:
-.skip 2048
+.skip 2097152
 stack_top:
-.skip 1024
-
+.skip 256
 .section .text
 .global _start
 .global tss
