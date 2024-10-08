@@ -461,8 +461,8 @@ void extfs_enum(diskman_ent *d){
 		extfs_read_inode_struct(&root_dir, d, EXTFS_ROOTDIR_INODE);	
 		
 
-		
-        extfs_dirent * root_dirents = k_obj_alloc(root_dir.sz_in_bytes_l);
+		char root_dirents_mem[root_dir.sz_in_bytes_l];
+        extfs_dirent * root_dirents = (extfs_dirent*)root_dirents_mem;
 
 		/*
 
