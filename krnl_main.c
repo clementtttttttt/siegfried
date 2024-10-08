@@ -64,8 +64,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
 	    unsigned int sz = m_info_old[0];
     
-
-	m_info = k_obj_alloc(sz);
+	char m_info_mem[sz];
+	
+	m_info = (unsigned int*) m_info_mem;
     mem_cpy(m_info, m_info_old, sz);
     
     unsigned long long fbaddr, fbw, fbh, fbb, fbp;

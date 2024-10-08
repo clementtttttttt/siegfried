@@ -349,7 +349,10 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode
 
     if(d->fs_type != DISKMAN_FS_EXTFS){
         return 0;
-    }     extfs_dirent * root_dirents = k_obj_alloc(8192);
+    }     
+    char root_dirents_mem[1024];
+    extfs_dirent * root_dirents = (extfs_dirent*)root_dirents_mem
+    ;
 
 		/*
 

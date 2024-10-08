@@ -59,7 +59,7 @@ void diskman_setup(){
 
     diskman_ent *i = disks;
 
-    char *detect_sect=k_obj_alloc( 1024);
+    char detect_sect[1024];
    	
    	
 	
@@ -96,5 +96,4 @@ void diskman_setup(){
         i = i->next;
     }
     
-    k_obj_free(detect_sect);
 }

@@ -90,7 +90,7 @@ asm("sti");
     draw_string("PARTENT SZ=");
     draw_hex(head.parts_ent_sz);
 
-	    char *esect = k_obj_alloc(head.parts_ent_sz);
+	    char esect[head.parts_ent_sz];
 
 
     for(unsigned long i=0; i < head.num_parts; ++i){
@@ -146,6 +146,5 @@ asm("sti");
 
     }
 
-    k_obj_free(esect);
     asm("cli");
 }
