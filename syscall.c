@@ -10,6 +10,7 @@
 #include "syscall.h"
 #include "runner.h"
 
+#include "types.h"
 #include "errno.h"
 void idt_syscall_handler_s();
 
