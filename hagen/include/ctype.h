@@ -37,7 +37,8 @@ int		isupper	(int c);
 int		isxdigit	(int c);
 int		tolower	(int c);
 int		toupper	(int c);
-	
+ int isascii(int c); 
+
 // macros for optimization
 #define	isalnum(c)			(isalpha(c) || isdigit(c))
 #define	isalpha(c)			(islower(c) || isupper(c))

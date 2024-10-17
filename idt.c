@@ -308,7 +308,7 @@ void idt_set_irq_ent(unsigned long no, void* addr){
 
 void idt_flush(){
 
-    asm inline("lidtq idtr");
+    asm volatile("lidtq %0"::"m"(idtr));
 }
 
 void idt_setup(){

@@ -4,12 +4,16 @@
 #include <stdarg.h>
 #include <stddef.h>
 
+
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef 	int				mbstate_t;
 typedef	__WINT_TYPE__		wint_t;
+
+#define WEOF 0x12484309
 struct tm;
 
 int					swprintf	(wchar_t* s, size_t n, const wchar_t* format, ...);

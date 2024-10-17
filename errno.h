@@ -15,6 +15,7 @@ int * __errno();
 #define	EBADF	9	/* Bad file number			*/
 #define	ECHILD	10	/* No children				*/
 #define	EAGAIN	11	/* No more processes			*/
+#define EWOULDBLOCK EAGAIN
 #define	ENOMEM	12	/* Not enough core			*/
 #define	EACCES	13	/* Permission denied			*/
 #define	EFAULT	14	/* Bad address				*/

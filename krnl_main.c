@@ -213,7 +213,7 @@ drivers_setup();
 
     asm("cli");
 
-    draw_string("STARTING SCHEDULER\r\n");
+    draw_string("KERNEL INITIALISED, STARTING SCHEDULER\r\n");
 
     //kernel enters scheduler at this point.
 

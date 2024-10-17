@@ -1,9 +1,10 @@
 #include <sys/types.h>
+#include <stddef.h>
 
 #pragma once
 enum mmap_flags{
 
-	MAP_SHARED,MAP_PRIVATE
+	MAP_SHARED,MAP_PRIVATE,MAP_FIXED
 };
 
 enum mmap_prot{

@@ -29,6 +29,9 @@ extern "C" {
 
 #define	RAND_MAX		(__INT_MAX__ - 1)
 
+#define MB_CUR_MAX 2 
+#warning stub MB_CUR_MAX
+
 typedef struct	{ int quot; int rem; }				div_t;
 typedef struct	{ long quot; long rem; }			ldiv_t;
 typedef struct	{ long long quot; long long rem; }	lldiv_t;
@@ -63,7 +66,7 @@ size_t				mbstowcs	(wchar_t* pwcs, const char* s, size_t n);
 size_t				wcstombs	(char* s, const wchar_t* pwcs, size_t n);
 
 void abort();
-
+ void exit(int status);
 
 #include "malloc.h"
 

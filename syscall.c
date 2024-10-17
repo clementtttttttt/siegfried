@@ -193,7 +193,21 @@ void syscall_exit(unsigned long code){
 		task_exit(code);
 }
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir};
+void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset){
+	void *ret;
+	if(addr == NULL || 
+	(page_lookup_pdei_tab(curr_task->page_tab, (void*)vaddr)->present
+         && page_lookup_pdei_tab(curr_task->page_tab, (void*)vaddr)->isuser
+	 )){
+		addr = page_virt_find_addr_user(curr_task->page_tab, len / 0x200000); 
+	}
+
+	ret = page_find_and_alloc_user(curr_task->page_tab, addr, len/0x200000);
+
+	return ret;
+}
+
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

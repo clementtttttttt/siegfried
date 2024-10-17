@@ -2,8 +2,8 @@ CFLAGS=-Werror -fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static -O3
-CC=clang --target=x86_64-pc-none-elf -march=x86-64
-#CC=x86_64-pc-none-elf-gcc
+#CC=clang --target=x86_64-pc-none-elf -march=x86-64
+CC=x86_64-pc-none-elf-gcc
 
 SOURCES=$(wildcard *.c)
 HEADERS = $(wildcard *.h)
@@ -19,7 +19,7 @@ OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
 all: sfkrnl.elf Makefile
 
 sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
-	@$(CC) -T linker.ld -o sfkrnl.elf -ffreestanding  -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
+	@$(CC) -flto -T linker.ld -o sfkrnl.elf -ffreestanding  -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
 	@echo CCLD\($(CC)\) $@
 
 obj/%.o : %.c | obj
@@ -37,7 +37,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: sf.iso
-	qemu-system-x86_64 -D log -S -s -enable-kvm -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.fd    -cpu kvm64 -monitor stdio 
+	qemu-system-x86_64 -D log -S -s -enable-kvm  -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
 
 clean:
 	rm obj -rf -

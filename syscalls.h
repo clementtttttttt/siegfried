@@ -1,4 +1,5 @@
-
+#ifndef __SF_SYSCALL_H
+#define __SF_SYSCALL_H
 inline static unsigned long syscall0(unsigned long func){  
     unsigned long retval;
     asm("int $0xf0":"=a"(retval):"D"(func));
@@ -77,3 +78,4 @@ int read(int file, char *buf, int len);
 int getpid();
 
 typedef struct syscall_siegfried_dir syscall_siegfried_dir;
+#endif

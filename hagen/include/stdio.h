@@ -22,9 +22,13 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+
+#define BUFSIZ 4096 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 int		snprintf		(char* s, size_t n, const char* format, ...);
 int		sprintf		(char* s, const char* format, ...);
@@ -36,7 +40,7 @@ int		vsscanf		(const char* s, const char* format, va_list arg);
 int 		fflush		(void * stream);
 int fprintf ( void * stream, const char * format, ... );
 
-
+#define EOF (-1)
 #warning STUB STDERR
 #define stderr (void*)42
 
