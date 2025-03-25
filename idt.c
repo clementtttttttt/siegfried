@@ -128,9 +128,11 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     dbgconout("CR2: ");
     dbgnumout_hex(idt_dump_cr2());
 
-    idt_print_stacktrace_depth((unsigned long*)fr->rbp,3);
 
 	page_switch_tab(curr_task->page_tab);
+	idt_print_stacktrace((unsigned long*)fr->rbp);
+
+	//page_switch_tab(curr_task->page_tab);
 
     asm("cli;hlt;");
     while(1){

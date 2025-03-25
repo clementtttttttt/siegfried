@@ -156,17 +156,24 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
 		} 
 		else{
+			
+			for(int i=0;prp2_vm[i] != 0&& (left > 0);++i){
+				mem_cpy(buf, prp2_vm[i], ((left>=4096)?4096:left));
+								draw_string("LOAD");
+												draw_hex( ((left>=4096)?4096:left));
 
-		for(int i=0;prp2_vm[i]&& (left > 0);++i){
-			mem_cpy(buf, prp2_vm[i], (left>4096?4096:left));
-			draw_hex(*(unsigned long*)prp2_vm[i]);
-			left -= 4096;
-			buf += (left>4096?4096:left);
-		}
-		}
-					    k_pageobj_free(&page_heap,prp2);
+				k_pageobj_free(&page_heap,prp2_vm[i]);
+				buf = (void*)((unsigned long)buf + ((left>=4096)?4096:left));
 
+				left -= 4096;
+			}
+		//	while(1){}
+		}
+		
     }
+    		 k_pageobj_free(&page_heap,prp2);
+
+    k_pageobj_free(&page_heap, prp2_vm);
 }
 
 nvme_disk *nvme_find_disk_from_inode(unsigned long inode){

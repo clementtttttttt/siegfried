@@ -28,7 +28,7 @@ int main(){
 	
 	char buffer[128];
 	unsigned char b_idx;
-	memset(buffer, 0, 128);
+	//memset(buffer, 0, 128);
 
 	while(1){
 		char cwd[256];
