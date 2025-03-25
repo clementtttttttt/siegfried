@@ -18,7 +18,7 @@ OBJECTS_S=$(patsubst %.S, %.o, $(SOURCES_S))
 OBJECTS2=$(addprefix obj/,$(OBJECTS))
 OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
 
-all: posh/posh sfkrnl.elf Makefile
+all: posh/posh sf.iso Makefile
 
 posh/posh: posh/main.c posh/comp.sh
 	cd posh && ./comp.sh
@@ -42,7 +42,7 @@ obj :
 sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
-test: sf.iso
+test: all
 	qemu-system-x86_64 -D log -S -s -enable-kvm  -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
 
 clean:

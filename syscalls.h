@@ -1,20 +1,37 @@
 #ifndef __SF_SYSCALL_H
 #define __SF_SYSCALL_H
-inline static unsigned long syscall0(unsigned long func){  
-    unsigned long retval;
+
+typedef enum syscalls_t_enum{
+	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_close, sys_open_dir, sys_mmap, sys_getcwd, sys_read_dir
+} syscalls_t;
+
+#define NAME_MAX 256 //TODO: MERGE LIMITS TO DEDICATED HEADER
+typedef struct syscall_siegfried_dir{
+
+    unsigned long num_files;
+	unsigned long inode;
+	char name[NAME_MAX];
+	
+
+}syscall_siegfried_dir;
+
+typedef char syscall_siegfried_dirnames_t[NAME_MAX];
+
+inline static void* syscall0(syscalls_t func){  
+    void* retval;
     asm("int $0xf0":"=a"(retval):"D"(func));
     return retval;
 }
 
-inline static unsigned long syscall1(unsigned long func,void* in1){
-    unsigned long retval;
+inline static void* syscall1(syscalls_t func,void* in1){
+    void* retval;
     asm("int $0xf0":"=a"(retval):"D"(func), "S"(in1));
     return retval;
 }
 
 
-inline static unsigned long  syscall2(unsigned long func,void* in1,void* in2){
-    unsigned long retval;
+inline static void*  syscall2(syscalls_t func,void* in1,void* in2){
+    void* retval;
     asm("int $0xf0":"=a"(retval):"D"(func), "S"(in1), "d"(in2));
 	return retval;
 }
@@ -26,7 +43,7 @@ inline static unsigned long  syscall2(unsigned long func,void* in1,void* in2){
     asm("int $0xf0"::"D"(func), "S"(in1), "d"(in2), "c"(in3), "r"(in4_r8), "r"(in5_r9));
 
 
-inline static unsigned long syscall4(unsigned long func,void* in1, void* in2,void*  in3, void* in4){
+inline static unsigned long syscall4(syscalls_t func,void* in1, void* in2,void*  in3, void* in4){
     register unsigned long in4_r8 __asm__("r8") = (unsigned long)in4;
     unsigned long retval;
     asm("int $0xf0":"=a"(retval):"D"(func), "S"(in1), "d"(in2), "c"(in3), "r"(in4_r8));
@@ -34,7 +51,7 @@ inline static unsigned long syscall4(unsigned long func,void* in1, void* in2,voi
 }
 
 
-inline static unsigned long syscall6(unsigned long func,void* in1, void* in2, void* in3, void* in4, void* in5,void* in6){
+inline static unsigned long syscall6(syscalls_t func,void* in1, void* in2, void* in3, void* in4, void* in5,void* in6){
     
     unsigned long retval;
     asm("mov %4, %%r8; mov %5, %%r9; push %6 ;int $0xf0":"=a"(retval):"D"(func), "S"(in1), "d"(in2), "c"(in3), "r"(in4), "r"(in5), "r"(in6));
@@ -65,9 +82,7 @@ typedef struct syscall_siegfried_stat{
 	unsigned long	ctime_in_ms;
 } syscall_siegfried_stat;
 
-enum syscalls{
-	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_close, sys_open_dir, sys_mmap, sys_getcwd
-};
+
 void syscall_setup();
 void _exit(int stat);
 int execve(char *name, char **argv, char **env);
@@ -76,5 +91,4 @@ int read(int file, char *buf, int len);
 
 int getpid();
 extern syscall_siegfried_file *fds[4096] ;
-typedef struct syscall_siegfried_dir syscall_siegfried_dir;
 #endif

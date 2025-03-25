@@ -10,15 +10,18 @@ typedef  long (*diskman_write_func_t) (unsigned long inode, unsigned long off_se
 #define DISKMAN_READ_FUNC(name)  long name (unsigned long id, unsigned long off_bytes, unsigned long num_bytes, void* buf)
 #define DISKMAN_WRITE_FUNC(name)  long name (unsigned long id, unsigned long off_bytes, unsigned long num_bytes, void* buf)
 
+#define NAME_MAX 256
 
 typedef struct siegfried_dir{
 
-    struct siegfried_file **files;
     unsigned long num_files;
 	unsigned long inode;
-	char name[256];
+	char name[NAME_MAX];
+	unsigned long di;
+	
 
 }siegfried_dir;
+typedef char siegfried_dirnames_t[NAME_MAX];
 
 enum diskman_file_tees{
     DISKMAN_T_NULL, DISKMAN_T_REG, DISKMAN_T_DIR, DISKMAN_T_SPEC
@@ -28,7 +31,7 @@ typedef struct siegfried_file{
 
 	struct diskman_ent *disk;
     unsigned long inode;
-    char name[256];
+    char name[NAME_MAX];
 
     unsigned short t; // file type(eg block device, char dev , dir , etc blab l
 	unsigned long off;
@@ -52,7 +55,7 @@ typedef struct siegfried_stat{
 } siegfried_stat;
 
 
-typedef siegfried_dir* (*diskman_open_dir_t) (unsigned long dm_inode, char *path, unsigned long attrs);
+typedef siegfried_dir* (*diskman_open_dir_t) (unsigned long dm_inode, char *path, unsigned long attrs, siegfried_dir *in);
 
 typedef unsigned long (*diskman_fread_t) (struct siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs);
 
@@ -63,14 +66,16 @@ typedef int (*diskman_fclose_t) (siegfried_file * f);
 
 typedef int (*diskman_fstat_t) (siegfried_file *f,siegfried_stat *stat);
 
-#define DISKMAN_OPEN_DIR_FUNC(name) siegfried_dir* name (unsigned long dm_inode, char *path, unsigned long attrs)
+typedef siegfried_dirnames_t *(*diskman_read_dir_t)(siegfried_dir *in, siegfried_dirnames_t *names);
+
+#define DISKMAN_OPEN_DIR_FUNC(name) siegfried_dir* name (unsigned long dm_inode, char *path, unsigned long attrs, siegfried_dir *in)
 
 #define DISKMAN_FWRITE_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
 #define DISKMAN_FREAD_FUNC(name) unsigned long name (siegfried_file *f, void *buf, unsigned long off, unsigned long bytes, unsigned long attrs)
 #define DISKMAN_FOPEN_FUNC(name) siegfried_file* name (unsigned long disk_id, char *path)
 #define DISKMAN_FCLOSE_FUNC(name) int name (siegfried_file *f)
 #define DISKMAN_FSTAT_FUNC(name) int name (siegfried_file *f,siegfried_stat *stat)
-
+#define DISKMAN_READ_DIR_FUNC(name) siegfried_dirnames_t *name (siegfried_dir *in,siegfried_dirnames_t *names)
 
 
 
@@ -91,6 +96,7 @@ typedef struct diskman_ent{
 	diskman_fopen_t fopen;
 	diskman_fstat_t fstat;
 	diskman_fclose_t fclose;
+	diskman_read_dir_t freaddir;
 
     void *fs_disk_info;
 

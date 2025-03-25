@@ -99,17 +99,27 @@ siegfried_file *syscall_open(char* path){
 
 }
 
-siegfried_dir *syscall_open_dir(char* path){
+siegfried_dir *syscall_open_dir(char* path, siegfried_dir *in){
 	unsigned long disk_inode = parse_path(&path);
 
     diskman_ent *e = diskman_find_ent(disk_inode);
 
     if(e != 0){
-		return e -> fopendir (disk_inode, path,0);
+		return e -> fopendir (disk_inode, path,0, in);
     }
     return (siegfried_dir*)-EINVAL;
     
 
+}
+
+siegfried_dirnames_t *syscall_read_dir(siegfried_dir *in, siegfried_dirnames_t *names){
+
+    diskman_ent *e = diskman_find_ent(in->di);
+
+    if(e != 0){
+		return e -> freaddir (in, names);
+    }
+    return (siegfried_dirnames_t*)-EINVAL;
 }
 
 int syscall_close(siegfried_file *f){
@@ -234,7 +244,7 @@ void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t of
 
 
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd, syscall_read_dir};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	
