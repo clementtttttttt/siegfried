@@ -36,7 +36,8 @@ int		sscanf		(const char* s, const char* format, ...);
 int		vsnprintf		(char* s, size_t n, const char* format, va_list arg);
 int		vsprintf		(char* s, const char* format, va_list arg);
 int		vsscanf		(const char* s, const char* format, va_list arg);
-	
+int puts(const char *s);
+
 int 		fflush		(void * stream);
 int fprintf ( void * stream, const char * format, ... );
 

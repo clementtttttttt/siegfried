@@ -69,7 +69,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 	m_info = (unsigned int*) m_info_mem;
     mem_cpy(m_info, m_info_old, sz);
     
-    unsigned long long fbaddr, fbw, fbh, fbb, fbp;
+    unsigned long long fbaddr=0, fbw, fbh, fbb, fbp;
 
         struct multiboot_tag_new_acpi *acpitag = 0;
 
@@ -178,7 +178,9 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
 drivers_setup();
 
-
+draw_string("FBADDR=");
+	draw_hex(fbaddr);
+	//while(1);
     draw_string("CMDLINE=\"");
     draw_string(krnl_cmdline);
     draw_string("\"\n");
@@ -207,6 +209,9 @@ drivers_setup();
 
     }
     while(res.sz != 0);
+
+
+    
 
     //load tasks and init loader	
     tasks_setup();

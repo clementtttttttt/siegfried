@@ -57,6 +57,8 @@ int k_pageobj_add_heapblk(KHEAPSS *heap, unsigned long addr, unsigned long size)
 	return 1;
 }
 
+#include "draw.h"
+
 void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size) {
 	KHEAPBLOCKSS		*b;
 	unsigned long				ptr;
@@ -64,6 +66,11 @@ void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size) {
 
 	/* too big */
 	if (size > heap->bsize) {
+		
+		draw_hex(size);
+		draw_string("error");
+		asm("int $3");
+		while(1){}
 		return 0;
 	}
 

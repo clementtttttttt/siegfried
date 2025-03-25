@@ -32,7 +32,7 @@ typedef struct siegfried_file{
 
     unsigned short t; // file type(eg block device, char dev , dir , etc blab l
 	unsigned long off;
-    void* fs_spec_dat;
+    void* fs_dat;
 
 }siegfried_file;
 

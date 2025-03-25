@@ -118,7 +118,6 @@ typedef struct task{
     unsigned int magic;
     union pml4e *page_tab;
     struct task *next;
-    siegfried_dir dir;
     unsigned long tid;
     unsigned long errno;
     unsigned long state;

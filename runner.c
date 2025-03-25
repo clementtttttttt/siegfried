@@ -25,8 +25,11 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 
 
     siegfried_file *f = d->fopen(disk_inode, name);
-    page_switch_krnl_tab(); //krnl stuff
     
+
+
+    page_switch_krnl_tab(); //krnl stuff
+     
    // unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(disk_inode),EXTFS_ROOTDIR_INODE, name);
     
     if((long)f <= 0){
@@ -87,6 +90,11 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 	t->tf->rdi = argc; //argc first argument
 	t->tf->rsi = (unsigned long) argv; //argv second argument
 
+//TODO: there's probably a better a way to do this
+
+	t->name = k_obj_alloc(str_len(name)) + 2;
+	(void) mem_cpy (t->name, name, str_len(name) + 2);
+	
 	if(env == 0){ //handle null env
 		env = k_obj_alloc(sizeof(char*));
 		*env = 0;
@@ -110,9 +118,10 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 					draw_string("RUNNER: program header #0 vaddr = ");
 					draw_hex(header->prog_tab[i].vaddr);
 
-			//		draw_string("RUNNER: program herader #0 memsz = ");
-			//		draw_hex(header->prog_tab[i].mem_sz);
-			
+					draw_string("RUNNER: program herader #0 memsz = ");
+					draw_hex(header->prog_tab[i].mem_sz);
+					draw_string("foffset=");
+					draw_hex(header->prog_tab[i].dat_off);
 
 					
 					void *tab = page_get_curr_tab();
@@ -121,17 +130,23 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 			
 					t->task_page_ptr[i].addr = page_lookup_paddr_tab(t->page_tab,(void*)header->prog_tab[i].vaddr);
 					t->task_page_ptr[i].pages = 1;
+					draw_hex((unsigned long)seg_addr);
 					draw_string("RUNNER: program header #0 paddr = ");
 					draw_hex((unsigned long)t->task_page_ptr[i].addr);
 
+
+					
 					
 					page_switch_tab(t->page_tab);
 					
 					
-						mem_set(seg_addr, 0x5a, header->prog_tab[i].mem_sz);
+					mem_set(seg_addr, 0x5a, header->prog_tab[i].mem_sz);
+	
 			
 					//extfs_read_inode_contents(diskman_find_ent(disk_inode), in, seg_addr, header->prog_tab[i].f_sz, header->prog_tab[i].dat_off);
 					d->fread(f, seg_addr, header->prog_tab[i].dat_off, header->prog_tab[i].f_sz, 0);
+					
+					
 					
 					page_switch_tab(tab);
 

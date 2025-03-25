@@ -84,17 +84,31 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
     cmd.cint0.cid = ++io_cmdid_c;
     cmd.cint0.opcode = opcode;
     cmd.nsid = in->id;
-    cmd.prp1 = (unsigned long)buf;
+    
+    void *prp1 = k_pageobj_alloc(&page_heap, 4096);
+    cmd.prp1 = (unsigned long)page_lookup_paddr(prp1);
 
-    char prp2_vm[4096];
+    void **prp2_vm = k_pageobj_alloc(&page_heap, 4096);
 
-    void* prp2 = page_lookup_paddr(prp2_vm);
+    void** prp2 = k_pageobj_alloc(&page_heap, 4096);
 
     if(num_sects >= (4096 / 512)){
-        cmd.prp2 = (unsigned long)prp2;
-    }
-    else cmd.prp2 = 0;
+		
+        cmd.prp2 = (unsigned long)page_lookup_paddr(prp2);
+        
+        
+        for(unsigned long  i=0;i<((num_sects*512 - (4096))/4096)+1; ++i){
+			prp2_vm[i] = k_pageobj_alloc(&page_heap, 4096);
+			prp2[i] = page_lookup_paddr(prp2_vm[i]);
+		
+	    }
+	    
 
+	}
+	
+    else{
+		 cmd.prp2 = 0;
+	}
     cmd.cint10 = off_sects & 0xffffffff;
     cmd.cint11 = off_sects >> 32;
 
@@ -128,18 +142,31 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
   //  in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = in->ctrl->phase;
 
-    //FIXME!!!!!: proper handling of ios with more than 4 sects or smth
+    //FIXME!!!!!: proper handling of ios with more than 8 sects or smth
+        mem_cpy(buf, prp1, num_sects*512);
+        k_pageobj_free(&page_heap,prp1);
+	
+    if(num_sects >= (4096/512)){
+		buf = (void*)((unsigned long)buf +4096);
+		long left = num_sects*512-4096;
 
-    if(num_sects >= (4096 / 512)){
-       // mem_cpy((void*)((unsigned long)buf), buf_io, 4096 );
-        //mem_cpy((void*)((unsigned long)buf + 4096), prp2_vm, num_sects * 512 - 4096);
-    }else{
-//           mem_cpy((void*)((unsigned long)buf), read_buf, num_sects*512 );
+
+		if((num_sects - (4096/512) == 1)){
+			mem_cpy(buf, prp2, left);
+
+		} 
+		else{
+
+		for(int i=0;prp2_vm[i]&& (left > 0);++i){
+			mem_cpy(buf, prp2_vm[i], (left>4096?4096:left));
+			draw_hex(*(unsigned long*)prp2_vm[i]);
+			left -= 4096;
+			buf += (left>4096?4096:left);
+		}
+		}
+					    k_pageobj_free(&page_heap,prp2);
 
     }
-
-    
-
 }
 
 nvme_disk *nvme_find_disk_from_inode(unsigned long inode){
@@ -187,21 +214,23 @@ DISKMAN_READ_FUNC(nvme_read_disk){
    
     
     unsigned long buf_sz = num_bytes ;
-    
-    buf_sz += 512- (buf_sz %512); //round up
+		
 
- 	void *rdbuf = k_pageobj_alloc(&page_heap,buf_sz);
+    buf_sz += 512 - (buf_sz %512); //round up
+
+ 	void *rdbuf = k_obj_alloc(buf_sz);
+ 	
 
 	//void *page_lookup_paddr(rdbuf);
 	
 
 	
-    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, page_lookup_paddr(rdbuf));
+    nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, (rdbuf));
 
 
     mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
 	
-    k_pageobj_free(&page_heap,rdbuf);
+    k_obj_free(rdbuf);
 
     //supposed to return read sects, not fucntional for now
     return num_bytes;

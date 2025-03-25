@@ -197,7 +197,7 @@ void halt_and_catch_fire(){
 	extern void* curr_task;
 	curr_task = 0;
 	draw_string("H&CF: press any key to reboot");
-	kb_wait_and_pop_char();
+	kb_wait_and_pop_ev();
 	draw_string("H&CF: rebooting NOW");
 	asm("xor %rax, %rax;mov %rax,%cr3");
 }

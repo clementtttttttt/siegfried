@@ -192,7 +192,7 @@ DISKMAN_FSTAT_FUNC(extfs_fstat){
 }
 
 DISKMAN_FREAD_FUNC(extfs_fread){
-	
+
 	return extfs_read_inode_contents(f->disk, f->inode, buf, bytes, off);
 	 
 }
@@ -217,7 +217,8 @@ DISKMAN_FOPEN_FUNC(extfs_fopen){
 				curr_inode = EXTFS_ROOTDIR_INODE;
 				break;
 			default:
-				curr_inode = curr_task->dir.inode;
+				//curr_inode = curr_task->dir.inode;
+				//TODO: open app dir
 				break;
 				
 			
@@ -291,14 +292,16 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* 
         }
         else{
 
+	
 		extfs_inode inode_tab_2;
 		extfs_read_inode_struct(&inode_tab_2,d, in );
 
                         extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)inode_tab_2.blk_data_ptrs,0);
 
 
+			//TODO: not reading entire extent properly?
 
-                           read= d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + off,count,buf);
+          read= d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + off,count,buf);
                             
 							
 

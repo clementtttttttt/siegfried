@@ -20,6 +20,7 @@ void page_mark_available_mem_range(unsigned long addr, unsigned long len){
 		if(len < 0x200000){// TODO: there has to be a better way to deal with small mem chunks without this
 				return;
 		}
+
 		page_available_mem_ent *it;
 		
 		if(avail_mem_root == 0){

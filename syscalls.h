@@ -34,7 +34,7 @@ inline static unsigned long syscall4(unsigned long func,void* in1, void* in2,voi
 }
 
 
-inline unsigned long syscall6(unsigned long func,void* in1, void* in2, void* in3, void* in4, void* in5,void* in6){
+inline static unsigned long syscall6(unsigned long func,void* in1, void* in2, void* in3, void* in4, void* in5,void* in6){
     
     unsigned long retval;
     asm("mov %4, %%r8; mov %5, %%r9; push %6 ;int $0xf0":"=a"(retval):"D"(func), "S"(in1), "d"(in2), "c"(in3), "r"(in4), "r"(in5), "r"(in6));
@@ -66,16 +66,15 @@ typedef struct syscall_siegfried_stat{
 } syscall_siegfried_stat;
 
 enum syscalls{
-	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_close, sys_open_dir
+	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_close, sys_open_dir, sys_mmap, sys_getcwd
 };
 void syscall_setup();
 void _exit(int stat);
-int close_(int file);
 int execve(char *name, char **argv, char **env);
 int fstat(int file, struct stat *st);
 int read(int file, char *buf, int len);
 
 int getpid();
-
+extern syscall_siegfried_file *fds[4096] ;
 typedef struct syscall_siegfried_dir syscall_siegfried_dir;
 #endif

@@ -1,12 +1,12 @@
 
-inline unsigned long syscall0(unsigned long func){  
-    unsigned long retval;
+inline long syscall0(unsigned long func){  
+    long retval;
     asm("int $0xf0":"=a"(retval):"D"(func));
     return retval;
 }
 
-inline unsigned long syscall1(unsigned long func,unsigned long in1){
-    unsigned long retval;
+inline long syscall1(unsigned long func,unsigned long in1){
+    long retval;
     asm("int $0xf0":"=a"(retval):"D"(func), "S"(in1));
     return retval;
 }
@@ -57,6 +57,6 @@ typedef struct syscall_siegfried_stat{
 } syscall_siegfried_stat;
 
 enum syscalls{
-	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat
+	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_getcwd
 };
 void syscall_setup();

@@ -74,11 +74,13 @@ void syscall_diskman_write(unsigned long disk_inode, unsigned long off_sects, un
 unsigned long parse_path(char** path){
 		unsigned long disk_inode = syscall_diskman_get_root();
 		
-		if(mem_cmp(path, "//", 2) == 0){
+		if(mem_cmp(*path, "//", 2) == 0){
 			*path += 2;
-			atoi_w_sz(*path, find_num_len(*path));
+			disk_inode = atoi_w_sz(*path, find_num_len(*path));
 			*path += find_num_len(*path);
+			
 		}
+		
 		return disk_inode;
 }
 
@@ -87,8 +89,9 @@ siegfried_file *syscall_open(char* path){
 
     diskman_ent *e = diskman_find_ent(disk_inode);
 
+   
     if(e != 0){
-		return e -> fopen (disk_inode, path);
+	return e -> fopen (disk_inode, path);
     }
     return (siegfried_file*)-EINVAL;
     
@@ -132,10 +135,30 @@ int syscall_stat(char* path, siegfried_stat *stat){
     
 
 }
+char *syscall_getcwd(char *buf, size_t size){
+	
+	//get path without filename only directory
+	char *end = curr_task->name;
+	
+	while(*(end++));
+	--end;
+	
+	while(end > curr_task->name && (*end != '/')){
+			--end;
+	}
+	
+	size_t sz2 = end - curr_task->name;
+	if(size > sz2) size = sz2;
+	
+
+	mem_cpy(buf,curr_task->name, size);
+		
+	return buf;
+}
 
 unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
 
-
+	
     if(f != 0){
 		return f->disk -> fread (f,buf, f->off, sz_bytes, attrs);
     }
@@ -196,19 +219,21 @@ void syscall_exit(unsigned long code){
 
 void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset){
 	void *ret;
-	if(addr == NULL || 
-	(page_lookup_pdei_tab(curr_task->page_tab, (void*)vaddr)->present
-         && page_lookup_pdei_tab(curr_task->page_tab, (void*)vaddr)->isuser
+	if(addr == 0 || 
+	(page_lookup_pdei_tab(curr_task->page_tab, (void*)addr)->present
+         && page_lookup_pdei_tab(curr_task->page_tab, (void*)addr)->isuser
 	 )){
-		addr = page_virt_find_addr_user(curr_task->page_tab, len / 0x200000); 
+		addr = (void*)page_virt_find_addr_user(curr_task->page_tab, len / 0x200000); 
 	}
-
-	ret = page_find_and_alloc_user(curr_task->page_tab, addr, len/0x200000);
+	// TODO: prot and flags for mmap
+	ret = page_find_and_alloc_user(curr_task->page_tab, (unsigned long)addr, len/0x200000);
 
 	return ret;
 }
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap};
+
+
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

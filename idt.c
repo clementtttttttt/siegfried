@@ -90,7 +90,13 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     draw_hex(fr->rip);
     
     draw_string("RIP DUMP(REVERSED)=");
-    draw_hex(*(unsigned long*)fr->rip);
+    
+    unsigned long dump;
+    page_switch_tab(curr_task->page_tab);
+    dump = *(unsigned long*)fr->rip;
+    
+    page_switch_krnl_tab();
+    draw_hex(dump);
 
     draw_string("CR2=");
     draw_hex(idt_dump_cr2());
@@ -124,7 +130,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
 
     idt_print_stacktrace_depth((unsigned long*)fr->rbp,3);
 
-	page_switch_krnl_tab();
+	page_switch_tab(curr_task->page_tab);
 
     asm("cli;hlt;");
     while(1){

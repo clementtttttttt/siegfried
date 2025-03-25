@@ -10,11 +10,10 @@
 diskman_ent *disks = 0;
 
 unsigned long inode = 0; //inode start at one
-
+#include "idt.h"
 
 
 diskman_ent *diskman_new_ent(){
-
     diskman_ent *ret;
 
     if(disks == 0){
@@ -31,6 +30,7 @@ diskman_ent *diskman_new_ent(){
         ret = ret->next;
     }
 
+    ret->ispart = 0;
     ret->inode = ++inode;
     ret->fs_type = DISKMAN_FS_NULL;
     ret->next = 0;
@@ -54,14 +54,14 @@ diskman_ent *diskman_find_ent(unsigned long inode){
 char detect_sect[1024];
 
 void diskman_setup(){
-	//devfs
-	devfs_setup();
+
 
     diskman_ent *i = disks;
 
     char detect_sect[1024];
    	
-   	
+   
+
 	
     while(i){
         if(i->ispart){
@@ -89,9 +89,10 @@ void diskman_setup(){
 
     //fs detection
     while(i){
-		if(i->fs_type == DISKMAN_FS_NULL){
-			extfs_enum(i);
-		}
+	
+	if(i->fs_type == DISKMAN_FS_NULL){
+		extfs_enum(i);
+	}
 
         i = i->next;
     }

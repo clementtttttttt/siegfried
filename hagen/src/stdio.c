@@ -21,7 +21,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include "syscalls.h"
 int snprintf(char* str, size_t size, const char* format, ...) {
 	va_list ap;
 	va_start(ap, format);
@@ -292,5 +292,15 @@ int fflush(void *stream){
 
 int fprintf (void * stream, const char * format, ... ){
 	#warning fprintf in TODO
+	return 0;
+}
+
+
+
+
+int puts(const char* str){
+	
+//TODO: proper return, proper printing support other than vga term
+	syscall2(sys_print_w_sz, (void*)str, (void*)strlen(str));
 	return 0;
 }
