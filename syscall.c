@@ -80,7 +80,7 @@ unsigned long parse_path(char** path){
 			*path += find_num_len(*path);
 			
 		}
-		
+
 		return disk_inode;
 }
 
@@ -91,6 +91,7 @@ siegfried_file *syscall_open(char* path){
 
    
     if(e != 0){
+
 	return e -> fopen (disk_inode, path);
     }
     return (siegfried_file*)-EINVAL;

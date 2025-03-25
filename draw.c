@@ -247,7 +247,10 @@ void draw_append_text_buf(const char c){
         case 0:
             return;
             break;
-
+		case 8:
+			--tcurx;
+			return;
+			break;
         case 0xa:
             draw_increment_line();
             return;

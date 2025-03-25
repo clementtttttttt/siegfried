@@ -5,12 +5,13 @@
 #include "apic.h"
 
 unsigned long str_len(char *in){
-    char *old=in;
-    while(*in){
-        ++in;
+
+    char *new=in;
+    while(*new){
+        ++new;
     }
 
-    return in - old;
+    return new - in;
 
 }
 

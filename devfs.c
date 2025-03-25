@@ -36,6 +36,7 @@ DISKMAN_FOPEN_FUNC(devfs_fopen){
 	devfs_ent *it = devfs_root;
 
 	while(it){
+		
 		if(mem_cmp(it->name, path, str_len(it->name)) == 0){
 			siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
 			f->inode = it->inode;
@@ -65,8 +66,9 @@ devfs_ent *devfs_make_ent(char *name){
 		it->next = k_obj_alloc(sizeof(devfs_ent));
 		it = it->next;
 	}
-	mem_cpy(it->name, name, str_len(name));
+	mem_cpy(it->name, name, str_len(name)+1);
 	it->inode = ++curr_inode;
+	it->next = 0;
 	return it;
 }
 

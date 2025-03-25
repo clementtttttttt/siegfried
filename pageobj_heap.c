@@ -69,7 +69,7 @@ void *k_pageobj_alloc(KHEAPSS *heap, unsigned long size) {
 		
 		draw_hex(size);
 		draw_string("error");
-		asm("int $3");
+		asm("int $1");
 		while(1){}
 		return 0;
 	}

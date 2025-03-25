@@ -13,7 +13,7 @@ typedef  long (*diskman_write_func_t) (unsigned long inode, unsigned long off_se
 
 typedef struct siegfried_dir{
 
-    struct siegfried_file *files;
+    struct siegfried_file **files;
     unsigned long num_files;
 	unsigned long inode;
 	char name[256];
