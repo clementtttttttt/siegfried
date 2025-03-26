@@ -211,18 +211,22 @@ DISKMAN_FCLOSE_FUNC(extfs_fclose){
 long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name){
 			str_tok_result res = {0,0};
 
-		unsigned long curr_inode;
+		ino_t curr_inode;
 		switch(path[0]){
 			case '/':
 				++path;
 				curr_inode = EXTFS_ROOTDIR_INODE;
 				break;
 			default:
-				char buf[NAME_MAX];
+				char buf[PATH_MAX] = {0};
 				extern char *syscall_getcwd(char *buf, size_t size);
-				syscall_getcwd(buf, NAME_MAX);
+				syscall_getcwd(buf, PATH_MAX);
 				curr_inode = extfs_find_inode_from_name_and_set_name(buf,disk_id, new_name);
 				//TODO: open app dir
+				if(curr_inode< 0){
+					draw_hex(curr_inode);
+					return curr_inode;
+				}
 				break;
 				
 			
@@ -230,7 +234,7 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 				
 		str_tok(path, '/', &res);
 		
-		str_tok_result name_res;
+		str_tok_result name_res = {0,0};
 		char name[256];
 		while(res.sz != 0){
 
@@ -321,7 +325,7 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		long dir_inode = extfs_find_inode_from_name_and_set_name(path, dm_inode, name);
 		if(dir_inode <= 0){
 			
-								return (siegfried_dir*)dir_inode;
+								return dir_inode;
 
 		}
 		
@@ -336,7 +340,7 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		extfs_read_inode_struct(&dir_ino, d, dir_inode);	
 		
 				if(!(dir_ino.types_n_perm & 0x4000)){ //not dir
-					return (siegfried_dir*)-ENOTDIR;
+					return -ENOTDIR;
 				}
 						
 
@@ -436,7 +440,7 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		mem_cpy(dir->name, name, str_len(name)); 
 		dir->di = dm_inode;
 		
-		return dir;
+		return 0;
 }
 
 DISKMAN_FOPEN_FUNC(extfs_fopen){
@@ -472,7 +476,7 @@ void extfs_free_blk_list(extfs_blk_list *l){
 
 }
 
-unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* buf, unsigned long count, unsigned long off){
+unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf, unsigned long count, unsigned long off){
 
     extfs_inode inode_tab; 
     extfs_read_inode_struct(&inode_tab,d, in);
@@ -506,9 +510,12 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* 
 }
 
 
+void extfs_fclosedir(ino_t dm_inode, siegfried_dir *in){
+		
+}
 
 
-unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode,char *name){
+unsigned long extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
 
 
     if(d->fs_type != DISKMAN_FS_EXTFS){
@@ -618,6 +625,7 @@ void extfs_enum(diskman_ent *d){
 		d->fclose = extfs_fclose;
 		d->fopendir = extfs_fopendir;
 		d->freaddir = extfs_freaddir;
+		d->fclosedir = extfs_fclosedir;
 
 
 

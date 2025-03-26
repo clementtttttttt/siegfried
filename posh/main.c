@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <limits.h>
 int main(){
 
 //        char buf[512];
@@ -32,8 +33,8 @@ int main(){
 	char buffer[128];
 
 	while(1){
-		char cwd[256];
-		getcwd(cwd, 256);
+		char cwd[PATH_MAX] = {0};
+		getcwd(cwd, PATH_MAX);
 		puts(cwd);
 		puts("# ");	
 		
@@ -44,6 +45,7 @@ int main(){
 			syscall4(sys_read, in_file, &input,(void*)1,0);
 			
 			if(input == 0xa){
+
 					break;
 			}
 			if(input == 8){
@@ -61,7 +63,10 @@ int main(){
 			
 		}
 		puts("\n");
-		
+							if(b_idx == 0){
+						continue; //skip, empty buffer
+					}
+				
 		
 		char *saveptr = 0;
 		
@@ -71,19 +76,30 @@ int main(){
 		
 		char *tok = strtok_r(buffer, " ", &saveptr);
 		do{
-
-			
-			if(!strcmp(tok, "ls")){
-				//if(
 				char *dir = next_tok();
 				
 				if(dir == NULL){
-						dir = ".";
+						dir = "./";
 				}
+			if(!strcmp(tok, "cd")){
+				char buf[PATH_MAX] = {0};
+				memset(buf, 0, PATH_MAX);
+				if(dir[0] != '/'){ //absolute
+					getcwd(buf, PATH_MAX);
+				}
+				strcat(buf, dir);
+				puts(buf);
+				puts("\n");
+				chdir(buf);
+			}
+				
+			if(!strcmp(tok, "ls")){
+				//if(
+
 				
 				syscall_siegfried_dir curr_dir;
 				long ret = (long)syscall2(sys_open_dir, dir, &curr_dir);
-				if(ret < 0){
+				if(ret != 0){
 					if(ret == -ENOTDIR){
 						//it's a file
 						puts(dir);
@@ -107,6 +123,9 @@ int main(){
 					puts(d[i]);
 					puts("\n");
 				}
+				
+				syscall1(sys_close_dir, &curr_dir);
+				
 				//char test[][NAME_MAX] = k_obj_alloc(sizeof(char[256]) * count);
 				
 				

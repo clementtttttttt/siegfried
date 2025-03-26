@@ -224,14 +224,15 @@ typedef struct extfs_blk_list{
 
 }extfs_blk_list;
 
+
 #define EXTFS_REQF_EXTENT 0x40
 #define EXTFS_REQF_64BIT 0x80
 
 void extfs_enum(diskman_ent *d);
 
-extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, unsigned long inode, extfs_bgrp_desc *descs_16x);
-unsigned long extfs_find_finode_from_dir(diskman_ent *d, unsigned long dir_inode,char *name);
-unsigned long extfs_read_inode_contents(diskman_ent *d, unsigned long in, void* buf, unsigned long count,unsigned long off);
+extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, ino_t inode, extfs_bgrp_desc *descs_16x);
+unsigned long extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name);
+unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf, unsigned long count,unsigned long off);
 #define EXTFS_ROOTDIR_INODE 2
 
 

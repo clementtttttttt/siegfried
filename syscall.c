@@ -9,6 +9,7 @@
 #include "klib.h"
 #include "syscall.h"
 #include "runner.h"
+#include "obj_heap.h"
 
 #include "types.h"
 #include "errno.h"
@@ -99,7 +100,7 @@ siegfried_file *syscall_open(char* path){
 
 }
 
-siegfried_dir *syscall_open_dir(char* path, siegfried_dir *in){
+long syscall_open_dir(char* path, siegfried_dir *in){
 	unsigned long disk_inode = parse_path(&path);
 
     diskman_ent *e = diskman_find_ent(disk_inode);
@@ -107,7 +108,7 @@ siegfried_dir *syscall_open_dir(char* path, siegfried_dir *in){
     if(e != 0){
 		return e -> fopendir (disk_inode, path,0, in);
     }
-    return (siegfried_dir*)-EINVAL;
+    return -EINVAL;
     
 
 }
@@ -146,6 +147,18 @@ int syscall_stat(char* path, siegfried_stat *stat){
     
 
 }
+
+char *sys_basename(char *path){
+	char *end = curr_task->name;
+	while(*(end++));
+	--end;
+	while(end > curr_task->name && (*end != '/')){
+		--end;
+	}
+	++end;
+	return end;
+}
+
 char *syscall_getcwd(char *buf, size_t size){
 	
 	//get path without filename only directory
@@ -161,7 +174,15 @@ char *syscall_getcwd(char *buf, size_t size){
 	size_t sz2 = end - curr_task->name;
 	if(size > sz2) size = sz2;
 	
+	if(size == 0){ //FIXME: hack for root dir
+		++size;
+	}
+	
+	if(curr_task->name[size-1] != '/'){
+		curr_task->name[size] = '/';
+			++size;
 
+	}
 	mem_cpy(buf,curr_task->name, size);
 		
 	return buf;
@@ -199,6 +220,46 @@ unsigned long syscall_spawn(char *path, char** argv, char** env, unsigned long a
 	
 }
 
+void syscall_close_dir(siegfried_dir *in){
+	diskman_find_ent(in->di)->fclosedir(in->di, in);
+}
+
+int syscall_chdir(char *path){
+	siegfried_dir d;
+	int ret;
+	if((ret=syscall_open_dir(path, &d)) < 0){
+		return ret;
+	}
+	
+	char *exec_name = sys_basename(curr_task->name);
+	
+	unsigned long sz = str_len(path) + str_len(curr_task->name) + 4;
+	char buf[sz];
+	mem_set(buf, 0, sz);
+	
+	mem_cpy(buf, path, str_len(path));
+	
+	char *first_end;
+	if(buf[str_len(path)-1] != '/'){
+		buf[str_len(path) ] = '/';
+		first_end = &buf[str_len(path) + 1];
+	}
+	else{
+		first_end = &buf[str_len(path)];
+	}
+	
+
+	mem_cpy(first_end, exec_name, str_len(exec_name));
+	draw_string(buf);
+	draw_string("\n");
+	k_obj_free(curr_task->name);
+	curr_task->name = k_obj_alloc(sz+1);
+	mem_cpy(curr_task->name, buf, sz+1);
+	
+	
+	syscall_close_dir(&d);
+	return 0;
+}
 
 void syscall_diskman_get_next_ent(syscall_disk_ent *e){
     if(e == 0){
@@ -244,7 +305,8 @@ void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t of
 
 
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd, syscall_read_dir};
+
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd, syscall_read_dir, syscall_close_dir, syscall_chdir};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

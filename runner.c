@@ -92,7 +92,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
 
 //TODO: there's probably a better a way to do this
 
-	t->name = k_obj_alloc(str_len(name)) + 2;
+	t->name = k_obj_alloc(str_len(name) + 2);
 	(void) mem_cpy (t->name, name, str_len(name) + 2);
 	
 	if(env == 0){ //handle null env
