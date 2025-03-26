@@ -100,7 +100,7 @@ siegfried_file *syscall_open(char* path){
 
 }
 
-long syscall_open_dir(char* path, siegfried_dir *in){
+int syscall_open_dir(char* path, siegfried_dir *in){
 	unsigned long disk_inode = parse_path(&path);
 
     diskman_ent *e = diskman_find_ent(disk_inode);
@@ -228,6 +228,7 @@ int syscall_chdir(char *path){
 	siegfried_dir d;
 	int ret;
 	if((ret=syscall_open_dir(path, &d)) < 0){
+		
 		return ret;
 	}
 	
@@ -250,8 +251,7 @@ int syscall_chdir(char *path){
 	
 
 	mem_cpy(first_end, exec_name, str_len(exec_name));
-	draw_string(buf);
-	draw_string("\n");
+
 	k_obj_free(curr_task->name);
 	curr_task->name = k_obj_alloc(sz+1);
 	mem_cpy(curr_task->name, buf, sz+1);

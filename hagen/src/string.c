@@ -227,6 +227,50 @@ char* strtok_r(char* s1, const char* s2, char** prevS1) {
 	return s1;
 }
 
+
+char *err_str_tab[] = {
+	"Success",
+	"Not superuser",
+	"Nonexistant file or directory",
+	"Nonexistant process",
+	"Interrupted system call",
+	"I/O error",
+	"Nonexistant device or address",
+	"Too many arguments",
+	"Corrupted executable",
+	"Bad file descriptor",
+	"No children",
+	"No more processes",
+	"Out of memory",
+	"Permission denied",
+	"Bad address",
+	"Not a block device",
+	"Device busy",
+	"File exists",
+	"Cross-device link",
+	"Nonexistant device",
+	"Not a directory",
+	"Is a directory",
+	"Invalid argument",
+	"File table overflow",
+	"Opened too many files",
+	"Not a teletype",
+	"Text file busy",
+	"File too large",
+	"Device out of space",
+	"Invalid seek",
+	"Read only filesystem",
+	"Too many links",
+	"Broken pipe",
+	"Argument out of range",
+	"Cannot represent result",
+	
+	
+};
+char *strerror(int errnum){
+	return err_str_tab[errnum];
+}
+
 #undef strtok
 char* strtok(char* s1, const char* s2) {
 	static char* prevS1;

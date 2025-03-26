@@ -88,9 +88,12 @@ int main(){
 					getcwd(buf, PATH_MAX);
 				}
 				strcat(buf, dir);
-				puts(buf);
-				puts("\n");
-				chdir(buf);
+	
+				int ret = chdir(buf);
+				if(ret!=0){
+					puts(strerror(-ret));
+					puts("\n");
+				}
 			}
 				
 			if(!strcmp(tok, "ls")){
@@ -107,7 +110,8 @@ int main(){
 						break;
 					}
 					else{
-						puts("Error opening directory\n");
+						puts(strerror(-ret));
+						puts("\n");
 						break;
 					}
 				}

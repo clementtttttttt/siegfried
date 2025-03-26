@@ -224,7 +224,7 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 				curr_inode = extfs_find_inode_from_name_and_set_name(buf,disk_id, new_name);
 				//TODO: open app dir
 				if(curr_inode< 0){
-					draw_hex(curr_inode);
+				//	draw_hex(curr_inode);
 					return curr_inode;
 				}
 				break;
@@ -322,11 +322,9 @@ DISKMAN_READ_DIR_FUNC(extfs_freaddir){
 
 DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		char name[NAME_MAX];
-		long dir_inode = extfs_find_inode_from_name_and_set_name(path, dm_inode, name);
+		ino_t dir_inode = extfs_find_inode_from_name_and_set_name(path, dm_inode, name);
 		if(dir_inode <= 0){
-			
-								return dir_inode;
-
+				return dir_inode;
 		}
 		
 		diskman_ent *d = diskman_find_ent(dm_inode);
