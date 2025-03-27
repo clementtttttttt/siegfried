@@ -208,6 +208,20 @@ DISKMAN_FCLOSE_FUNC(extfs_fclose){
 		return 0;
 }
 
+void dump_inode(extfs_inode ino){
+	draw_string("\nINODE DUMP!\n");
+	
+	#define D(name) {draw_string("ino->"#name" = ");draw_hex(ino.name);}
+
+	D(time_access)
+	D(disk_sects_count)
+	D(types_n_perm)
+	D(sz_in_bytes_l)
+	D(sz_in_bytes_h)
+}
+
+
+
 long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name){
 			str_tok_result res = {0,0};
 
@@ -225,6 +239,9 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 				//TODO: open app dir
 				if(curr_inode< 0){
 				//	draw_hex(curr_inode);
+						draw_string("ERR! curr_inode=");
+		draw_hex(curr_inode);
+		
 					return curr_inode;
 				}
 				break;
@@ -234,18 +251,27 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 				
 		str_tok(path, '/', &res);
 		
+		
+		
 		str_tok_result name_res = {0,0};
 		char name[256];
+		
+
 		while(res.sz != 0){
 
-				
+						draw_string("curr_inode=");
+		draw_hex(curr_inode);
+		
 				mem_set(name, 0, 256);
 				mem_cpy(name , path+res.off, res.sz);
 			
-				extfs_inode f_info;
+				extfs_inode f_info = {0};
 				extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
 				
 				if(!(f_info.types_n_perm & 0x4000)){ //not dir
+					draw_string("f_info.types_n_perm = ");
+					draw_hex(f_info.types_n_perm);
+					dump_inode(f_info);
 					return -ENOTDIR;
 				}
 				
@@ -274,7 +300,7 @@ long
 		extfs_read_inode_struct(&inode_tab,d, dir_ino);
 	
 	if(!(inode_tab.types_n_perm & 0x4000)){ //not a dir        
-
+			
 			return 0;
 		}
 		
@@ -324,7 +350,7 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		char name[NAME_MAX];
 		ino_t dir_inode = extfs_find_inode_from_name_and_set_name(path, dm_inode, name);
 		if(dir_inode <= 0){
-				return dir_inode;
+				return (int) dir_inode;
 		}
 		
 		diskman_ent *d = diskman_find_ent(dm_inode);
@@ -338,6 +364,10 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		extfs_read_inode_struct(&dir_ino, d, dir_inode);	
 		
 				if(!(dir_ino.types_n_perm & 0x4000)){ //not dir
+										draw_string("dir_ino.types_n_perm = ");
+															dump_inode(dir_ino);
+
+					draw_hex(dir_ino.types_n_perm);
 					return -ENOTDIR;
 				}
 						

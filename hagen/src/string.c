@@ -263,11 +263,21 @@ char *err_str_tab[] = {
 	"Too many links",
 	"Broken pipe",
 	"Argument out of range",
-	"Cannot represent result",
+	"Cannot represent result"
 	
 	
 };
 char *strerror(int errnum){
+	if(errnum < 0){
+		return "Invalid errno";
+	}
+	if(errnum > (sizeof(err_str_tab) / sizeof(char*))){
+	
+		return "Invalid errno";
+		
+	}
+	
+
 	return err_str_tab[errnum];
 }
 

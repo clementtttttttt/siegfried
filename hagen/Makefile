@@ -5,8 +5,7 @@ AR := x86_64-pc-none-elf-ar
 
 INC_PATH:=include
 
-override CFLAGS += -I$(INC_PATH)  -O0 
-
+override CFLAGS += -I$(INC_PATH)  -O3 -static
 
 # path macros
 BIN_PATH := bin

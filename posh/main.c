@@ -81,6 +81,11 @@ int main(){
 				if(dir == NULL){
 						dir = "./";
 				}
+				
+			if(!strcmp(tok, "reboot")){
+				
+				syscall3(sys_reboot+2, 0, (void*)SYSCALL_REBOOT_MAGIC, (void*)SYSCALL_REBOOT_MAGIC2);
+			}
 			if(!strcmp(tok, "cd")){
 				char buf[PATH_MAX] = {0};
 				memset(buf, 0, PATH_MAX);
@@ -91,7 +96,8 @@ int main(){
 	
 				int ret = chdir(buf);
 				if(ret!=0){
-					puts(strerror(-ret));
+					char *test = strerror(-ret);
+					puts(test);
 					puts("\n");
 				}
 			}
