@@ -73,7 +73,7 @@ typedef struct acpi_madt{
 
 }acpi_madt;
 
-typedef enum{
+typedef enum acpi_gas_addrspace {
 		GAS_MEM,
 		GAS_IO,
 		GAS_PCICS,
@@ -97,12 +97,12 @@ typedef enum{
 } acpi_gas_sz_t;
 typedef struct acpi_gas{
 
-	acpi_gas_addrspace_t address_space;
+	unsigned char address_space;
 	unsigned char size;
 	unsigned char off;
-	acpi_gas_sz_t access_size;
+	unsigned char access_size;
 	unsigned long addr;
-}acpi_gas;
+}__attribute__((packed))acpi_gas ;
 
 typedef struct acpi_fadt{
     acpi_sdt_header header;
@@ -151,10 +151,16 @@ typedef struct acpi_fadt{
 	
 	unsigned short arch_flags;
 	
+	unsigned char rsvd_2;
+	unsigned int flags;
+	
 	acpi_gas reset_reg;
+	unsigned char reset_value;
 
 
 }__attribute__((packed))acpi_fadt;
+
+int acpiman_try_reboot();
 
 typedef struct acpi_hpet{
     acpi_sdt_header header;

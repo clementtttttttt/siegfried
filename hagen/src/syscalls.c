@@ -4,6 +4,7 @@
 #include "syscalls.h"
 #include <errno.h>
 #include <unistd.h>
+#include <sys/types.h>
 syscall_siegfried_file *fds[4096] = {0};
 static unsigned long lowest_fd = 1;
 
@@ -14,7 +15,10 @@ int *__errno(){
 }
 
 
-void _exit(int st){
+pid_t spawn(char *path, char** argv, char** env, unsigned long attrs){
+	return syscall4(sys_spawn,path, argv, env, attrs);
+}
+void exit(int st){
 	syscall1(sys_exit, (void*)(unsigned long)st);
 	while(1){}
 }

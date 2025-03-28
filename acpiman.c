@@ -4,6 +4,7 @@
 #include "debug.h"
 #include "draw.h"
 #include "page.h"
+#include "io.h"
 
 acpi_rsdp_desc sys_rsdp_desc;
 
@@ -16,6 +17,51 @@ int acpiman_isvalid(void* stuff, unsigned long size){
         sum += bytes[i];
     }
     return !((unsigned char)sum);
+}
+
+void acpi_gas_poke(acpi_gas *addr, unsigned long in){
+	draw_hex(addr->address_space);
+	draw_hex(addr->access_size);
+	draw_hex(addr->addr);
+	draw_hex(sizeof(acpi_gas));
+	switch((acpi_gas_addrspace_t)addr->address_space){
+		case GAS_IO:
+		{
+			switch((acpi_gas_sz_t)addr->access_size){
+				case SZ_CHAR:
+					io_outb(addr->addr, in);
+				break;
+				case SZ_INT:
+					io_outl(addr->addr, in);
+				break;
+				case SZ_NULL:
+					io_outb(addr->addr, in);
+				break;
+				default:
+				break;
+			}
+		}
+		break;
+		case GAS_MEM:
+		{
+			void *a = page_map_paddr_mmio(addr->addr, 1);
+			switch((acpi_gas_sz_t)addr->access_size){
+				case SZ_CHAR:
+					*(unsigned char*)a = in;
+				break;
+				case SZ_SHORT:
+					*(unsigned short*)a = in;
+				break;
+				case SZ_INT:
+					*(unsigned int*)a = in;
+				break;
+				default:
+				break;
+			}
+		}
+		default:
+		break;
+	}
 }
 
 acpi_sdt_header *acpiman_get_tab(char* magic){
@@ -33,6 +79,19 @@ acpi_sdt_header *acpiman_get_tab(char* magic){
     return (acpi_sdt_header*) 0;
 }
 
+static acpi_gas reset_addr;
+static unsigned long reset_value;
+
+int acpiman_try_reboot(){
+	
+	
+	
+
+	acpi_gas_poke(& reset_addr, reset_value);
+	//reset failed if we reach this point
+	while(1){}
+	return -1;
+}
 void acpiman_setup(void* rsdp){
     mem_cpy(&sys_rsdp_desc, rsdp, sizeof(acpi_rsdp_desc));
 
@@ -107,6 +166,10 @@ void acpiman_setup(void* rsdp){
         mem_cpy(magic, h->magic, 4);
         //draw_string(magic);
     }
+
+	acpi_fadt *fadt = (acpi_fadt*)acpiman_get_tab("FACP");
+	reset_addr = fadt->reset_reg;
+	reset_value = fadt->reset_value;
 
 
 }

@@ -228,7 +228,7 @@ char* strtok_r(char* s1, const char* s2, char** prevS1) {
 }
 
 
-char *err_str_tab[] = {
+const char *err_str_tab[256] = {
 	"Success",
 	"Not superuser",
 	"Nonexistant file or directory",
@@ -267,18 +267,12 @@ char *err_str_tab[] = {
 	
 	
 };
-char *strerror(int errnum){
-	if(errnum < 0){
-		return "Invalid errno";
-	}
-	if(errnum > (sizeof(err_str_tab) / sizeof(char*))){
+const char *strerror(int errnum){
 	
-		return "Invalid errno";
-		
-	}
+	const char* ret =  err_str_tab[errnum];
 	
 
-	return err_str_tab[errnum];
+	return ret;
 }
 
 #undef strtok
@@ -335,12 +329,13 @@ void* memset(void* ptr, int value, size_t num) {
 #undef strlen
 size_t strlen(const char* str) {
 	size_t len = 0;
+	/*
 #if defined(__GNUC__) && defined(_TARGET_X86_)
 	const char* endPtr = str;
 	asm("repne scasb" : "+D"(endPtr) : "a"(0), "c"(~0) : "cc");
 	len = (endPtr - str) - 1;
-#else
+#else*/
 	while (*str != '\0') { str++; len++; }
-#endif
+//#endif
 	return len;
 }

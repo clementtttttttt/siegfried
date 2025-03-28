@@ -474,7 +474,7 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 DISKMAN_FOPEN_FUNC(extfs_fopen){
 		siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
 		
-		unsigned long curr_inode = extfs_find_inode_from_name_and_set_name(path, disk_id,f->name);
+		ino_t curr_inode = extfs_find_inode_from_name_and_set_name(path, disk_id,f->name);
 		
 		if(curr_inode <= 0){
 								k_obj_free(f);

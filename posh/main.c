@@ -80,13 +80,25 @@ int main(){
 				
 				if(dir == NULL){
 						dir = "./";
+						
 				}
-				
+			if(tok[0] == '.' || tok[0] == '/'){
+				pid_t ret = spawn(tok, 0,0,0);
+				if(ret<0){
+					puts(strerror(-ret));
+					puts("\n");
+				}
+			}
+			else
+			if(!strcmp(tok, "exit")){
+				exit(0);
+			}
+			else
 			if(!strcmp(tok, "reboot")){
 				
-				syscall3(sys_reboot+2, 0, (void*)SYSCALL_REBOOT_MAGIC, (void*)SYSCALL_REBOOT_MAGIC2);
+				syscall3(sys_reboot, 0, (void*)SYSCALL_REBOOT_MAGIC, (void*)SYSCALL_REBOOT_MAGIC2);
 			}
-			if(!strcmp(tok, "cd")){
+			else if(!strcmp(tok, "cd")){
 				char buf[PATH_MAX] = {0};
 				memset(buf, 0, PATH_MAX);
 				if(dir[0] != '/'){ //absolute
@@ -101,7 +113,7 @@ int main(){
 					puts("\n");
 				}
 			}
-				
+				else
 			if(!strcmp(tok, "ls")){
 				//if(
 
@@ -116,7 +128,9 @@ int main(){
 						break;
 					}
 					else{
-						puts(strerror(-ret));
+						char *test = strerror(-ret);
+							puts(test);
+
 						puts("\n");
 						break;
 					}
@@ -140,7 +154,11 @@ int main(){
 				
 				
 			}
-			
+			else{
+			puts(tok);
+			puts(": Unknown command");
+			puts("\n");
+		}
 		}
 		while(tok=next_tok());
 		

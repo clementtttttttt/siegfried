@@ -11,7 +11,7 @@
 
 
 
-int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env, unsigned long attrs){
+pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env, unsigned long attrs){
 	
 	pml4e *old = page_get_curr_tab();
 
@@ -19,7 +19,7 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
     diskman_ent *d;
     if(!(d = diskman_find_ent(disk_inode))){
         draw_string("invalid inode number\n");
-        return 0;
+        return -EINVAL;
     }
  
 
@@ -28,16 +28,16 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
     
 
 
-    page_switch_krnl_tab(); //krnl stuff
      
    // unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(disk_inode),EXTFS_ROOTDIR_INODE, name);
     
-    if((long)f <= 0){
-			draw_string("runner: exec file not found\n");
+    if((long)f < 0){
 			//if(curr_task)
 			//	curr_task->errno = ENOENT;	
-			return 0;
+			return (pid_t)f;
     }
+
+    page_switch_krnl_tab(); //krnl stuff
 
     elf_head *header = k_obj_alloc(sizeof(elf_head));
 	
@@ -46,11 +46,10 @@ int  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char**
     d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
 	
     if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
-		draw_string("invalid elf file\n");
 		
 		k_obj_free(header);
 		k_obj_free(f);
-		return 0;
+		return (pid_t) -ENOEXEC;
 	}
 			    draw_string("number of loads: ");
 	    draw_hex(header->prog_tab_num_ents);

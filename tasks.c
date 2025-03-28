@@ -182,8 +182,8 @@ void tasks_setup(){
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
     
-    if(!runner_spawn_task(krnl_init_inode, "/sbin/sfinit",0,0,0)){ //tid 0 = fail
-	if(!runner_spawn_task(krnl_init_inode, "/sfinit",0,0,0)){ //try other paths
+    if(runner_spawn_task(krnl_init_inode, "/sbin/sfinit",0,0,0)<0){ //tid <0 = fail
+	if(runner_spawn_task(krnl_init_inode, "/sfinit",0,0,0)<0){ //try other paths
 
 	}
     }

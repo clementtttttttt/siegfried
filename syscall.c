@@ -10,6 +10,7 @@
 #include "syscall.h"
 #include "runner.h"
 #include "obj_heap.h"
+#include "acpiman.h"
 
 #include "types.h"
 #include "errno.h"
@@ -212,11 +213,13 @@ unsigned long syscall_write(siegfried_file *f, void *buf, unsigned long sz_bytes
 }
 
 
-unsigned long syscall_spawn(char *path, char** argv, char** env, unsigned long attrs){
+pid_t syscall_spawn(char *path, char** argv, char** env, unsigned long attrs){
 	//parse path
 	
 	unsigned long disk_inode = parse_path(&path);
-	return runner_spawn_task(disk_inode, path, argv, env, attrs);
+	
+	pid_t ret =  runner_spawn_task(disk_inode, path, argv, env, attrs);
+	return ret;
 	
 }
 
@@ -312,9 +315,9 @@ int syscall_reboot(int arg, unsigned long magic, unsigned long magic2){
 		return -EINVAL;
 	}
 	
-	
+	acpiman_try_reboot();
 	//TODO: permission authorise before reboot, ACPI reboot
-	asm("lgdt 0");
+	asm volatile("lidt 0;int $69");
 	
 	return 0;
 }

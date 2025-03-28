@@ -52,7 +52,7 @@ int strcoll ( const char * str1, const char * str2 );
 char *stpncpy(char *dest, const char *src, size_t n);
 int strcasecmp(const char *s1, const char *s2);
 int strncasecmp(const char *s1, const char *s2, size_t n);
- char *strerror(int errnum);
+const char *strerror(int errnum);
 
 #ifdef __GNUC__
 /* GCC has builtin functions which have two possible effects:
