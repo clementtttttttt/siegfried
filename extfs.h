@@ -1,3 +1,5 @@
+#include "types.h"
+
 typedef struct extfs_superblock{
 
     unsigned int num_inodes;
@@ -121,14 +123,14 @@ typedef struct extfs_bgrp_desc{
 
 typedef struct extfs_disk_info{
 
-    unsigned int blksz_bytes;
-    unsigned long blksz_sects;
+    size_t blksz_bytes;
+    size_t blksz_sects;
 
-    unsigned long inodes_per_grp;
-    unsigned long blk_start;
-    unsigned long bgdt_sz_b;
+    size_t inodes_per_grp;
+    size_t blk_start;
+    size_t bgdt_sz_b;
 
-    unsigned long inode_struct_sz_b;
+    size_t inode_struct_sz_b;
 
     unsigned int req_flags, opt_flags;
 
@@ -185,6 +187,25 @@ typedef struct extfs_dirent{
 
 }__attribute__((packed))extfs_dirent;
 
+typedef struct extfs_hashdir_ent{
+	unsigned int hash;
+	unsigned int block;
+}__attribute__((packed))extfs_hashdir_ent;
+
+typedef struct extfs_hashdir_root{
+	
+	char onedot_and_twodot[0x1c];
+	unsigned char hash_type;
+	unsigned char info_len;
+	unsigned char indir_levels;
+	unsigned char rsvd;
+	unsigned short limit_ents;
+	unsigned short count_ents;
+	unsigned int file_block;
+	extfs_hashdir_ent ents[0];
+	
+}__attribute__((packed))extfs_hashdir_root;
+
 typedef struct extfs_extent_head{
 
     unsigned short magic;
@@ -227,7 +248,8 @@ typedef struct extfs_blk_list{
 
 #define EXTFS_REQF_EXTENT 0x40
 #define EXTFS_REQF_64BIT 0x80
-
+#define EXTFS_BGRP_DESC_SZ_32BITS 32
+#define EXTFS_HASHED_IDX_FLAG 0x1000
 void extfs_enum(diskman_ent *d);
 
 extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, ino_t inode, extfs_bgrp_desc *descs_16x);

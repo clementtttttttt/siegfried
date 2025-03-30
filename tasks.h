@@ -110,7 +110,7 @@ struct task_page_ent{
 #undef errno
 
 typedef struct task{
-    krnl_state *krnl_state; //stack + STACK_SZ - sizeof(krnl_state).
+    volatile krnl_state *volatile krnl_state; //stack + STACK_SZ - sizeof(krnl_state).
     void* krnl_stack_base;
     void *user_stack_base;
     task_int_sframe *tf;
@@ -136,7 +136,7 @@ void task_dump_sframe(task_int_sframe *in);
 void task_scheduler();
 void task_yield();
 void tasks_setup();
-void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_state *new_ptr_to_stack_addr);
+void task_save_and_change_krnl_state(volatile krnl_state *volatile*old_ptr_to_stack_addr,volatile  krnl_state *volatile new_ptr_to_stack_addr);
 
 void task_exit(unsigned long);
 void task_enter_krnl();

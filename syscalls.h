@@ -97,6 +97,7 @@ int execve(char *name, char **argv, char **env);
 int fstat(int file, struct stat *st);
 int read(int file, char *buf, int len);
 pid_t spawn(char *path, char** argv, char** env, unsigned long attrs);
+int opendir(char* path, syscall_siegfried_dir *in);
 
 int getpid();
 #define SYSCALL_REBOOT_MAGIC 0xC1EA1EBE1550CA55

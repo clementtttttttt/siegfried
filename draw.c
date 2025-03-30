@@ -291,6 +291,29 @@ void draw_string_w_sz(const char* str, unsigned int sz){
 
 }
 
+void hexdump(void *ptr, unsigned long i2){
+	    char hexlookup[] = "0123456789ABCDEF";
+
+	char *ptr2 = ptr;
+	    draw_append_text_buf('\n');
+	
+	for(unsigned long i=0;i<i2;++i){        
+				if(i % 8 == 0){
+				    draw_append_text_buf('\n');
+
+		}
+        draw_append_text_buf(hexlookup[*ptr2 >> 4 & 0xf]);
+        draw_append_text_buf(hexlookup[*ptr2 & 0xf]);
+		draw_append_text_buf(' ');
+		++ptr2;
+		
+
+	}
+	draw_append_text_buf('\n');
+    draw_swap_textbuf();
+
+}
+
 void draw_hex(unsigned long in){
     char hexlookup[] = "0123456789ABCDEF";
 

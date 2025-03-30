@@ -110,7 +110,7 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 		 cmd.prp2 = 0;
 	}
     cmd.cint10 = off_sects & 0xffffffff;
-    cmd.cint11 = off_sects >> 32;
+    cmd.cint11 = off_sects >> 32 & 0xffffffff;
 
     cmd.cint12 = (num_sects & 0xffff) - 1;
 
@@ -142,7 +142,6 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
   //  in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = in->ctrl->phase;
 
-    //FIXME!!!!!: proper handling of ios with more than 8 sects or smth
         mem_cpy(buf, prp1, num_sects*512);
         k_pageobj_free(&page_heap,prp1);
 	
@@ -159,8 +158,6 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 			
 			for(int i=0;prp2_vm[i] != 0&& (left > 0);++i){
 				mem_cpy(buf, prp2_vm[i], ((left>=4096)?4096:left));
-								draw_string("LOAD");
-												draw_hex( ((left>=4096)?4096:left));
 
 				k_pageobj_free(&page_heap,prp2_vm[i]);
 				buf = (void*)((unsigned long)buf + ((left>=4096)?4096:left));
@@ -235,7 +232,7 @@ DISKMAN_READ_FUNC(nvme_read_disk){
     nvme_send_io_cmd(disk, off_bytes/512, /*opcode*/2, buf_sz / 512, (rdbuf));
 
 
-    mem_cpy(buf,(void*) ((unsigned long)rdbuf+off_bytes%512), num_bytes);
+    mem_cpy(buf,(void*) ((size_t)rdbuf+off_bytes%512), num_bytes);
 	
     k_obj_free(rdbuf);
 

@@ -48,7 +48,6 @@ asm("task_load_task_regs_and_spawn:;\
                                 ;\
         iretq");
 
-void task_save_and_change_krnl_state(krnl_state **old_ptr_to_stack_addr, krnl_state *new_ptr_to_stack_addr);
 
 asm(".globl task_save_and_change_krnl_state;\
     task_save_and_change_krnl_state:;\
@@ -125,7 +124,8 @@ task *task_new(){
 
     stack -= sizeof(krnl_state);
     curr->krnl_state = (krnl_state*) stack;
-    mem_set(curr->krnl_state, 0 , sizeof(krnl_state));
+    //not volatile yet
+    mem_set((void*)curr->krnl_state, 0 , sizeof(krnl_state));
 
     curr->krnl_state->rip = (unsigned long) task_pre_init;
 
@@ -198,7 +198,7 @@ void tasks_setup(){
 
 
 
-krnl_state *scheduler_state;
+static volatile krnl_state *volatile scheduler_state;
 
 volatile int task_in_krnl = 0;
 
@@ -374,7 +374,7 @@ void task_yield(){
         
 
 		
-        task_save_and_change_krnl_state((krnl_state**)&curr_task->krnl_state, scheduler_state);
+        task_save_and_change_krnl_state(&curr_task->krnl_state, scheduler_state);
 		
 	
 }

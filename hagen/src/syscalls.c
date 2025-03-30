@@ -14,6 +14,10 @@ int *__errno(){
 	return &_sys_errno;
 }
 
+int opendir(char* path, syscall_siegfried_dir *in){
+	return (int)syscall2(sys_open_dir, path, in);
+
+}
 
 pid_t spawn(char *path, char** argv, char** env, unsigned long attrs){
 	return syscall4(sys_spawn,path, argv, env, attrs);
@@ -78,9 +82,6 @@ int getpid(){
 	return syscall0(sys_get_tid);
 }
 
-int opendir(){
-	
-}
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset){
 	syscall6(sys_mmap,addr, len, prot, flags, fd, offset);
 }

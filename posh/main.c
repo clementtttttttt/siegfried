@@ -12,14 +12,14 @@ int main(){
 	
         
     //    __builtin_trap();
-    if(getpid() != 1){
+    /*if(getpid() != 1){
 		while(1){
 			
 			puts("HEY!");
 			syscall1(sys_sleep, (void*)100);
 			
 		}
-	}
+	}*/
 
        	char msg1[] = "Piece-of-shell v1.0\nA badly written duct-taped shell for SIEGFRIED\n\n"; 
 
@@ -127,7 +127,7 @@ int main(){
 
 				
 				syscall_siegfried_dir curr_dir;
-				long ret = (long)syscall2(sys_open_dir, dir, &curr_dir);
+				int ret = opendir(dir, &curr_dir);
 				if(ret != 0){
 					if(ret == -ENOTDIR){
 						//it's a file
