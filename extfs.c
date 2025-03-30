@@ -341,15 +341,17 @@ long
             extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
 
              if(inode_tab.flags & EXTFS_HASHED_IDX_FLAG){
-				ret=d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes) 
-                                 + ((extfs_disk_info*)d->fs_disk_info)->blk_start * inf->blksz_bytes /*sb blk addr*/
-             , 0x1c , parent); //read in twodots and bullcrap
+				 ret = extfs_read_inode_contents(d, dir_ino, parent, 0x1c, 0);
+				//read in twodots and bullcrap
              
 				char hash_root_mem[sizeof(extfs_hashdir_root) + 160] = {0};
 				extfs_hashdir_root *hash_root = (extfs_hashdir_root*)hash_root_mem;
 				
-				ret = d->read_func(d->inode, (ex->blk_dat * inf->blksz_bytes), sizeof(extfs_hashdir_root) + 160, hash_root);
+				ret = extfs_read_inode_contents(d, dir_ino, hash_root,  sizeof(extfs_hashdir_root) + 160, 0);
+				
+				//ret = d->read_func(d->inode, (ex->blk_dat * inf->blksz_bytes), sizeof(extfs_hashdir_root) + 160, hash_root);
 				dump_hashroot(hash_root);
+
 				
 				hexdump(hash_root, sizeof(extfs_hashdir_root) + 32);
 			 }
