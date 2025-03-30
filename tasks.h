@@ -130,7 +130,7 @@ typedef struct task{
     
 }task;
 
-extern task *curr_task;
+extern  task *volatile curr_task;
 void task_dump_sframe(task_int_sframe *in);
 
 void task_scheduler();

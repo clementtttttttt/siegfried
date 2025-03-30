@@ -26,15 +26,15 @@ void syscall_setup(){
 
 void syscall_sleep(unsigned long in1){
 
-    asm("sti");
 
 
     unsigned long count = rtc_get_count() + in1;
 
-    while(count >= rtc_get_count()){
+    while(rtc_get_count() < count){
+
+		task_yield();
     }
 
-    asm("cli");
 
 }
 

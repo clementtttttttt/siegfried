@@ -808,7 +808,7 @@ void page_switch_tab(pml4e *tab){
 		
 		asm volatile("\
         movq %0, %%cr3;\
-        "::"r"(tab):);
+        "::"d"(tab):);
  }
 
 void *page_find_and_alloc_user(pml4e *tab, unsigned long vaddr, unsigned long pgs){

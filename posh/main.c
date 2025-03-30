@@ -12,6 +12,14 @@ int main(){
 	
         
     //    __builtin_trap();
+    if(getpid() != 1){
+		while(1){
+			
+			puts("HEY!");
+			syscall1(sys_sleep, (void*)100);
+			
+		}
+	}
 
        	char msg1[] = "Piece-of-shell v1.0\nA badly written duct-taped shell for SIEGFRIED\n\n"; 
 

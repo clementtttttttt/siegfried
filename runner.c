@@ -161,6 +161,7 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 			}
 			
 	}
+	k_obj_free(header);
 
 		page_switch_tab(old);
 
@@ -168,7 +169,6 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	d->fclose(f);
 
 
-		task_yield();
-	k_obj_free(header);
+	
     return t->tid;
 }

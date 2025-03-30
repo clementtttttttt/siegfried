@@ -48,6 +48,7 @@ void timer_setup(){
 
     draw_string("APIC TIMER INIT COUNT=");
     draw_hex(cnts_in_TTEth);
+    
 
     apic_write_reg(0x380, cnts_in_TTEth); //set timer init count
 

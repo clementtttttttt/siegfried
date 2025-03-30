@@ -11,9 +11,9 @@
 
 unsigned char tasking_enabled = 0;
 
-task *tasks=0;
+static task *tasks=0;
 
-task *curr_task=0;
+ task *volatile curr_task=0;
 
 extern tss_t tss;
 extern KHEAPSS page_heap;
@@ -34,7 +34,7 @@ int get_tasks_list_len(){
 			
 }
 
-void task_set_tss(unsigned long in){
+inline static void task_set_tss(unsigned long in){
         tss.rsp_0 = in;
 }
 
@@ -260,21 +260,22 @@ void task_cleanup_zombie(){
 						
 						iter->next = tasks->next;
 						tasks = tasks->next;
-						k_obj_free(curr_task);
+						k_obj_free((void*)curr_task);
 						curr_task = tasks;
 					}
 					else{
-						k_obj_free(curr_task);
+						k_obj_free((void*)curr_task);
 						curr_task=tasks;
 						
 					}	
 
 }
 
+extern void apic_ack_int();
+
 void task_scheduler(){
 		scheduler_started = 1;
         while(1){
-		
 
                 if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
 
@@ -295,6 +296,7 @@ void task_scheduler(){
 
 
                 curr_task = curr_task->next;
+                
                 
                 
                 task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ-512-sizeof(task_int_sframe));
@@ -372,7 +374,7 @@ void task_yield(){
         
 
 		
-        task_save_and_change_krnl_state(&curr_task->krnl_state, scheduler_state);
+        task_save_and_change_krnl_state((krnl_state**)&curr_task->krnl_state, scheduler_state);
 		
 	
 }

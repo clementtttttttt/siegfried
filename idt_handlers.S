@@ -23,7 +23,7 @@ tmp_r15: .quad 0
 rip_save: .quad 0
 rax_save: .quad 0
 
-
+.globl apic_ack_int
 apic_ack_int:
     movq apic_addr, %rdi
     movl $0, 0xb0(%rdi)
@@ -100,12 +100,9 @@ idt_timer_handler_s:
 
     call timer_handler
 
-    cmpl $1, task_in_krnl
-    jz 3f
 
     call task_yield
 
-    3:
 
     movq $2f, rip_save
     jmp idt_load_regs
