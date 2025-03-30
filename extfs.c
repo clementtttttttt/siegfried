@@ -8,9 +8,7 @@
 #include "debug.h"
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-//FIXME: HANDLE 64bit sISZE PROPERLY
-
-//FIXME: remove integer overflow in block calculations
+//FIXME: FLEX_BG READ
 
 void dump_inode(extfs_inode ino){
 	draw_string("\nINODE DUMP!\n");
@@ -46,39 +44,24 @@ void extfs_read_inodes_blk_desc(diskman_ent *d, ino_t inode, extfs_bgrp_desc *in
     extfs_disk_info *inf = d->fs_disk_info;
         unsigned long sz_s = inf -> blksz_bytes ;
         
+       draw_string("block group=");
+       draw_hex((((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp))) );
 
-	draw_string("block group=");
-	draw_hex(((((size_t)inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp))));
+	draw_string("bgd blocks=");
+	
+	unsigned long idx =                           (((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)))  * inf->bgdt_sz_b  
+                     + ((extfs_disk_info*)d->fs_disk_info)->blk_start * sz_s /*sb blk addr*/
+                     + sz_s;
+
 
     d->read_func(d->inode,
-                    ((((size_t)inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)))  * inf->bgdt_sz_b  
-                     + ((extfs_disk_info*)d->fs_disk_info)->blk_start * sz_s /*sb blk addr*/
-                     + sz_s/*1 block offset*/
-                     + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b
+                    idx
                      , sizeof(extfs_bgrp_desc), in);
 
 
 }
 
 
-extfs_bgrp_desc* extfs_read_inodes_blk_desc_new(diskman_ent *d, ino_t inode, extfs_bgrp_desc (*descs_8x)[]){
-
-    extfs_disk_info *inf = d->fs_disk_info;
-        unsigned long sz_s = inf -> blksz_bytes ;
-        
-
-	draw_string("block group=");
-	draw_hex(((((size_t)inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp))));
-
-    d->read_func(d->inode,
-                    ((((size_t)inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)))  * inf->bgdt_sz_b  
-                     + ((extfs_disk_info*)d->fs_disk_info)->blk_start * sz_s /*sb blk addr*/
-                     + sz_s/*1 block offset*/
-                     , sizeof(extfs_bgrp_desc[8]), descs_8x);
-
-
-    return (extfs_bgrp_desc*)((unsigned long)descs_8x + (((inode-1) / ((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)) % (512 / inf->bgdt_sz_b) * inf->bgdt_sz_b);
-}
 
 void extfs_read_inode_struct(extfs_inode * inode_tab,diskman_ent *d, ino_t inode){
 

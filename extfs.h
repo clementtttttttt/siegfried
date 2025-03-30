@@ -1,5 +1,6 @@
 #include "types.h"
 
+
 typedef struct extfs_superblock{
 
     unsigned int num_inodes;
@@ -79,6 +80,15 @@ typedef struct extfs_superblock{
     unsigned int num_blks_h;
     unsigned int num_rsvd_blks_h;
     unsigned int num_free_blks_h;
+    
+    unsigned short minimal_inode_size;
+    unsigned short inode_reserve_size;
+    unsigned int flags;
+    unsigned short raid_stride;
+    unsigned short mmp_interval;
+    unsigned long mmp_block;
+    unsigned int raid_width;
+    unsigned char flex_bg_sz_exp;
 }__attribute__((packed))extfs_superblock;
 
 typedef struct extfs_bgrp_desc{
