@@ -8,7 +8,129 @@
 #include "debug.h"
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
 
-//FIXME: FLEX_BG READ
+
+#define ROUND(f, a, b, c, d, x, s)	\
+	(a += f(b, c, d) + x, a = rol32(a, s))
+#define K1 0
+#define K2 013240474631UL
+#define K3 015666365641UL
+
+
+/* F, G and H are basic MD4 functions: selection, majority, parity */
+#define F(x, y, z) ((z) ^ ((x) & ((y) ^ (z))))
+#define G(x, y, z) (((x) & (y)) + (((x) ^ (y)) & (z)))
+#define H(x, y, z) ((x) ^ (y) ^ (z))
+
+/**
+ * rol32 - rotate a 32-bit value left
+ * @word: value to rotate
+ * @shift: bits to roll
+ */
+static inline uint32_t rol32(uint32_t word, unsigned int shift)
+{
+	return (word << (shift & 31)) | (word >> ((-shift) & 31));
+}
+
+
+/*
+ * Basic cut-down MD4 transform.  Returns only 32 bits of result.
+ */
+static uint32_t half_md4_transform(uint32_t buf[4], uint32_t const in[8])
+{
+	uint32_t a = buf[0], b = buf[1], c = buf[2], d = buf[3];
+
+	/* Round 1 */
+	ROUND(F, a, b, c, d, in[0] + K1,  3);
+	ROUND(F, d, a, b, c, in[1] + K1,  7);
+	ROUND(F, c, d, a, b, in[2] + K1, 11);
+	ROUND(F, b, c, d, a, in[3] + K1, 19);
+	ROUND(F, a, b, c, d, in[4] + K1,  3);
+	ROUND(F, d, a, b, c, in[5] + K1,  7);
+	ROUND(F, c, d, a, b, in[6] + K1, 11);
+	ROUND(F, b, c, d, a, in[7] + K1, 19);
+
+	/* Round 2 */
+	ROUND(G, a, b, c, d, in[1] + K2,  3);
+	ROUND(G, d, a, b, c, in[3] + K2,  5);
+	ROUND(G, c, d, a, b, in[5] + K2,  9);
+	ROUND(G, b, c, d, a, in[7] + K2, 13);
+	ROUND(G, a, b, c, d, in[0] + K2,  3);
+	ROUND(G, d, a, b, c, in[2] + K2,  5);
+	ROUND(G, c, d, a, b, in[4] + K2,  9);
+	ROUND(G, b, c, d, a, in[6] + K2, 13);
+
+	/* Round 3 */
+	ROUND(H, a, b, c, d, in[3] + K3,  3);
+	ROUND(H, d, a, b, c, in[7] + K3,  9);
+	ROUND(H, c, d, a, b, in[2] + K3, 11);
+	ROUND(H, b, c, d, a, in[6] + K3, 15);
+	ROUND(H, a, b, c, d, in[1] + K3,  3);
+	ROUND(H, d, a, b, c, in[5] + K3,  9);
+	ROUND(H, c, d, a, b, in[0] + K3, 11);
+	ROUND(H, b, c, d, a, in[4] + K3, 15);
+
+	buf[0] += a;
+	buf[1] += b;
+	buf[2] += c;
+	buf[3] += d;
+
+	return buf[1]; /* "most hashed" word */
+}
+#undef ROUND
+#undef K1
+#undef K2
+#undef K3
+#undef F
+#undef G
+#undef H
+
+static void str2hashbuf_signed(const char *msg, int len, uint32_t *buf, int num)
+{       
+	draw_hex(num);
+        uint32_t   pad, val;
+        int     i;
+        const signed char *scp = (const signed char *) msg;
+                                
+        pad = (uint32_t)len | ((uint32_t)len << 8);
+        pad |= pad << 16;
+                
+        val = pad;      
+        if (len > num*4)
+                len = num * 4;
+        for (i = 0; i < len; i++) {
+                val = ((int) scp[i]) + (val << 8); 
+                if ((i % 4) == 3) {
+                        *buf++ = val;
+                        val = pad;
+                        num--;
+                }
+        }       
+        if (--num >= 0)
+                *buf++ = val;
+        while (--num >= 0)
+                *buf++ = pad;
+}            
+
+ uint32_t extfs_dir_hash(const extfs_inode *d, const char *name, long len){
+	uint32_t seed[4];
+	     /* Initialize the default seed for the hash checksum functions */
+        seed[0] = 0x67452301;
+        seed[1] = 0xefcdab89;
+        seed[2] = 0x98badcfe;
+        seed[3] = 0x10325476;
+        
+        uint32_t hash_in[8];
+        const char *backup = name;
+        
+        while(len>0){
+			str2hashbuf_signed(backup, len, hash_in, 8);
+			half_md4_transform(seed, hash_in);
+			len -= 32;
+			backup += 32;
+		}
+	return 0;
+} 
+
 
 void dump_inode(extfs_inode ino){
 	draw_string("\nINODE DUMP!\n");
@@ -243,7 +365,7 @@ DISKMAN_FCLOSE_FUNC(extfs_fclose){
 
 
 
-long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name){
+ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name){
 			str_tok_result res = {0,0};
 
 		ino_t curr_inode;
@@ -257,6 +379,8 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 				extern char *syscall_getcwd(char *buf, size_t size);
 				syscall_getcwd(buf, PATH_MAX);
 				curr_inode = extfs_find_inode_from_name_and_set_name(buf,disk_id, new_name);
+				
+				
 				//TODO: open app dir
 				if(curr_inode< 0){
 				//	draw_hex(curr_inode);
@@ -275,13 +399,11 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 		
 		
 		str_tok_result name_res = {0,0};
-		char name[256];
+		char name[PATH_MAX];
 		
 
 		while(res.sz != 0){
 
-						draw_string("curr_inode=");
-		draw_hex(curr_inode);
 		
 				mem_set(name, 0, 256);
 				mem_cpy(name , path+res.off, res.sz);
@@ -289,7 +411,23 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 				extfs_inode f_info = {0};
 				extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
 				
-				if(!(f_info.types_n_perm & 0x4000)){ //not dir
+				if(f_info.types_n_perm & EXTFS_SYMLINK_TYPE){
+					
+										char symlink_str[f_info.sz_in_bytes_l + 1];
+
+					if(f_info.sz_in_bytes_l < 60){ //stored in extent stuff
+						draw_string_w_sz((const char*)f_info.blk_data_ptrs, f_info.sz_in_bytes_l);
+											mem_cpy(symlink_str, f_info.blk_data_ptrs, f_info.sz_in_bytes_l);
+
+					}
+					
+					
+					curr_inode  = extfs_find_finode_from_dir(diskman_find_ent(disk_id), curr_inode, symlink_str);
+					
+					
+				}
+				
+				if(!(f_info.types_n_perm & EXTFS_DIR_TYPE)){ //not dir
 					draw_string("f_info.types_n_perm = ");
 					draw_hex(f_info.types_n_perm);
 					dump_inode(f_info);
@@ -314,16 +452,16 @@ long extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,c
 long
  extfs_read_dir_dirents(diskman_ent *d, unsigned long dir_ino, extfs_dirent *parent){
 
-		long ret;
+		long ret =0 ;
 		extfs_disk_info *inf = d->fs_disk_info;
 		
 		
 		extfs_inode inode_tab;
 		extfs_read_inode_struct(&inode_tab,d, dir_ino);
 	
-	if(!(inode_tab.types_n_perm & 0x4000)){ //not a dir        
+		if(!(inode_tab.types_n_perm & 0x4000) ){ //not a dir        
 			
-			return 0;
+			return -ENOTDIR;
 		}
 		
 
@@ -334,31 +472,36 @@ long
         }
         else{
 
-            extfs_extent_head *chk2 =  (extfs_extent_head*)inode_tab.blk_data_ptrs;
             
 
 
-            extfs_extent_end *ex =(extfs_extent_end *)( (unsigned long)chk2 + sizeof(extfs_extent_head));
 
              if(inode_tab.flags & EXTFS_HASHED_IDX_FLAG){
 				 ret = extfs_read_inode_contents(d, dir_ino, parent, 0x1c, 0);
 				//read in twodots and bullcrap
              
-				char hash_root_mem[sizeof(extfs_hashdir_root) + 160] = {0};
+				/*char hash_root_mem[sizeof(extfs_hashdir_root) + 160] = {0};
 				extfs_hashdir_root *hash_root = (extfs_hashdir_root*)hash_root_mem;
 				
 				ret = extfs_read_inode_contents(d, dir_ino, hash_root,  sizeof(extfs_hashdir_root) + 160, 0);
-				
+				//FIXME: proper reading dirents 
 				//ret = d->read_func(d->inode, (ex->blk_dat * inf->blksz_bytes), sizeof(extfs_hashdir_root) + 160, hash_root);
 				dump_hashroot(hash_root);
 
+
 				
-				hexdump(hash_root, sizeof(extfs_hashdir_root) + 32);
+				extfs_dirent test[128];
+				extfs_read_inode_contents(d, dir_ino, test, 128,hash_root->file_block*inf->blksz_bytes);
+					unsigned int hash = extfs_dir_hash(&inode_tab, test[0].name, test[0].namelen_l);
+				draw_hex(hash);
+				
+				hexdump(hash_root, sizeof(extfs_hashdir_root) + 32);*/
+				draw_string("RET=");
+				draw_hex(ret);
 			 }
 			 else{
-				ret=d->read_func(d->inode, (ex->blk_dat)*(inf->blksz_bytes) 
-                                 + ((extfs_disk_info*)d->fs_disk_info)->blk_start * inf->blksz_bytes /*sb blk addr*/
-             , 512*2 , parent);
+				 ret = extfs_read_inode_contents(d, dir_ino, parent, 512*2,0);
+		
 			}
 
         }
@@ -369,11 +512,9 @@ long
 }
 
 DISKMAN_READ_DIR_FUNC(extfs_freaddir){
-	
-			extfs_inode dir_ino;
-		extfs_read_inode_struct(&dir_ino, diskman_find_ent(in->di), in->inode);	
-			char dir_dirents_mem[dir_ino.sz_in_bytes_l];
-			mem_set(dir_dirents_mem, 0, dir_ino.sz_in_bytes_l);
+	//FIXME: proper dirent sizing
+			char dir_dirents_mem[4096];
+			mem_set(dir_dirents_mem, 0, 4096);
         extfs_dirent * dir_dirents = (extfs_dirent*)dir_dirents_mem;
 
 
@@ -401,24 +542,10 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		
 		diskman_ent *d = diskman_find_ent(dm_inode);
 		
-		
 
-		
-		extfs_inode dir_ino;
-		extfs_read_inode_struct(&dir_ino, d, dir_inode);	
-		
-		
-
-				if(!(dir_ino.types_n_perm & 0x4000)){ //not dir
-										draw_string("dir_inode = ");
-
-					draw_hex(dir_inode);
-					dump_inode(dir_ino);
-					return -ENOTDIR;
-				}
 						
 
-		char dir_dirents_mem[dir_ino.sz_in_bytes_l];
+		char dir_dirents_mem[4096];//FIXME: proper dirent size
         extfs_dirent * dir_dirents = (extfs_dirent*)dir_dirents_mem;
 
 		/*
@@ -438,9 +565,15 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 
         }*/
         
-        mem_set(dir_dirents_mem, 0, dir_ino.sz_in_bytes_l);
+        mem_set(dir_dirents_mem, 0, 4096);
         
-        extfs_read_dir_dirents(d, dir_inode,  dir_dirents);
+        long ret = extfs_read_dir_dirents(d, dir_inode,  dir_dirents);
+        		draw_string("ERR!");
+			draw_hex(ret);
+        if(ret <= 0){
+	
+			return ret;
+		}
         
         int count = 0;
         
@@ -552,13 +685,13 @@ void extfs_free_blk_list(extfs_blk_list *l){
 
 }
 
-unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf, unsigned long count, unsigned long off){
+size_t extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf, long count, unsigned long off){
 
     extfs_inode inode_tab; 
     extfs_read_inode_struct(&inode_tab,d, in);
    
     extfs_disk_info *inf = d->fs_disk_info;
-		unsigned long read;
+		unsigned long read=0;
     
     	if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
 
@@ -573,11 +706,17 @@ unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf, uns
                         extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)inode_tab_2.blk_data_ptrs,0);
 
 
-			//TODO: not reading entire extent properly?
+			//FIXME: not reading entire extent properly?
+			
+		  do{
 
-          read= d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + off,count,buf);
-                            
-							
+				read += d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + off,MIN((long)(blks->num_blks * inf->blksz_bytes), count),buf);
+				draw_string("READ");
+				draw_hex(read);
+				count -= blks->num_blks * MIN((long)(blks->num_blks * inf->blksz_bytes), count);
+	      }
+          while(count>0);                
+		  
 
      }
         
@@ -591,7 +730,7 @@ void extfs_fclosedir(ino_t dm_inode, siegfried_dir *in){
 }
 
 
-unsigned long extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
+ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
 
 
     if(d->fs_type != DISKMAN_FS_EXTFS){
@@ -617,8 +756,11 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *n
 
 
         }*/
-        if(extfs_read_dir_dirents(d, dir_inode,  root_dirents) == 0){
-			return 0;
+        long ret;
+        if((ret=extfs_read_dir_dirents(d, dir_inode,  root_dirents) )<=0){
+						draw_string("ERR!");
+			draw_hex(-ret);
+			return ret;
 		}
         
        
@@ -638,7 +780,7 @@ unsigned long extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *n
         }
 
  
-        return 0;
+        return -ENOENT;
 
 }
    

@@ -52,7 +52,7 @@ unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned 
     e->disk->read_func(e->disk->inode, e->lba_start*512 + off, num, buf);
 
 
-    return off;
+    return num;
 }
 
 unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned long num, void *buf){
@@ -62,7 +62,7 @@ unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned
     e->disk->write_func(e->disk->inode, e->lba_start*512 + off, num, buf);
 
 
-    return off;
+    return num;
 }
 
 void diskman_gpt_enum(diskman_ent *in){

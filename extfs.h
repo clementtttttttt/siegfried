@@ -202,6 +202,14 @@ typedef struct extfs_hashdir_ent{
 	unsigned int block;
 }__attribute__((packed))extfs_hashdir_ent;
 
+typedef struct extfs_hashdir_node{
+	char zeroes[8];
+	unsigned short limit_ents;
+	unsigned short count_ents;
+	unsigned int file_block;
+	extfs_hashdir_ent ents[0];
+}__attribute__((packed))extfs_hashdir_node;
+
 typedef struct extfs_hashdir_root{
 	
 	char onedot_and_twodot[0x1c];
@@ -259,12 +267,14 @@ typedef struct extfs_blk_list{
 #define EXTFS_REQF_EXTENT 0x40
 #define EXTFS_REQF_64BIT 0x80
 #define EXTFS_BGRP_DESC_SZ_32BITS 32
+#define EXTFS_DIR_TYPE 0x4000
+#define EXTFS_SYMLINK_TYPE 0xa000
 #define EXTFS_HASHED_IDX_FLAG 0x1000
 void extfs_enum(diskman_ent *d);
 
 extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, ino_t inode, extfs_bgrp_desc *descs_16x);
-unsigned long extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name);
-unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf, unsigned long count,unsigned long off);
+ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t parent_dir_inode,char *name);
+unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf,  long count,unsigned long off);
 #define EXTFS_ROOTDIR_INODE 2
 
 

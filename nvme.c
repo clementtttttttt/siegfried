@@ -236,7 +236,7 @@ DISKMAN_READ_FUNC(nvme_read_disk){
 	
     k_obj_free(rdbuf);
 
-    //supposed to return read sects, not fucntional for now
+    //FIXME: return read sects
     return num_bytes;
 }
 
