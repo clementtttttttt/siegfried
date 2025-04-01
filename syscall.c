@@ -189,7 +189,7 @@ char *syscall_getcwd(char *buf, size_t size){
 	return buf;
 }
 
-unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
+long syscall_read(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
 
 	
     if(f != 0){
@@ -201,7 +201,7 @@ unsigned long syscall_read(siegfried_file *f, void *buf, unsigned long sz_bytes,
 }
 
 
-unsigned long syscall_write(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
+long syscall_write(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
 
 
     if(f != 0){
@@ -231,8 +231,6 @@ int syscall_chdir(char *path){
 	siegfried_dir d;
 	int ret;
 	if((ret=syscall_open_dir(path, &d)) < 0){
-		draw_string("RETURN");
-		draw_hex(ret);
 		return ret;
 	}
 	

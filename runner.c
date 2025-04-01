@@ -43,17 +43,22 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	
 	
     //extfs_read_inode_contents(diskman_find_ent(disk_inode), in, header, 512, 0);
-    d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
+    long read = d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
 	
+		if(read<0){
+				k_obj_free(header);
+		k_obj_free(f);
+				page_switch_tab(old);
+		return read;
+	}
     if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
 		
 		k_obj_free(header);
 		k_obj_free(f);
+		page_switch_tab(old);
 		return (pid_t) -ENOEXEC;
 	}
-			    draw_string("number of loads: ");
-	    draw_hex(header->prog_tab_num_ents);
-
+			    
 
 	
 	header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
@@ -61,9 +66,14 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 
 
 	
-	d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
+	 read = d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
-
+	if(read<0){
+				k_obj_free(header);
+		k_obj_free(f);
+				page_switch_tab(old);
+		return read;
+	}
     
     if(mem_cmp((char[]){0x7f,'E','L','F'}, header->magic,4)){
 		draw_string("second elf header check invalid? something's wrong\n");

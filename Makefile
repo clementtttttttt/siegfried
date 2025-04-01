@@ -1,6 +1,6 @@
-OPT_FLAGS=-O3
+OPT_FLAGS=-O0
 
-CFLAGS=-Werror -Wno-array-bounds  -fno-omit-frame-pointer -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
+CFLAGS=-Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static $(OPT_FLAGS)
@@ -43,7 +43,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: all
-	qemu-system-x86_64 -enable-kvm -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=/dev/nvme1n1,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
+	qemu-system-x86_64 -enable-kvm -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=/dev/nvme0n1,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
 
 clean:
 	rm obj -rf -

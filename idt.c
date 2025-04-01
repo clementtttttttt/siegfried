@@ -114,9 +114,11 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     
     if(curr_task){
 		draw_string("\nERR: userland PF");
+		draw_string("TID=");
+		draw_hex(curr_task->tid);
 		curr_task->tf = (void*)(((unsigned long)fr));
 	
-       // task_exit(139);
+        task_exit(139);
     }
     dbgconout("PAGE FAULT: ERRCODE=");
     dbgnumout_bin(fr->errcode);
@@ -265,12 +267,14 @@ void idt_gpf_handler(task_trap_sframe *frame){
 
     if(curr_task){
 		draw_string("\nERR: userland GPF");
+		draw_string("\nTID=");
+		    draw_hex(curr_task->tid);
+
 		curr_task->tf = (void*)(((unsigned long)frame));
 		idt_print_stacktrace_depth((unsigned long*)frame->rbp,8);
 
         task_exit(139);
     }
-    draw_hex(curr_task->tid);
 
     draw_string("FAULT TASK TID IS 1: PANICKING!!!\n");
 

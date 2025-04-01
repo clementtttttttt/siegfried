@@ -45,7 +45,7 @@ gpt_partlist_ent *gpt_find_ent(unsigned long inode){
 
 }
 
-unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned long num, void *buf){
+long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned long num, void *buf){
 
     gpt_partlist_ent *e = gpt_find_ent(inode);
 
@@ -55,7 +55,7 @@ unsigned long diskman_gpt_read(unsigned long inode, unsigned long off, unsigned 
     return num;
 }
 
-unsigned long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned long num, void *buf){
+ long diskman_gpt_write(unsigned long inode, unsigned long off, unsigned long num, void *buf){
 
     gpt_partlist_ent *e = gpt_find_ent(inode);
 
