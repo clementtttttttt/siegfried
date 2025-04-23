@@ -1,6 +1,6 @@
 OPT_FLAGS=-O0
 
-CFLAGS=-Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -fno-stack-protector -march=k8 -mtune=k8 
+CFLAGS= -Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -march=k8 -mtune=k8 
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static $(OPT_FLAGS)
