@@ -166,10 +166,10 @@ void extfs_read_inodes_blk_desc(diskman_ent *d, ino_t inode, extfs_bgrp_desc *in
     extfs_disk_info *inf = d->fs_disk_info;
         unsigned long sz_s = inf -> blksz_bytes ;
         
-       draw_string("block group=");
-       draw_hex((((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp))) );
+     //  draw_string("block group=");
+       //draw_hex((((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp))) );
 
-	draw_string("bgd blocks=");
+	//draw_string("bgd blocks=");
 	
 	unsigned long idx =                           (((inode-1) / (((extfs_disk_info*)d->fs_disk_info) -> inodes_per_grp)))  * inf->bgdt_sz_b  
                      + ((extfs_disk_info*)d->fs_disk_info)->blk_start * sz_s /*sb blk addr*/
@@ -200,14 +200,14 @@ void extfs_read_inode_struct(extfs_inode * inode_tab,diskman_ent *d, ino_t inode
 
         size_t sz_s = inf -> blksz_bytes ;
 
-	draw_string("inode=");
-	draw_hex(inode);
-	draw_string("off=");
-		draw_hex(  bd.blk_inode_tab*sz_s
-        + ((((inode-1) % inf->inodes_per_grp) * inf->inode_struct_sz_b) )
-       );
-        	draw_string("off2=");
-		draw_hex(bd.blk_inode_tab);
+	//draw_string("inode=");
+	//draw_hex(inode);
+	//draw_string("off=");
+	//	draw_hex(  bd.blk_inode_tab*sz_s
+      //  + ((((inode-1) % inf->inodes_per_grp) * inf->inode_struct_sz_b) )
+       //)/;
+      //  	draw_string("off2=");
+		//draw_hex(bd.blk_inode_tab);
         //reads INODE ENTRY in INODE TABLE not BLOCK GROUP DESC
 
         d->read_func(d->inode,

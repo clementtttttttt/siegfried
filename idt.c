@@ -118,7 +118,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
 		draw_hex(curr_task->tid);
 		curr_task->tf = (void*)(((unsigned long)fr));
 	
-        task_exit(139);
+        task_exit(DIED_SEGFAULT);
     }
     dbgconout("PAGE FAULT: ERRCODE=");
     dbgnumout_bin(fr->errcode);

@@ -21,10 +21,15 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
         draw_string("invalid inode number\n");
         return -EINVAL;
     }
- 
+    
+    
+	char name_krnl[str_len(name)+2];
+	mem_set(name_krnl, 0 , str_len(name) + 2); 
+	mem_cpy(name_krnl, name, str_len(name));
+    page_switch_krnl_tab(); //krnl stuff
 
 
-    siegfried_file *f = d->fopen(disk_inode, name);
+    siegfried_file *f = d->fopen(disk_inode, name_krnl);
     
 
 
@@ -37,7 +42,6 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 			return (pid_t)f;
     }
 
-    page_switch_krnl_tab(); //krnl stuff
 
     elf_head *header = k_obj_alloc(sizeof(elf_head));
 	
@@ -101,8 +105,8 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 
 //TODO: there's probably a better a way to do this
 
-	t->name = k_obj_alloc(str_len(name) + 2);
-	(void) mem_cpy (t->name, name, str_len(name) + 2);
+	t->name = k_obj_alloc(str_len(name_krnl) + 2);
+	(void) mem_cpy (t->name, name_krnl, str_len(name_krnl));
 	
 	if(env == 0){ //handle null env
 		env = k_obj_alloc(sizeof(char*));
@@ -173,12 +177,14 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	}
 	k_obj_free(header);
 
-		page_switch_tab(old);
 
 	
 	d->fclose(f);
+	
+	volatile pid_t ret = t->tid;
 
+		page_switch_tab(old);
 
 	
-    return t->tid;
+    return ret;
 }

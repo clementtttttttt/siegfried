@@ -27,6 +27,10 @@ void exit(int st){
 	while(1){}
 }
 
+syscall_msg_t *gmsg(void){
+	return syscall0(sys_gmsg);
+}
+
 int close(int file){
 	if(file == 0) return -EINVAL;
 

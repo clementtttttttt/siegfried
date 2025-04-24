@@ -47,7 +47,7 @@ ino_t syscall_diskman_get_root(void){
 }
 
 pid_t syscall_get_tid(void){
-		if(curr_task == 0) return -1; //no tasks yet
+		if(curr_task == 0) return 0; //krnl pid = 0;
 		
 		return curr_task->tid; //just returns
 }
@@ -165,7 +165,7 @@ char *syscall_getcwd(char *buf, size_t size){
 	
 	//get path without filename only directory
 	char *end = curr_task->name;
-	
+	draw_string(end);
 	while(*(end++));
 	--end;
 	
@@ -183,6 +183,8 @@ char *syscall_getcwd(char *buf, size_t size){
 	if(curr_task->name[size-1] != '/'){
 		curr_task->name[size] = '/';
 			++size;
+					curr_task->name[size] = 0;
+
 
 	}
 	mem_cpy(buf,curr_task->name, size);
@@ -307,8 +309,14 @@ void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t of
 }
 
 syscall_msg_t * syscall_gmsg(void){
-	return -0;
+	return task_msgqueue_pop();
 }
+
+void syscall_pmsg_1(pid_t dest, pid_t src, syscall_msg_type_t t){
+	syscall_msg_t *msg = task_nmsg(dest,src,t,0);
+	task_msgqueue_push(msg);
+}
+
 
 
 int syscall_reboot(int arg, unsigned long magic, unsigned long magic2){

@@ -175,6 +175,18 @@ extern pml4e pml4_table[];
 
 extern unsigned long krnl_init_inode;
 
+task* task_find_by_tid(pid_t in){
+	task *it = tasks;
+	
+	do{
+			if(it->tid == in){
+				return it;
+			}
+			it = it->next;
+			
+	}	while(it->next != tasks);
+	return NULL;
+}
 
 void tasks_setup(){
 
@@ -207,18 +219,7 @@ static volatile krnl_state *volatile scheduler_state;
 volatile int task_in_krnl = 0;
 
 void task_cleanup_zombie(){
-	
-					if(curr_task != tasks){
-						task *iter= tasks;
-	
 
-						while(iter->next != curr_task)iter=iter->next;
-
-						iter->next = curr_task->next; //remove task from task list
-						
-
-						
-					}
 					
 					if((unsigned long)curr_task->krnl_stack_base == 0xDEADBEEF){
 							draw_string("attempting to clean up a cleaned up task?\n");
@@ -246,7 +247,14 @@ void task_cleanup_zombie(){
 					}
 					page_free_tab(curr_task->page_tab);
 					
-
+					task *next = curr_task->next;
+					task *prev = tasks;
+					
+					while(prev->next != curr_task){
+						
+						prev = prev->next;
+					}
+					prev -> next = next;
 					
 					if(curr_task == tasks){
 
@@ -269,7 +277,6 @@ void task_cleanup_zombie(){
 					}
 					else{
 						k_obj_free((void*)curr_task);
-						curr_task=tasks;
 						
 					}	
 
@@ -277,6 +284,22 @@ void task_cleanup_zombie(){
 
 extern void apic_ack_int();
 
+void task_msgqueue_push(syscall_msg_t *in){
+		task *i = task_find_by_tid(in->dest);
+		i->msg_queue[i->msg_queue_head++] = in;
+		i->msg_queue_head &= 0b1111; //wrap around at 16
+		while(i->msg_queue_tail == i->msg_queue_head){
+			task_yield();
+		}
+}
+syscall_msg_t * task_msgqueue_pop(void){
+		curr_task->msg_queue_tail &= 0b1111;
+		while(curr_task->msg_queue_tail == curr_task->msg_queue_head){
+			task_yield();
+		}
+
+		return curr_task->msg_queue[(curr_task->msg_queue_tail++)];
+}
 void task_scheduler(){
 		scheduler_started = 1;
         while(1){
@@ -284,33 +307,23 @@ void task_scheduler(){
                 if(curr_task == 0 && tasks == 0) continue; //continue while curr task is 0
 
 
-				task *find_dead_it = tasks;
+				                curr_task = curr_task->next;
+
 				
 				
-				do{
-					if(find_dead_it->state == T_DEAD){
-							curr_task = find_dead_it;
-							task_cleanup_zombie();
-							break;
-					}
-					find_dead_it=find_dead_it->next;
-				}
-				while(find_dead_it != tasks);
+					if(curr_task->state == T_DEAD){
+								task_cleanup_zombie();
+								curr_task = tasks;
+							
+					}else{
 
-
-
-                curr_task = curr_task->next;
-                
-                
                 
                 task_set_tss((unsigned long)curr_task->krnl_stack_base + TASK_STACK_SZ-512-sizeof(task_int_sframe));
-
 				page_switch_tab(curr_task->page_tab);
-
                 task_save_and_change_krnl_state(&scheduler_state, curr_task->krnl_state);
                 
 				page_switch_krnl_tab();
-
+				}
         }
 
 }
@@ -347,14 +360,22 @@ void task_dump_sframe(task_int_sframe *in){
 
 }
 
+syscall_msg_t * task_nmsg(pid_t dest, pid_t src, syscall_msg_type_t t,size_t dat_sz){
+	syscall_msg_t *ret = k_obj_alloc(sizeof(syscall_msg_t) + dat_sz);
+	ret->dest = dest;
+	ret->src = src;
+	mem_set(ret->spec_dat, 0,dat_sz);
+	return ret;
+}
 
-
-void task_exit(unsigned long code){
+void task_exit(syscall_child_died_type_t code){
 
 
 	
 	page_switch_krnl_tab();
-
+	syscall_msg_t *exit_msg = task_nmsg(curr_task->creator, curr_task->tid, MSG_CHILD_DIED, sizeof(syscall_child_died_type_t));
+	*((syscall_child_died_type_t*)&exit_msg->spec_dat) = code;
+	task_msgqueue_push(exit_msg);
 		
 	curr_task->state = T_DEAD; //notify scheduler that body of task needs to be clean up 
 

@@ -1,4 +1,4 @@
-#include "syscalls.h"
+#include <syscalls.h>
 #include <string.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -92,6 +92,7 @@ int main(){
 				}
 			if(tok[0] == '.' || tok[0] == '/'){
 				pid_t ret = spawn(tok, 0,0,0);
+				syscall_msg_t *msg = gmsg();
 				if(ret<0){
 					puts(strerror(-ret));
 					puts("\n");

@@ -270,6 +270,8 @@ void draw_append_text_buf(const char c){
 }
 
 void draw_string(const char* str){
+	
+	
     
     while(*str){
         draw_append_text_buf(*str);

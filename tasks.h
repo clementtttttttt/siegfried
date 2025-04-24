@@ -2,6 +2,7 @@ union pml4e;
 #include "diskman.h"
 #include "syscall.h"
 #pragma once
+
 typedef struct tss_t{
 
     unsigned int rsvd;
@@ -109,6 +110,12 @@ struct task_page_ent{
 };
 #undef errno
 
+void task_msgqueue_push(syscall_msg_t *in);
+syscall_msg_t * task_msgqueue_pop(void);
+syscall_msg_t * task_nmsg(pid_t dest, pid_t src, syscall_msg_type_t t,size_t dat_sz);
+
+
+
 typedef struct task{
     volatile krnl_state *volatile krnl_state; //stack + STACK_SZ - sizeof(krnl_state).
     void* krnl_stack_base;
@@ -129,7 +136,7 @@ typedef struct task{
     struct task_page_ent *task_page_ptr;
     
     
-    syscall_msg_t msg_queue[16];
+    syscall_msg_t *msg_queue[16];
     unsigned char msg_queue_head;
     unsigned char msg_queue_tail;
     
@@ -145,8 +152,10 @@ void task_yield();
 void tasks_setup();
 void task_save_and_change_krnl_state(volatile krnl_state *volatile*old_ptr_to_stack_addr,volatile  krnl_state *volatile new_ptr_to_stack_addr);
 
-void task_exit(unsigned long);
+void task_exit(syscall_child_died_type_t);
 void task_enter_krnl();
 void task_exit_krnl();
 task *task_start_func(void *func);
+task* task_find_by_tid(pid_t in);
+
 void task_dump_sframe(task_int_sframe *in);

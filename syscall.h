@@ -8,3 +8,5 @@
 void syscall_setup();
 
 pid_t syscall_get_tid(void);
+void syscall_pmsg_1(pid_t dest, pid_t src, syscall_msg_type_t t);
+syscall_msg_t * syscall_gmsg(void);
