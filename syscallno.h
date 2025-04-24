@@ -49,3 +49,24 @@ inline static void* syscall6(syscalls_t func,void* in1, void* in2, void* in3, vo
     return (void*)retval;
 }
 
+typedef struct syscall_siegfried_stat{
+	
+	unsigned long	perms;
+	unsigned long 	inode;
+	unsigned long	disk_inode;
+	unsigned long	links;
+	unsigned long	uid;
+	unsigned long	gid;
+	unsigned long	size;
+	unsigned long	atime_in_ms;
+	unsigned long	mtime_in_ms;
+	unsigned long	ctime_in_ms;
+} syscall_siegfried_stat;
+
+typedef struct syscall_disk_ent{
+    char uuid[16];
+    int uuid_len;
+    unsigned long inode;
+    void* diskman_ent;
+}syscall_disk_ent;
+

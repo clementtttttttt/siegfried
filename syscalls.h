@@ -22,26 +22,8 @@ typedef char syscall_siegfried_dirnames_t[NAME_MAX];
 typedef struct syscall_siegfried_file syscall_siegfried_file;
 
 
-typedef struct syscall_disk_ent{
-    char uuid[16];
-    int uuid_len;
-    unsigned long inode;
-    void* diskman_ent;
-}syscall_disk_ent;
 
-typedef struct syscall_siegfried_stat{
 
-	unsigned long	perms;
-	unsigned long 	inode;
-	unsigned long	disk_inode;
-	unsigned long	links;
-	unsigned long	uid;
-	unsigned long	gid;
-	unsigned long	size;
-	unsigned long	atime_in_ms;
-	unsigned long	mtime_in_ms;
-	unsigned long	ctime_in_ms;
-} syscall_siegfried_stat;
 
 
 void syscall_setup();
