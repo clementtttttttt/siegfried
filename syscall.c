@@ -40,13 +40,14 @@ void syscall_sleep(unsigned long in1){
 
 extern diskman_ent *disks;
 
-unsigned long syscall_diskman_get_root(){
+ino_t syscall_diskman_get_root(void){
 	extern unsigned long krnl_init_inode;
 		
 		return krnl_init_inode; //just returns
 }
 
-unsigned long syscall_get_tid(){
+pid_t syscall_get_tid(void){
+		if(curr_task == 0) return -1; //no tasks yet
 		
 		return curr_task->tid; //just returns
 }
@@ -305,6 +306,9 @@ void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t of
 	return ret;
 }
 
+syscall_msg_t * syscall_gmsg(void){
+	return -0;
+}
 
 
 int syscall_reboot(int arg, unsigned long magic, unsigned long magic2){
@@ -322,7 +326,7 @@ int syscall_reboot(int arg, unsigned long magic, unsigned long magic2){
 
 
 
-void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd, syscall_read_dir, syscall_close_dir, syscall_chdir, syscall_reboot};
+void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd, syscall_read_dir, syscall_close_dir, syscall_chdir, syscall_reboot, syscall_gmsg};
 
 unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	

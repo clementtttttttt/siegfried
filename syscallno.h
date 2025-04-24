@@ -1,5 +1,9 @@
+#ifndef _SYSCALLNO_H_
+#define _SYSCALLNO_H_
+#define SYSCALL_REBOOT_MAGIC 0xC1EA1EBE1550CA55
+#define SYSCALL_REBOOT_MAGIC2 0xCAFEBABE1E560001
 typedef enum syscalls_t_enum{
-	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_close, sys_open_dir, sys_mmap, sys_getcwd, sys_read_dir, sys_close_dir, sys_chdir, sys_reboot
+	sys_exit = 0, sys_sleep, sys_print_w_sz, sys_disk_get_next, sys_disk_read, sys_disk_write, sys_read, sys_write, sys_open, sys_spawn, sys_disk_get_root, sys_get_tid, sys_stat, sys_close, sys_open_dir, sys_mmap, sys_getcwd, sys_read_dir, sys_close_dir, sys_chdir, sys_reboot, sys_gmsg
 } syscalls_t;
 
 inline  static  void* syscall0(syscalls_t func){  
@@ -49,6 +53,20 @@ inline static void* syscall6(syscalls_t func,void* in1, void* in2, void* in3, vo
     return (void*)retval;
 }
 
+typedef enum{
+		MSG_NULL, MSG_TERM, MSG_CHILD_DIED
+	
+} syscall_msg_type_t;
+
+
+typedef struct syscall_msg_t{
+	pid_t src;
+	pid_t dest;
+	syscall_msg_type_t type;
+	char spec_dat[0];
+	
+} syscall_msg_t;
+
 typedef struct syscall_siegfried_stat{
 	
 	unsigned long	perms;
@@ -69,4 +87,4 @@ typedef struct syscall_disk_ent{
     unsigned long inode;
     void* diskman_ent;
 }syscall_disk_ent;
-
+#endif

@@ -1,6 +1,6 @@
 union pml4e;
 #include "diskman.h"
-
+#include "syscall.h"
 #pragma once
 typedef struct tss_t{
 
@@ -118,14 +118,21 @@ typedef struct task{
     unsigned int magic;
     union pml4e *page_tab;
     struct task *next;
-    unsigned long tid;
+    pid_t tid;
     unsigned long errno;
     unsigned long state;
     char ** env;
     char ** argv;
+    pid_t creator;
     
     long task_page_ents;
     struct task_page_ent *task_page_ptr;
+    
+    
+    syscall_msg_t msg_queue[16];
+    unsigned char msg_queue_head;
+    unsigned char msg_queue_tail;
+    
     
     
 }task;

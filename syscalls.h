@@ -35,7 +35,6 @@ pid_t spawn(char *path, char** argv, char** env, unsigned long attrs);
 int opendir(char* path, syscall_siegfried_dir *in);
 
 int getpid();
-#define SYSCALL_REBOOT_MAGIC 0xC1EA1EBE1550CA55
-#define SYSCALL_REBOOT_MAGIC2 0xCAFEBABE1E560001
+
 extern syscall_siegfried_file *fds[4096] ;
 #endif

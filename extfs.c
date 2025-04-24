@@ -133,7 +133,7 @@ static void str2hashbuf_signed(const char *msg, int len, uint32_t *buf, int num)
 
 
 void dump_inode(extfs_inode ino){
-	draw_string("\nINODE DUMP!\n");
+/*	draw_string("\nINODE DUMP!\n");
 	
 	#define D(name) {draw_string("ino->"#name" = ");draw_hex(ino.name);}
 	
@@ -142,7 +142,7 @@ void dump_inode(extfs_inode ino){
 	D(disk_sects_count)
 	D(types_n_perm)
 	D(sz_in_bytes_l)
-	D(sz_in_bytes_h)
+	D(sz_in_bytes_h)*/
 }
 
 void dump_hashroot(extfs_hashdir_root *in){

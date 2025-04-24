@@ -7,5 +7,4 @@
 //};
 void syscall_setup();
 
-#define SYSCALL_REBOOT_MAGIC 0xC1EA1EBE1550CA55
-#define SYSCALL_REBOOT_MAGIC2 0xCAFEBABE1E560001
+pid_t syscall_get_tid(void);

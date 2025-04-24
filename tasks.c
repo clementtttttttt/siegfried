@@ -133,6 +133,10 @@ task *task_new(){
     
     curr-> state = T_RUNNING;
 
+	curr -> msg_queue_tail = 0;
+	curr->msg_queue_head = 0;
+	mem_set(curr->msg_queue, 0 ,sizeof(curr->msg_queue));
+
     stack -= 8;
 
     *((void(**)())stack) = task_exit;

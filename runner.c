@@ -8,7 +8,7 @@
 #include "tasks.h"
 #include "errno.h"
 #include "debug.h"
-
+#include "syscall.h"
 
 
 pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env, unsigned long attrs){
@@ -115,7 +115,7 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	t->task_page_ents = header->prog_tab_num_ents;
 	t->task_page_ptr = k_obj_alloc(sizeof( struct task_page_ent)*t->task_page_ents);
 	
-
+	t->creator = syscall_get_tid();
 	
     for(int i=0; i < header->prog_tab_num_ents; ++i){
 			switch(header->prog_tab[i].seg_type){
