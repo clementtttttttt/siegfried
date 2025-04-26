@@ -26,7 +26,7 @@ unsigned long str_len(char *in){
 #endif
 
 
-void inhibit_loop_to_libcall mem_cpy(void *dest, void *src, unsigned long n)
+void inhibit_loop_to_libcall mem_cpy(void *dest, void *src, size_t n)
 {
 	unsigned char *d = dest;
 	const unsigned char *s = src;
@@ -203,6 +203,23 @@ void halt_and_catch_fire(){
 	asm("xor %rax, %rax;mov %rax,%cr3");
 }
 
+void itoa_w_sz(char *buf, unsigned long in, size_t sz){
+	size_t ret_sz = 0;
+	unsigned long in2 = in;
+	do{
+		++ret_sz;
+		in2/=10;
+	}while(in2);  
+	char ret_buf[ret_sz + 1];
+	mem_set(ret_buf,0,sizeof(ret_buf));
+	while(ret_sz){
+		ret_buf[ret_sz-1] = in % 10;
+		in /= 10;
+		--ret_sz;
+	}
+	
+	mem_cpy(buf, ret_buf, ret_sz);
+}
 
 void klib_clear_var_cache(void *v){
 

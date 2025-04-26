@@ -1,5 +1,6 @@
 #ifndef _SYSCALLNO_H_
 #define _SYSCALLNO_H_
+typedef long ino_t;
 
 #include "types.h"
 #define SYSCALL_REBOOT_MAGIC 0xC1EA1EBE1550CA55

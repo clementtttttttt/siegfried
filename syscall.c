@@ -151,21 +151,87 @@ int syscall_stat(char* path, siegfried_stat *stat){
 }
 
 char *sys_basename(char *path){
-	char *end = curr_task->name;
+	char *end = path;
 	while(*(end++));
 	--end;
-	while(end > curr_task->name && (*end != '/')){
+	while(end > path && (*end != '/')){
 		--end;
 	}
 	++end;
 	return end;
 }
 
+
+char *sys_dirname(char *buf,char *path){
+	char *end = path;
+	while(*(end++));
+	--end;
+	while(end > path && (*end != '/')){
+		--end;
+	}
+	++end;
+
+	//todo: secure mempy
+	(void)mem_cpy(buf, path, end - path);
+	return end;
+}
+
+size_t sys_get_dir_name(char *buf, size_t s,diskman_ent *d, siegfried_dir* in){ //returns offset for basenaem
+	
+	if(in->inode == d->get_root_inode()){
+			//FIXME: error checking for this
+			buf[0] = '/';
+			return 1;
+	}
+	
+	siegfried_dir par;
+	syscall_open_dir("..",&par);
+		
+		siegfried_dir *old_cwd = curr_task->cwd;
+		curr_task->cwd = &par;
+	syscall_close_dir(&par);
+
+	
+	char self_name[NAME_MAX];
+	mem_set(self_name, 0, NAME_MAX);
+	d->get_name_from_parent(d, in->parent, in->inode, self_name);
+	
+
+	size_t path_off = sys_get_dir_name(buf, s, d, &par);
+
+	
+
+	if((s-path_off) > 0)
+		(void)mem_cpy(buf+path_off, self_name, str_len(self_name));
+	path_off += str_len(self_name);
+	if(path_off == (s-1)){
+		buf[path_off] = 0;
+		return s;
+	}
+	else{
+		buf[path_off++] = '/';
+		buf[path_off] = 0;
+	}
+
+	
+		curr_task->cwd = old_cwd;
+
+	//return 0;
+	return path_off;
+}
+char *syscall_getcwd(char *buf, size_t s){
+	//TODO: implement getcwd with more robust 
+	mem_set(buf, 0, s);
+
+	(void)sys_get_dir_name(buf, s, diskman_find_ent(curr_task->dm_inode),curr_task->cwd);
+	return buf;
+	//return "";
+}
+/*
 char *syscall_getcwd(char *buf, size_t size){
 	
 	//get path without filename only directory
 	char *end = curr_task->name;
-	draw_string(end);
 	while(*(end++));
 	--end;
 	
@@ -188,9 +254,12 @@ char *syscall_getcwd(char *buf, size_t size){
 
 	}
 	mem_cpy(buf,curr_task->name, size);
+		draw_string(buf);
+		draw_string(" ");
+
 		
 	return buf;
-}
+}*/
 
 long syscall_read(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigned long attrs){
 
@@ -231,38 +300,18 @@ void syscall_close_dir(siegfried_dir *in){
 }
 
 int syscall_chdir(char *path){
-	siegfried_dir d;
+	siegfried_dir *d = k_obj_alloc(sizeof(siegfried_dir));
 	int ret;
-	if((ret=syscall_open_dir(path, &d)) < 0){
+	if((ret=syscall_open_dir(path, d)) < 0){
+		k_obj_free(d);
 		return ret;
 	}
 	
-	char *exec_name = sys_basename(curr_task->name);
+	syscall_close_dir(curr_task->cwd);
+	curr_task->cwd = d;
 	
-	unsigned long sz = str_len(path) + str_len(curr_task->name) + 4;
-	char buf[sz];
-	mem_set(buf, 0, sz);
-	
-	mem_cpy(buf, path, str_len(path));
-	
-	char *first_end;
-	if(buf[str_len(path)-1] != '/'){
-		buf[str_len(path) ] = '/';
-		first_end = &buf[str_len(path) + 1];
-	}
-	else{
-		first_end = &buf[str_len(path)];
-	}
 	
 
-	mem_cpy(first_end, exec_name, str_len(exec_name));
-
-	k_obj_free(curr_task->name);
-	curr_task->name = k_obj_alloc(sz+1);
-	mem_cpy(curr_task->name, buf, sz+1);
-	
-	
-	syscall_close_dir(&d);
 	return 0;
 }
 

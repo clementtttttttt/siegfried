@@ -10,7 +10,7 @@
 typedef struct syscall_siegfried_dir{
 
     unsigned long num_files;
-	unsigned long inode;
+	ino_t inode;
 	char name[NAME_MAX];
 	
 
@@ -20,7 +20,6 @@ typedef char syscall_siegfried_dirnames_t[NAME_MAX];
 
 
 typedef struct syscall_siegfried_file syscall_siegfried_file;
-
 
 
 

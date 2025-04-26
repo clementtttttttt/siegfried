@@ -131,6 +131,10 @@ typedef struct task{
     char ** env;
     char ** argv;
     pid_t creator;
+   
+	siegfried_dir *cwd;
+    ino_t dm_inode;
+    
     
     long task_page_ents;
     struct task_page_ent *task_page_ptr;

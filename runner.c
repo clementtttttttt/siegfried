@@ -11,6 +11,7 @@
 #include "syscall.h"
 
 
+
 pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char** env, unsigned long attrs){
 	
 	pml4e *old = page_get_curr_tab();
@@ -22,18 +23,21 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
         return -EINVAL;
     }
     
+    char dname[PATH_MAX];
+    mem_set(dname, 0, PATH_MAX);
+    sys_dirname(dname, name);
     
-	char name_krnl[str_len(name)+2];
-	mem_set(name_krnl, 0 , str_len(name) + 2); 
+	char name_krnl[str_len(name)+4]; //for two dots purposes
+	mem_set(name_krnl, 0 , str_len(name)+2); 
 	mem_cpy(name_krnl, name, str_len(name));
     page_switch_krnl_tab(); //krnl stuff
 
 
+
+	
     siegfried_file *f = d->fopen(disk_inode, name_krnl);
     
 
-
-     
    // unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(disk_inode),EXTFS_ROOTDIR_INODE, name);
     
     if((long)f < 0){
@@ -44,11 +48,11 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 
 
     elf_head *header = k_obj_alloc(sizeof(elf_head));
-	
-	
+
+
     //extfs_read_inode_contents(diskman_find_ent(disk_inode), in, header, 512, 0);
     long read = d->fread(f, header, 0, sizeof(elf_head), 0); //load initial header
-	
+
 		if(read<0){
 				k_obj_free(header);
 		k_obj_free(f);
@@ -106,7 +110,8 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 //TODO: there's probably a better a way to do this
 
 	t->name = k_obj_alloc(str_len(name_krnl) + 2);
-	(void) mem_cpy (t->name, name_krnl, str_len(name_krnl));
+	char *c = sys_basename(name_krnl);
+	(void) mem_cpy (t->name, c, str_len(c));
 	
 	if(env == 0){ //handle null env
 		env = k_obj_alloc(sizeof(char*));
@@ -115,6 +120,10 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 
 	t->env = env;
 	
+	t->dm_inode = disk_inode;
+	t->cwd = k_obj_alloc(sizeof(siegfried_dir));
+	syscall_open_dir(dname, t->cwd);
+	//d->fopendir(disk_inode, dname, 0, t->cwd);
 	
 	t->task_page_ents = header->prog_tab_num_ents;
 	t->task_page_ptr = k_obj_alloc(sizeof( struct task_page_ent)*t->task_page_ents);
@@ -182,8 +191,7 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	d->fclose(f);
 	
 	volatile pid_t ret = t->tid;
-
-		page_switch_tab(old);
+	page_switch_tab(old);
 
 	
     return ret;

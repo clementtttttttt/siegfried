@@ -286,6 +286,9 @@ extern void apic_ack_int();
 
 void task_msgqueue_push(syscall_msg_t *in){
 		task *i = task_find_by_tid(in->dest);
+		if(i == 0){
+			return; //TODO: good error handling
+		}
 		i->msg_queue[i->msg_queue_head++] = in;
 		i->msg_queue_head &= 0b1111; //wrap around at 16
 		while(i->msg_queue_tail == i->msg_queue_head){
