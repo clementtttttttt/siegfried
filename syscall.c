@@ -185,7 +185,10 @@ size_t sys_get_dir_name(char *buf, size_t s,diskman_ent *d, siegfried_dir* in){ 
 	}
 	
 	siegfried_dir par;
-	syscall_open_dir("..",&par);
+	int ret = syscall_open_dir("..",&par);
+	if(ret < 0){
+		return ret;
+	}
 		
 		siegfried_dir *old_cwd = curr_task->cwd;
 		curr_task->cwd = &par;

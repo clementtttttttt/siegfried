@@ -13,7 +13,7 @@ unsigned char tasking_enabled = 0;
 
 static task *tasks=0;
 
- task *volatile curr_task=0;
+volatile task *volatile curr_task=0;
 
 extern tss_t tss;
 extern KHEAPSS page_heap;
@@ -138,6 +138,8 @@ task *task_new(){
 	mem_set(curr->msg_queue, 0 ,sizeof(curr->msg_queue));
 
     stack -= 8;
+
+	curr->cwd = 0;
 
     *((void(**)())stack) = task_exit;
 

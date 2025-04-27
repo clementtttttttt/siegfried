@@ -365,11 +365,28 @@ DISKMAN_FCLOSE_FUNC(extfs_fclose){
 		return 0;
 }
 
+ino_t extfs_resolve_symlink(ino_t cwd,ino_t disk_id, ino_t symlink_node, extfs_inode *f_info){
+					char symlink_str[f_info->sz_in_bytes_l + 1];
+					mem_set(symlink_str,0,sizeof(symlink_str));
+
+					if(f_info->sz_in_bytes_l < 60){ //stored in extent stuff
+							mem_cpy(symlink_str, f_info->blk_data_ptrs, f_info->sz_in_bytes_l);
+
+					}
+					else{
+						extfs_read_inode_contents(diskman_find_ent(disk_id), symlink_node, symlink_str, f_info->sz_in_bytes_l,0);
+					}
+					draw_string("symlink=");
+					draw_string(symlink_str);
+					ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd,char *path, unsigned long disk_id,char* new_name,ino_t *par);
+					
+					return extfs_find_inode_from_name_and_set_name(cwd,symlink_str, disk_id, 0, 0);
+}
 
 long
  extfs_read_dir_dirents(diskman_ent *d, ino_t dir_ino, extfs_dirent *buf);
 
-ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name,ino_t *par){
+ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned long disk_id,char* new_name,ino_t *par){
 			str_tok_result res = {0,0};
 
 		ino_t curr_inode;
@@ -380,15 +397,15 @@ ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,
 				break;
 			default:
 
-				curr_inode = curr_task->cwd->inode;
-				
+				if(!cwd) curr_inode = curr_task->cwd->inode;
+				else curr_inode = cwd;
 				
 				//TODO: open app dir
 				if(curr_inode< 0){
 				//	draw_hex(curr_inode);
 						draw_string("ERR! curr_inode=");
 		draw_hex(curr_inode);
-		
+					draw_string(path);
 					return curr_inode;
 				}
 				break;
@@ -402,54 +419,61 @@ ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,
 		
 		str_tok_result name_res = {0,0};
 		char name[PATH_MAX];
-		
-		while(res.sz != 0){
+						extfs_inode f_info = {0};
+		ino_t last = curr_inode;
+		while(res.sz != 0 ){
 
 		
 				mem_set(name, 0, 256);
 				mem_cpy(name , path+res.off, res.sz);
 			
-				extfs_inode f_info = {0};
+			
+				mem_set(&f_info, 0, sizeof(extfs_inode));
 				extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
 				
 
 
 				if(f_info.types_n_perm & EXTFS_SYMLINK_TYPE){
-					
-										char symlink_str[f_info.sz_in_bytes_l + 1];
-
-					if(f_info.sz_in_bytes_l < 60){ //stored in extent stuff
-						draw_string_w_sz((const char*)f_info.blk_data_ptrs, f_info.sz_in_bytes_l);
-											mem_cpy(symlink_str, f_info.blk_data_ptrs, f_info.sz_in_bytes_l);
-
+					curr_inode = extfs_resolve_symlink(last,disk_id,curr_inode,&f_info); //TODO: implment symlink reoslve 
+					if(!curr_inode){
+						return -ENOENT;
 					}
-			draw_string("\n\nA");
-				draw_string(symlink_str);
-				draw_string("A\n\n");
-					
-					curr_inode  = extfs_find_finode_from_dir(diskman_find_ent(disk_id), curr_inode, symlink_str);
+
 				}	
-				else if(!(f_info.types_n_perm & EXTFS_DIR_TYPE)){ //not dir
+				else{
+				if(!(f_info.types_n_perm & EXTFS_DIR_TYPE)){ //not dir
 					draw_string("f_info.types_n_perm = ");
 					draw_hex(f_info.types_n_perm);
 					dump_inode(f_info);
 					
 					return -ENOTDIR;
 				}
+				last = curr_inode;
 				
 				if((curr_inode = extfs_find_finode_from_dir(diskman_find_ent(disk_id),curr_inode, name)) == 0){
 					
 					return -ENOENT;//not dir
-				}
+				}}
 
 			str_tok(path, '/', &res);
 		
 		}
+		extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
+		
+		if(f_info.types_n_perm & EXTFS_SYMLINK_TYPE){
+			//	curr_inode = extfs_resolve_symlink(last, disk_id,curr_inode,&f_info); //TODO: implment symlink reoslve 
+				if(!curr_inode){
+					return -ENOENT;
+				}
+		}	
+		
+		
 		if(par){
 			*par = extfs_find_finode_from_dir(diskman_find_ent(disk_id), curr_inode, "..");
+			
 		}
 		
-		
+		if(new_name)
 		mem_cpy(new_name, path+name_res.off, str_len(path+name_res.off));
 			
 		return curr_inode;
@@ -487,6 +511,8 @@ ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
         if((ret=extfs_read_dir_dirents(d, dir_inode,  root_dirents) )<=0){
 						draw_string("ERR!");
 			draw_hex(-ret);
+			void idt_print_stacktrace(unsigned long*);
+			idt_print_stacktrace(__builtin_frame_address(0));
 			return ret;
 		}
         
@@ -628,12 +654,7 @@ int extfs_find_name_from_parent(diskman_ent *d, ino_t dir_inode, ino_t target,ch
         while(root_dirents->inode && root_dirents->ent_sz){
 
             if(root_dirents->inode == target){
-				/*if(root_dirents->name[0] == '.' && root_dirents->name[1] == '.' && root_dirents->name[2] == 0){
-					//FIXME: get rid of this utter mindfuck
-					    siegfried_dir *two_fucking_dots = extfs_get_parent(dir_inode);
-						
-						extfs_find_name_from_parent(d, root_dirents->inode , root, name);
-				}*/
+
 				mem_set(name,0,root_dirents->namelen_l+1);
 				mem_cpy(name, root_dirents->name, root_dirents->namelen_l);
 				return 0;
@@ -654,7 +675,8 @@ int extfs_find_name_from_parent(diskman_ent *d, ino_t dir_inode, ino_t target,ch
 DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		char name[NAME_MAX];
 		ino_t par;
-		ino_t dir_inode = extfs_find_inode_from_name_and_set_name(path, dm_inode, name, &par);
+		ino_t dir_inode = extfs_find_inode_from_name_and_set_name(0,path, dm_inode, name, &par);
+		
 		if(dir_inode <= 0){
 				return  dir_inode;
 		}
@@ -742,8 +764,14 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 
 DISKMAN_FOPEN_FUNC(extfs_fopen){
 		siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
-		
-		ino_t curr_inode = extfs_find_inode_from_name_and_set_name(path, disk_id,f->name,0);
+		ino_t cwd;
+		if(!curr_task || !curr_task->cwd){
+			cwd = EXTFS_ROOTDIR_INODE;
+		}
+		else{
+			cwd = curr_task->cwd->inode;
+		}
+		ino_t curr_inode = extfs_find_inode_from_name_and_set_name(cwd,path, disk_id,&f->name[0],0);
 		
 		if(curr_inode <= 0){
 								k_obj_free(f);

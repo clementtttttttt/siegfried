@@ -122,7 +122,10 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	
 	t->dm_inode = disk_inode;
 	t->cwd = k_obj_alloc(sizeof(siegfried_dir));
-	syscall_open_dir(dname, t->cwd);
+	int r = syscall_open_dir(dname, t->cwd);
+	if(r < 0){
+		return 0;
+	}
 	//d->fopendir(disk_inode, dname, 0, t->cwd);
 	
 	t->task_page_ents = header->prog_tab_num_ents;

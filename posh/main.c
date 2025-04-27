@@ -108,14 +108,14 @@ int main(){
 				syscall3(sys_reboot, 0, (void*)SYSCALL_REBOOT_MAGIC, (void*)SYSCALL_REBOOT_MAGIC2);
 			}
 			else if(!strcmp(tok, "cd")){
-				char buf[PATH_MAX] = {0};
-				memset(buf, 0, PATH_MAX);
-				if(dir[0] != '/'){ //absolute
-					getcwd(buf, PATH_MAX);
-				}
-				strcat(buf, dir);
+			//	char buf[PATH_MAX] = {0};
+			//	memset(buf, 0, PATH_MAX);
+			//	if(dir[0] != '/'){ //absolute
+				//	getcwd(buf, PATH_MAX);
+				//}
+				//strcat(buf, dir);
 	
-				int ret = chdir(buf);
+				int ret = chdir(dir);
 				if(ret!=0){
 					char *test = strerror(-ret);
 					puts(test);
