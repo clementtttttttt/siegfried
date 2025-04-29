@@ -11,6 +11,7 @@
 .globl idt_kb_handler_s
 .globl idt_debug_handler_s
 .globl idt_div0_handler_s
+.globl syscall_new_handler_s
 
 .globl idt_load_regs
 .globl rip_save
@@ -143,6 +144,10 @@ idt_rtc_handler_s:
     2:
 
     iretq
+
+syscall_new_handler_s:
+	
+	sysret
 
 idt_syscall_handler_s:
     movq $1f, rip_save

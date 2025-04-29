@@ -92,15 +92,22 @@ int main(){
 				}
 			if(tok[0] == '.' || tok[0] == '/'){
 				pid_t ret = spawn(tok, 0,0,0);
-				syscall_msg_t *msg = gmsg();
-				if(ret<0){
+				puts("PID=");
+				if(ret<=0){
 					puts(strerror(-ret));
 					puts("\n");
+					break;
+				}
+				syscall_msg_t *msg = gmsg();
+				syscall_child_died_type_t code = *((syscall_child_died_type_t*)&msg->spec_dat);
+				if(code){
+					puts("Program crashed\n");
 				}
 			}
 			else
 			if(!strcmp(tok, "exit")){
-				exit(0);
+				asm("syscall");
+				//exit(0);
 			}
 			else
 			if(!strcmp(tok, "reboot")){

@@ -432,8 +432,8 @@ ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned lo
 				extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
 				
 
-
 				if(f_info.types_n_perm & EXTFS_SYMLINK_TYPE){
+					
 					curr_inode = extfs_resolve_symlink(last,disk_id,curr_inode,&f_info); //TODO: implment symlink reoslve 
 					if(!curr_inode){
 						return -ENOENT;
@@ -441,6 +441,8 @@ ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned lo
 
 				}	
 				else{
+									last = curr_inode;
+
 				if(!(f_info.types_n_perm & EXTFS_DIR_TYPE)){ //not dir
 					draw_string("f_info.types_n_perm = ");
 					draw_hex(f_info.types_n_perm);
@@ -448,7 +450,6 @@ ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned lo
 					
 					return -ENOTDIR;
 				}
-				last = curr_inode;
 				
 				if((curr_inode = extfs_find_finode_from_dir(diskman_find_ent(disk_id),curr_inode, name)) == 0){
 					
@@ -461,17 +462,24 @@ ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned lo
 		extfs_read_inode_struct(&f_info, diskman_find_ent(disk_id), curr_inode);
 		
 		if(f_info.types_n_perm & EXTFS_SYMLINK_TYPE){
-			//	curr_inode = extfs_resolve_symlink(last, disk_id,curr_inode,&f_info); //TODO: implment symlink reoslve 
-				if(!curr_inode){
+				//curr_inode = extfs_resolve_symlink(last, disk_id,curr_inode,&f_info); //TODO: implment symlink reoslve 
+				if(curr_inode<=0){
 					return -ENOENT;
 				}
+				if(par){
+					*par = last;
+				}
 		}	
+		else{
 		
 		
 		if(par){
 			*par = extfs_find_finode_from_dir(diskman_find_ent(disk_id), curr_inode, "..");
-			
-		}
+			if(*par < 0){
+				
+				return -ENOENT;
+			}
+		}}
 		
 		if(new_name)
 		mem_cpy(new_name, path+name_res.off, str_len(path+name_res.off));

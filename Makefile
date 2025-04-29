@@ -43,7 +43,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: all
-	qemu-system-x86_64  -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=/dev/nvme0n1,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
+	qemu-system-x86_64  -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
 
 clean:
 	rm obj -rf -

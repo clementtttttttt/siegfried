@@ -15,9 +15,14 @@
 #include "types.h"
 #include "errno.h"
 void idt_syscall_handler_s();
+void syscall_new_handler_s();
+void syscall_wrmsr(unsigned int addr, unsigned int high, unsigned int low){
+	asm("wrmsr"::"c"(addr),"a"(low),"d"(high));
+}
+
 
 void syscall_setup(){
-
+	syscall_wrmsr(0xc0000082, ((uint64_t)syscall_new_handler_s)>>32, ((uint32_t)(uint64_t)syscall_new_handler_s)&0xffffffff);
     idt_set_irq_ent(0xf0, idt_syscall_handler_s);
     idt_flush();
 
@@ -291,7 +296,7 @@ long syscall_write(siegfried_file *f, void *buf, unsigned long sz_bytes, unsigne
 pid_t syscall_spawn(char *path, char** argv, char** env, unsigned long attrs){
 	//parse path
 	
-	unsigned long disk_inode = parse_path(&path);
+	ino_t disk_inode = parse_path(&path);
 	
 	pid_t ret =  runner_spawn_task(disk_inode, path, argv, env, attrs);
 	return ret;
@@ -388,9 +393,9 @@ int syscall_reboot(int arg, unsigned long magic, unsigned long magic2){
 
 void *syscall_table[200] = {syscall_exit, syscall_sleep, draw_string_w_sz, syscall_diskman_get_next_ent, syscall_diskman_read, syscall_diskman_write, syscall_read, syscall_write,syscall_open, syscall_spawn, syscall_diskman_get_root, syscall_get_tid, syscall_stat, syscall_close, syscall_open_dir, syscall_mmap, syscall_getcwd, syscall_read_dir, syscall_close_dir, syscall_chdir, syscall_reboot, syscall_gmsg};
 
-unsigned long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
+long syscall_main(unsigned long func,unsigned long i1, unsigned long i2, unsigned long i3, unsigned long i4, unsigned long i5, unsigned long i6){
 	
-	unsigned long retval = -ENOSYS;
+	 long retval = -ENOSYS;
     if(syscall_table[func]){
     	unsigned long i5_r8 = i5;
 	unsigned long i6_r9 = i6;

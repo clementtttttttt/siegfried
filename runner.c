@@ -39,10 +39,12 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
     
 
    // unsigned long in = extfs_find_finode_from_dir(diskman_find_ent(disk_inode),EXTFS_ROOTDIR_INODE, name);
-    
+
     if((long)f < 0){
+
 			//if(curr_task)
 			//	curr_task->errno = ENOENT;	
+			page_switch_tab(old);
 			return (pid_t)f;
     }
 
@@ -72,7 +74,6 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	header = k_obj_realloc(header,sizeof(elf_head) + header->prog_tab_num_ents * header->prog_tab_ent_sz);
 
 
-
 	
 	 read = d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
@@ -88,7 +89,9 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 		draw_hex((unsigned long)header);
 		k_obj_free(header);
 		k_obj_free(f);
-		return 0;
+					page_switch_tab(old);
+
+		return -ENOEXEC;
 	}
        task* t=task_start_func((void*)header->entry_addr);
 	    t -> tf -> rip = (unsigned long) header->entry_addr;
@@ -124,7 +127,7 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 	t->cwd = k_obj_alloc(sizeof(siegfried_dir));
 	int r = syscall_open_dir(dname, t->cwd);
 	if(r < 0){
-		return 0;
+		return -ENOENT;
 	}
 	//d->fopendir(disk_inode, dname, 0, t->cwd);
 	
