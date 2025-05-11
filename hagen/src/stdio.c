@@ -30,6 +30,8 @@ int snprintf(char* str, size_t size, const char* format, ...) {
 	return n;
 }
 
+
+
 int sprintf(char* str, const char* format, ...) {
 	va_list ap;
 	va_start(ap, format);
@@ -44,6 +46,14 @@ int sscanf(const char* s, const char* format, ...) {
 	int n = vsscanf(s, format, ap);
 	va_end(ap);
 	return n;
+}
+
+FILE * fopen(const char *path, const char *modes){
+		return (FILE*)syscall1(sys_open, path);//TODO: add modes to syscall
+}
+
+int fclose(FILE* stream){
+	return (int)(uint64_t)syscall1(sys_close, stream);
 }
 
 int vsnprintf(char* str, size_t size, const char* format, va_list ap) {
@@ -278,6 +288,21 @@ int vsnprintf(char* str, size_t size, const char* format, va_list ap) {
 
 int vsprintf(char* str, const char* format, va_list ap) {
 	return vsnprintf(str, (size_t)-1, format, ap);
+}
+
+
+int printf(const char *restrict fmt, ...){
+	int ret;
+	va_list ap;
+	char crap[999];
+	
+	va_start(ap, fmt);
+	ret = vsprintf(crap, fmt, ap);
+	
+	puts(crap);
+	va_end(ap);
+	return ret;
+	
 }
 
 int vsscanf(const char* s, const char* format, va_list ap) {

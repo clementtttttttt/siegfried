@@ -27,8 +27,8 @@ void exit(int st){
 	while(1){}
 }
 
-syscall_msg_t *gmsg(void){
-	return syscall0(sys_gmsg);
+void gmsg(syscall_msg_t *m){
+	return syscall1(sys_gmsg, m);
 }
 
 int close(int file){

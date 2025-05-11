@@ -30,6 +30,8 @@ extern "C" {
 #endif
 
 
+typedef void FILE;
+int printf(const char *restrict fmt, ...);
 int		snprintf		(char* s, size_t n, const char* format, ...);
 int		sprintf		(char* s, const char* format, ...);
 int		sscanf		(const char* s, const char* format, ...);
@@ -37,10 +39,10 @@ int		vsnprintf		(char* s, size_t n, const char* format, va_list arg);
 int		vsprintf		(char* s, const char* format, va_list arg);
 int		vsscanf		(const char* s, const char* format, va_list arg);
 int puts(const char *s);
-
+FILE * fopen(const char *path, const char *modes);
 int 		fflush		(void * stream);
 int fprintf ( void * stream, const char * format, ... );
-
+int fclose(FILE* stream);
 #define EOF (-1)
 #warning STUB STDERR
 #define stderr (void*)42

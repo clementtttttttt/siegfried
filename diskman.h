@@ -1,7 +1,6 @@
 #ifndef _SYS_DISKMAN_H
 #define _SYS_DISKMAN_H
-typedef long ino_t;
-
+#include "types.h"
 //TODO: MOVE DEFS TO SEPARATE HEADER
 #define PATH_MAX 4096
 #define NAME_MAX 256
@@ -87,9 +86,8 @@ typedef siegfried_dirnames_t *(*diskman_read_dir_t)(siegfried_dir *in, siegfried
 #define DISKMAN_FCLOSE_FUNC(name) int name (siegfried_file *f)
 #define DISKMAN_FSTAT_FUNC(name) int name (siegfried_file *f,siegfried_stat *stat)
 #define DISKMAN_READ_DIR_FUNC(name) siegfried_dirnames_t *name (siegfried_dir *in,siegfried_dirnames_t *names)
-typedef struct diskman_ent diskman_ent;
 
-typedef  int (*diskman_get_name_from_parent_t) (diskman_ent *d, ino_t dir_inode, ino_t target,char *name);
+typedef  int (*diskman_get_name_from_parent_t) (struct diskman_ent *d, ino_t dir_inode, ino_t target,char *name);
 
 typedef struct diskman_ent{
     struct diskman_ent *next;

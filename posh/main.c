@@ -98,8 +98,9 @@ int main(){
 					puts("\n");
 					break;
 				}
-				syscall_msg_t *msg = gmsg();
-				syscall_child_died_type_t code = *((syscall_child_died_type_t*)&msg->spec_dat);
+				syscall_msg_t msg; 
+				gmsg(&msg);
+				syscall_child_died_type_t code = *((syscall_child_died_type_t*)&msg.spec_dat);
 				if(code){
 					puts("Program crashed\n");
 				}

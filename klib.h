@@ -20,8 +20,6 @@ void itoa_w_sz(char *buf, unsigned long in, size_t sz);
 void klib_clear_var_cache(void *v);
 unsigned long find_num_len(char *str);
 
-#define HAVE_SIZE_T
-typedef unsigned long size_t;
 
 
 static inline void mmio_pokel(volatile void *addr, unsigned int value){

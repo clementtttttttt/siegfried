@@ -365,8 +365,13 @@ void *syscall_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t of
 	return ret;
 }
 
-syscall_msg_t * syscall_gmsg(void){
-	return task_msgqueue_pop();
+void syscall_gmsg(syscall_msg_t *dest){
+	syscall_msg_t *m = task_msgqueue_pop();
+	
+	mem_cpy(dest, m, sizeof(syscall_msg_t));
+	
+	k_obj_free(m);
+
 }
 
 void syscall_pmsg_1(pid_t dest, pid_t src, syscall_msg_type_t t){

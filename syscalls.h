@@ -32,7 +32,7 @@ int read(int file, char *buf, int len);
 pid_t spawn(char *path, char** argv, char** env, unsigned long attrs);
 int opendir(char* path, syscall_siegfried_dir *in);
 void syscall_pmsg_1(pid_t dest, pid_t src, syscall_msg_type_t t);
-syscall_msg_t *gmsg(void);
+void gmsg(syscall_msg_t *m );
 int getpid();
 
 extern syscall_siegfried_file *fds[4096];

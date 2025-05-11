@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 
+typedef long ino_t;
 
 typedef long off_t;
 

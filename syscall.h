@@ -12,4 +12,4 @@ int syscall_open_dir(char* path, siegfried_dir *in);
 pid_t syscall_get_tid(void);
 void syscall_pmsg_1(pid_t dest, pid_t src, syscall_msg_type_t t);
 void syscall_close_dir(siegfried_dir *in);
-syscall_msg_t * syscall_gmsg(void);
+void syscall_gmsg(syscall_msg_t *msg);
