@@ -40,6 +40,7 @@ double				atof		(const char* nptr);
 int					atoi		(const char* nptr);
 long int				atol		(const char* nptr);
 long long int			atoll		(const char* nptr);
+char* getenv( const char* env_var );
 
 #warning strtod commented out
 //double				strtod	(const char* nptr, char** endptr);

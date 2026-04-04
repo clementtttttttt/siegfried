@@ -43,6 +43,14 @@ FILE * fopen(const char *path, const char *modes);
 int 		fflush		(void * stream);
 int fprintf ( void * stream, const char * format, ... );
 int fclose(FILE* stream);
+long ftell( FILE* stream );
+int fseek( FILE* stream, long offset, int origin );
+size_t fwrite( const void* restrict buffer, size_t size, size_t count,
+               FILE* restrict stream );
+size_t fread( void *restrict buffer, size_t size, size_t count,
+              FILE *restrict stream );
+        int feof( FILE *stream );      
+              int vfprintf( FILE* stream, const char* format, va_list vlist );
 #define EOF (-1)
 #warning STUB STDERR
 #define stderr (void*)42
