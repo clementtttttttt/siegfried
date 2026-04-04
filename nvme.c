@@ -14,7 +14,7 @@ extern KHEAPSS page_heap;
 
 nvme_ctrl *nvme_ctrl_list;
 
-nvme_ctrl *nvme_new_ctrl(){
+nvme_ctrl *nvme_new_ctrl(void){
 
     nvme_ctrl *ret;
 
@@ -482,12 +482,11 @@ draw_hex(bar0->ctrl_conf_raw);
 
 	//zero out entries just for good measure
 	mem_set((void*)curr->acq_vaddr, 0, 4096);
-	mem_set((void*)curr->asq_vaddr, 0, 4096);
 
 
 }
 
-void nvme_setup(){
+void nvme_setup(void){
 
     pci_dev_ent* it = 0;
 

@@ -25,7 +25,7 @@ typedef struct pci_bridge_ent{
 } pci_bridge_ent;
 
 
-void pci_enum();
+void pci_enum(void);
 void pci_enum_bus(unsigned short bus);
 pci_dev_ent *pci_get_next_dev_ent(pci_dev_ent *in);
 unsigned short pci_read_conw(unsigned char bus, unsigned char slot, unsigned char func, unsigned char offset);

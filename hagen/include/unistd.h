@@ -20,7 +20,9 @@ int pipe(int fildes[2]);
 
  int dup(int fildes);
 int dup2(int fildes, int fildes2);
+ int execv(const char *path, char *const argv[]);
 
+ int execvp(const char *file, char *const argv[]);
  int lstat(const char *path, struct stat *buf);
 off_t lseek(int fd, off_t off, int whence);
 int isatty(int fd);

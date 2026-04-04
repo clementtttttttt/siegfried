@@ -24,7 +24,7 @@ typedef struct syscall_siegfried_file syscall_siegfried_file;
 
 
 
-void syscall_setup();
+void syscall_setup(void);
 void _exit(int stat);
 int execve(char *name, char **argv, char **env);
 int fstat(int file, struct stat *st);
@@ -33,7 +33,7 @@ pid_t spawn(char *path, char** argv, char** env, unsigned long attrs);
 int opendir(char* path, syscall_siegfried_dir *in);
 void syscall_pmsg_1(pid_t dest, pid_t src, syscall_msg_type_t t);
 void gmsg(syscall_msg_t *m );
-int getpid();
+pid_t getpid(void);
 
 extern syscall_siegfried_file *fds[4096];
 

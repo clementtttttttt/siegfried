@@ -803,11 +803,13 @@ static FORCEINLINE int win32munmap(void* ptr, size_t size) {
 #endif /* WIN32 */
 #endif /* HAVE_MMAP */
 
+
 #if HAVE_MREMAP
 #ifndef WIN32
 #define MREMAP_DEFAULT(addr, osz, nsz, mv) mremap((addr), (osz), (nsz), (mv))
 #endif /* WIN32 */
 #endif /* HAVE_MREMAP */
+
 
 /**
  * Define CALL_MORECORE

@@ -12,4 +12,4 @@ typedef struct kb_ev_s{
 	int code; 
 	
 } kb_ev_t;
-kb_ev_t kb_wait_and_pop_ev();
+kb_ev_t kb_wait_and_pop_ev(void);

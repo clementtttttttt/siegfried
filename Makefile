@@ -5,7 +5,8 @@ ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static $(OPT_FLAGS)
 #CC=clang --target=x86_64-pc-none-elf -march=x86-64
-CC=x86_64-pc-none-elf-gcc
+#CC=x86_64-pc-none-elf-gcc
+CC=gcc
 
 SOURCES=$(wildcard *.c)
 HEADERS = $(wildcard *.h)
@@ -43,7 +44,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: all
-	qemu-system-x86_64  -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2-ovmf/OVMF_CODE.csm.fd    -cpu kvm64 -monitor stdio -boot splash-time=0
+	qemu-system-x86_64  -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -bios /usr/share/edk2/ovmf/OVMF_CODE.fd     -cpu kvm64 -monitor stdio -boot splash-time=0
 
 clean:
 	rm obj -rf -

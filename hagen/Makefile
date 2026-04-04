@@ -1,6 +1,6 @@
 # tool macros
-CC := x86_64-pc-none-elf-gcc
-AR := x86_64-pc-none-elf-ar
+CC := x86_64-none-elf-gcc
+AR := ar
 
 
 INC_PATH:=include
@@ -13,7 +13,7 @@ OBJ_PATH := obj
 SRC_PATH := src
 DBG_PATH := debug
 
-SYSROOT := $(HOME)/cross/x86_64-siegfried/sys-root
+SYSROOT := $(HOME)/opt/cross/x86_64-siegfried/sys-root
 
 project_name := hagen
 

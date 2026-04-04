@@ -4,7 +4,7 @@
 #pragma once
 enum mmap_flags{
 
-	MAP_SHARED,MAP_PRIVATE,MAP_FIXED
+	MAP_SHARED,MAP_PRIVATE,MAP_FIXED,MAP_ANONYMOUS
 };
 
 enum mmap_prot{

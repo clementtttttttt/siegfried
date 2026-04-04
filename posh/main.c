@@ -107,8 +107,8 @@ int main(){
 			}
 			else
 			if(!strcmp(tok, "exit")){
-				asm("syscall");
-				//exit(0);
+				//asm("syscall");
+				exit(0);
 			}
 			else
 			if(!strcmp(tok, "reboot")){

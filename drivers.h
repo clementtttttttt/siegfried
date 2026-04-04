@@ -1,1 +1,1 @@
-void drivers_setup();
+void drivers_setup(void);

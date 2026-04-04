@@ -10,7 +10,7 @@ static unsigned long lowest_fd = 1;
 
 int _sys_errno= 0;
 
-int *__errno(){
+int *__errno(void){
 	return &_sys_errno;
 }
 
@@ -20,7 +20,7 @@ int opendir(char* path, syscall_siegfried_dir *in){
 }
 
 pid_t spawn(char *path, char** argv, char** env, unsigned long attrs){
-	return syscall4(sys_spawn,path, argv, env, attrs);
+	return (pid_t)syscall4(sys_spawn,path, argv, env, (void*)attrs);
 }
 void exit(int st){
 	syscall1(sys_exit, (void*)(unsigned long)st);
@@ -28,7 +28,7 @@ void exit(int st){
 }
 
 void gmsg(syscall_msg_t *m){
-	return syscall1(sys_gmsg, m);
+	(void)syscall1(sys_gmsg, m);
 }
 
 int close(int file){
@@ -58,7 +58,7 @@ int fork(){ //we havent fork
 ssize_t write(int fd, const void *buf, size_t count){
 	if(fd == 0) return -EINVAL;
 	
-	return syscall4(sys_write, fds[fd], buf, count, 0); //0 attr
+	return (ssize_t)syscall4(sys_write, fds[fd], buf,(void*) count, 0); //0 attr
 	
 
 }
@@ -82,12 +82,13 @@ uid_t getuid(){
 
 }
 
-int getpid(){
-	return syscall0(sys_get_tid);
+pid_t getpid(){
+	return (pid_t)syscall0(sys_get_tid);
 }
 
 void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t offset){
-	syscall6(sys_mmap,addr, len, prot, flags, fd, offset);
+	return syscall6(sys_mmap,addr, (void*)len,(void*) prot,(void*) flags, (void*)fd,(void*) offset);
+
 }
 
 int isatty(int file);
@@ -116,7 +117,7 @@ mode_t umask(mode_t cmask){
 
 int read(int file, char *buf, int len){
 	syscall_siegfried_file *f = fds[file];
-	syscall4(sys_read, f, buf, len, 0);
+	syscall4(sys_read, f, buf, (void*)len, 0);
 	
 	#warning TODO proper errcode return
 	return 0; 

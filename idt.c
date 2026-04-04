@@ -65,7 +65,7 @@ void idt_print_stacktrace_depth(unsigned long *stack, int depth){
     draw_string("\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\315END STACK TRACE\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\xcd\n");
 }
 
-unsigned long idt_dump_cr2();
+unsigned long idt_dump_cr2(void);
 asm("idt_dump_cr2: movq %cr2, %rax; retq");
 
 void idt_pagefault_handler(task_trap_sframe *fr){

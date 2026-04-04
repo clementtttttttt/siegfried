@@ -28,9 +28,9 @@ typedef struct idt_tab_desc{
 
 }__attribute__((packed))idt_tab_desc ;
 
-void idt_setup();
+void idt_setup(void);
 void idt_set_irq_ent(unsigned long no, void* addr);
-void idt_flush();
+void idt_flush(void);
 void idt_print_stacktrace(unsigned long *stack);
 void idt_print_stacktrace_depth(unsigned long *stack, int depth);
 void idt_print_stacktrace_con(unsigned long *stack);
