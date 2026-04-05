@@ -114,6 +114,7 @@ int syscall_open_dir(char* path, siegfried_dir *in){
     diskman_ent *e = diskman_find_ent(disk_inode);
 
     if(e != 0){
+		if(e->fopendir == 0) return -ENOSYS;
 		return e -> fopendir (disk_inode, path,0, in);
     }
     return -EINVAL;
@@ -126,6 +127,7 @@ siegfried_dirnames_t *syscall_read_dir(siegfried_dir *in, siegfried_dirnames_t *
     diskman_ent *e = diskman_find_ent(in->di);
 
     if(e != 0){
+		if(e->freaddir == 0) return (siegfried_dirnames_t*)-ENOSYS;
 		return e -> freaddir (in, names);
     }
     return (siegfried_dirnames_t*)-EINVAL;

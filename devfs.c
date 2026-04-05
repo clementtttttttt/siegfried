@@ -27,6 +27,8 @@ DISKMAN_FREAD_FUNC(devfs_fread){
 }
 
 
+
+
 static devfs_ent *devfs_root = 0;
 
 DISKMAN_FOPEN_FUNC(devfs_fopen){
