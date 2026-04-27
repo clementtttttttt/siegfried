@@ -1,6 +1,6 @@
 OPT_FLAGS=-O0
 
-CFLAGS= -Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -march=k8 -mtune=k8 
+CFLAGS= -Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -march=k8 -mtune=k8 -I. -Iinclude 
 ASFLAGS=$(CFLAGS)
 
 LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static $(OPT_FLAGS)
@@ -8,13 +8,13 @@ LDFLAGS=-z max-page-size=0x1000 -mno-red-zone -static $(OPT_FLAGS)
 #CC=x86_64-pc-none-elf-gcc
 CC=gcc
 
-SOURCES=$(wildcard *.c)
-HEADERS = $(wildcard *.h)
+SOURCES=$(wildcard src/*.c)
+HEADERS = $(wildcard include/*.h)
 
-SOURCES_S=$(wildcard *.S)
+SOURCES_S=$(wildcard asm/*.S)
 
-OBJECTS=$(patsubst %.c, %.o, $(SOURCES))
-OBJECTS_S=$(patsubst %.S, %.o, $(SOURCES_S))
+OBJECTS=$(patsubst src/%.c, %.o, $(SOURCES))
+OBJECTS_S=$(patsubst asm/%.S, %.o, $(SOURCES_S))
 
 OBJECTS2=$(addprefix obj/,$(OBJECTS))
 OBJECTS2_S=$(addprefix obj/, $(OBJECTS_S))
@@ -29,11 +29,11 @@ sfkrnl.elf: $(OBJECTS2) $(OBJECTS2_S) linker.ld
 	@$(CC)  -T linker.ld -o sfkrnl.elf -ffreestanding  -nostdlib $(OBJECTS2) $(OBJECTS2_S)   -Wl,-Map=output.map $(LDFLAGS)
 	@echo CCLD\($(CC)\) $@
 
-obj/%.o : %.c | obj
+obj/%.o : src/%.c | obj
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo CC\($(CC)\) $@
 
-obj/%.o : %.S | obj
+obj/%.o : asm/%.S | obj
 	@$(CC) $(ASFLAGS) -c $< -o $@
 	@echo CCAS\($(CC)\) $@
 
