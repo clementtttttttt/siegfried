@@ -77,7 +77,7 @@ void dbg_write_debug_reg(unsigned long tmp,char reg){
 void dbg_disable_breakpoint(char bp_num, char islocal){
 	dr7_t val;
 	
-	val.raw = dbg_read_debug_reg(REG_DR0);
+	val.raw = dbg_read_debug_reg(REG_DR7);
 	
 	unsigned char en_bits = islocal?0b01:0b10;
 	unsigned long tmp = (en_bits << (bp_num*2));

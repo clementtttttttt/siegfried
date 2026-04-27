@@ -218,7 +218,7 @@ void itoa_w_sz(char *buf, unsigned long in, size_t sz){
 		--ret_sz;
 	}
 	
-	mem_cpy(buf, ret_buf, ret_sz);
+	mem_cpy(buf, ret_buf, sz);
 }
 
 void klib_clear_var_cache(void *v){

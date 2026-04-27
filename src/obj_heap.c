@@ -813,7 +813,7 @@ void PREFIX(k_obj_free)(void *ptr)
 
 void* PREFIX(k_obj_calloc)(unsigned long nobj, unsigned long size)
 {
-       int real_size;
+       long real_size;
        void *p;
 
        real_size = nobj * size;

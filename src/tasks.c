@@ -186,7 +186,7 @@ task* task_find_by_tid(pid_t in){
 			}
 			it = it->next;
 			
-	}	while(it->next != tasks);
+	}	while(it != tasks);
 	return NULL;
 }
 

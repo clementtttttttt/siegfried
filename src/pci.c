@@ -325,7 +325,7 @@ void pci_enum_func(unsigned short bus, unsigned char dev, unsigned char func) {
 		
 			pci_enum_bus(vmd_bus);
 		
-		biter->next = k_obj_alloc(sizeof(pci_bridge_ent*));
+		biter->next = k_obj_alloc(sizeof(pci_bridge_ent));
 		biter->next->ecam_addr = 0;
 		
 		

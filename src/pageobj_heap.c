@@ -178,7 +178,7 @@ void k_pageobj_free(KHEAPSS *heap, void *ptr) {
 					dbgconout("THIS\r\n");
 					while(b_it->next != b )b_it = b_it -> next;
 
-				//	b_it -> next = b -> next;
+					b_it -> next = b -> next;
 				}
 				page_free_found((unsigned long)b, b->size/2097152);
 
