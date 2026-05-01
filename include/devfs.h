@@ -10,6 +10,8 @@ typedef struct devfs_ent{
 		char name[20];
 		devfs_read read_func;
 		unsigned long size;
+		
+		__uint128_t uuid;  
 		int inode;
 		
 }devfs_ent;

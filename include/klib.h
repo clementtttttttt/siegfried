@@ -9,6 +9,7 @@ int mem_cmp(const void *vl, const void *vr, unsigned long n);
 unsigned long str_len(char *in);
 void halt_and_catch_fire();
 
+int str_cmp (char* str1,  char* str2);
 typedef struct str_tok_result{
     unsigned long off;
     unsigned long sz;

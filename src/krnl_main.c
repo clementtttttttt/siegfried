@@ -75,6 +75,8 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 
         krnl_init_inode = 5;
 
+	
+	uuid_t root_uuid = 0;
 
     struct multiboot_tag *tag_ptr = (struct multiboot_tag *)&(m_info[2]);
     while(((unsigned long long) tag_ptr - (unsigned long long) m_info) < sz){
@@ -214,7 +216,7 @@ draw_string("FBADDR=");
     
 
     //load tasks and init loader	
-    tasks_setup();
+    tasks_setup(root_uuid);
 
     asm("cli");
 

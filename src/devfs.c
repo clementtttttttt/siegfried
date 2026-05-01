@@ -39,7 +39,7 @@ DISKMAN_FOPEN_FUNC(devfs_fopen){
 
 	while(it){
 		
-		if(mem_cmp(it->name, path, str_len(it->name)) == 0){
+		if(str_cmp(it->name, path) == 0){
 			siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
 			f->inode = it->inode;
 			f->disk = devd;

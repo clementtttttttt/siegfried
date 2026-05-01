@@ -254,6 +254,19 @@ unsigned long find_num_len(char *str){
 
 }
 
+
+int str_cmp (char* str1,  char* str2){
+	if(str_len(str1) > str_len(str2)){
+		return str1[str_len(str2)] - str2[str_len(str2)];
+	}
+	if(str_len(str2) > str_len(str1)){
+		return str1[str_len(str1)] - str2[str_len(str1)];
+	}
+	
+	return str1[str_len(str1)-1] - str2[str_len(str2)-1];
+}
+
+
 void str_tok(char *str, char delim, str_tok_result *off){
 
     if(off->off > str_len(str) || str_len(str) == 0){off->off = 0; off->sz = 0; return;}

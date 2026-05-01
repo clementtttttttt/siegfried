@@ -17,7 +17,7 @@ typedef unsigned long gid_t;
 typedef unsigned short mode_t;
 typedef long clock_t;
 typedef unsigned long wctype_t;
-
+typedef __uint128_t uuid_t;
 
 struct stat {
 	uint16_t	st_dev;
