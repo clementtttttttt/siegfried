@@ -38,6 +38,23 @@ diskman_ent *diskman_new_ent(){
     return ret;
 }
 
+ino_t diskman_find_from_uuid(uuid_t u){
+	diskman_ent *it = disks;
+			draw_uuid(u);
+
+    while(it){
+		if(it->uuid_len != 0){
+		
+			draw_uuid(*(uuid_t*)it->uuid);
+			if(!mem_cmp(&u, it->uuid, it->uuid_len)){
+				return it->inode;
+			}
+		}
+		it = it->next;
+	}
+	return -1;
+}
+
 diskman_ent *diskman_find_ent(unsigned long inode){
     diskman_ent *it = disks;
     while(it){

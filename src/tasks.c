@@ -190,7 +190,7 @@ task* task_find_by_tid(pid_t in){
 	return NULL;
 }
 
-void tasks_setup(){
+void tasks_setup(uuid_t root_uuid){
 
     asm("cli");
     mem_set(&tss, 0, sizeof(tss));
@@ -199,9 +199,16 @@ void tasks_setup(){
     tasking_enabled = 1; 
     asm volatile("movw $0x28, %%ax; ltrw %%ax":::"ax");
 
+	uint64_t dsk = krnl_init_inode;
+    if(root_uuid != 0){
+		dsk = diskman_find_from_uuid(root_uuid);
+		krnl_init_inode = dsk;	 //TODO: get rid of this stupid global variable
+	}
     
-    if(runner_spawn_task(krnl_init_inode, "/sbin/sfinit",0,0,0)<0){ //tid <0 = fail
-	if(runner_spawn_task(krnl_init_inode, "/sfinit",0,0,0)<0){ //try other paths
+    
+    
+    if(runner_spawn_task(dsk, "/sbin/sfinit",0,0,0)<0){ //tid <0 = fail
+	if(runner_spawn_task(dsk, "/sfinit",0,0,0)<0){ //try other paths
 
 	}
     }

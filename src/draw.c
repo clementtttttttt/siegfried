@@ -316,6 +316,18 @@ void hexdump(void *ptr, unsigned long i2){
 
 }
 
+void draw_uuid(uuid_t in){
+    char hexlookup[] = "0123456789ABCDEF";
+
+    for(int i=0;i<32;++i){
+        char c = hexlookup[((in>>((15-i)*4))&0xf)];
+        draw_append_text_buf(c);
+    }
+    draw_append_text_buf('\n');
+
+    draw_swap_textbuf();
+}
+
 void draw_hex(unsigned long in){
     char hexlookup[] = "0123456789ABCDEF";
 

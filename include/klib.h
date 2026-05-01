@@ -8,6 +8,8 @@ void *mem_set(void *dest, unsigned int val, unsigned long sz);
 int mem_cmp(const void *vl, const void *vr, unsigned long n);
 unsigned long str_len(char *in);
 void halt_and_catch_fire();
+uuid_t str_to_uuid(const char *str);
+
 
 int str_cmp (char* str1,  char* str2);
 typedef struct str_tok_result{

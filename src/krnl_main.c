@@ -207,6 +207,19 @@ draw_string("FBADDR=");
 
         }
 
+        if(!mem_cmp(&krnl_cmdline[res.off], "ruuid=", str_len("ruuid="))){
+			
+			if(res.sz == (str_len("ruuid=") + 2 * (128/8))){ 
+				
+				root_uuid = str_to_uuid(&krnl_cmdline[res.off + str_len("ruuid=")]);
+				
+			}
+			else{
+				dbgconout("wrong str len for ruuid");
+			}
+
+        }
+
         str_tok(krnl_cmdline, ' ', &res);
 
     }

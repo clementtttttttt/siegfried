@@ -132,7 +132,7 @@ asm("sti");
 
 		    
         draw_string("\nFOUND PART: PART_UUID=");
-        draw_string_w_sz((char*)&ent->part_guid, 16);
+        draw_uuid(*(uuid_t*)&ent->part_guid);
         draw_string("\n");
         draw_string("PARTNAME=");
         draw_string_w_sz(ent->partname, 72);

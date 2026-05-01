@@ -47,9 +47,9 @@ void syscall_sleep(unsigned long in1){
 extern diskman_ent *disks;
 
 ino_t syscall_diskman_get_root(void){
-	extern unsigned long krnl_init_inode;
+	extern unsigned long krnl_init_inode; //TODO: get rid of stupid global variable
 		
-		return krnl_init_inode; //just returns
+	return krnl_init_inode; //just returns
 }
 
 pid_t syscall_get_tid(void){

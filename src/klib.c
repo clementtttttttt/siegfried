@@ -254,6 +254,31 @@ unsigned long find_num_len(char *str){
 
 }
 
+uuid_t str_to_uuid(const char *str){
+	uuid_t ret = 0;
+	
+	for(int i=0;i<32; ++i){
+		if(str[i] >= '0' && str[i] <= '9'){
+			ret |= str[i] - '0';
+		}
+		if(str[i] >= 'A' && str[i] <= 'F'){
+			ret |= str[i] - 'A' + 0xA;
+		}	
+		if(str[i] >= 'a' && str[i] <= 'f'){
+			ret |= str[i] - 'a' + 0xa;
+		}		
+		if(i<31){
+			ret <<= 4;
+		}	
+	}
+	
+	uint64_t lower = ret & 0xffffffffffffffff;
+	ret >>= 64;
+	ret |= (uuid_t) lower << 64;
+	
+	return ret;
+	
+}
 
 int str_cmp (char* str1,  char* str2){
 	if(str_len(str1) > str_len(str2)){

@@ -13,7 +13,7 @@ typedef struct siegfried_dir{
 	char name[NAME_MAX];
 	unsigned long di;
 	ino_t parent;
-	
+
 
 }siegfried_dir;
 
@@ -128,6 +128,7 @@ void diskman_gpt_enum(diskman_ent *in);
 
 diskman_ent *diskman_find_ent(unsigned long inode);
 
+ino_t diskman_find_from_uuid(uuid_t u);
 
 enum fs_types{
     DISKMAN_FS_NULL, DISKMAN_FS_EXTFS, DISKMAN_FS_FAT,DISKMAN_FS_DEV

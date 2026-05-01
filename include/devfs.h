@@ -11,7 +11,6 @@ typedef struct devfs_ent{
 		devfs_read read_func;
 		unsigned long size;
 		
-		__uint128_t uuid;  
 		int inode;
 		
 }devfs_ent;
