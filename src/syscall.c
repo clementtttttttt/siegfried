@@ -114,6 +114,7 @@ int syscall_open_dir(char* path, siegfried_dir *in){
     diskman_ent *e = diskman_find_ent(disk_inode);
 
     if(e != 0){
+
 		if(e->fopendir == 0) return -ENOSYS;
 		return e -> fopendir (disk_inode, path,0, in);
     }
@@ -314,13 +315,13 @@ int syscall_chdir(char *path){
 	siegfried_dir *d = k_obj_alloc(sizeof(siegfried_dir));
 	int ret;
 	if((ret=syscall_open_dir(path, d)) < 0){
+
 		k_obj_free(d);
 		return ret;
 	}
-	
+
 	syscall_close_dir(curr_task->cwd);
 	curr_task->cwd = d;
-	
 	
 
 	return 0;

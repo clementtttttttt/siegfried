@@ -258,8 +258,8 @@ void kb_setup(){
     
     if(!(fadt->arch_flags & 0b10) && fadt->header.rev >= 2){
 		draw_hex(fadt->arch_flags);
-		draw_string("PS2 CTRL NOT FOUND\n");
-			return; //no ps2 ctrl
+		draw_string("WARNING: PS2 not found in FACP\n");
+		//return; //no ps2 ctrl
 	}
     
         apic_map_irq(0x1, 0x21);

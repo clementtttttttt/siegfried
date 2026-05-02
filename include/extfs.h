@@ -274,7 +274,7 @@ void extfs_enum(diskman_ent *d);
 
 extfs_bgrp_desc *extfs_read_blk_desc(diskman_ent *d, ino_t inode, extfs_bgrp_desc *descs_16x);
 ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t parent_dir_inode,char *name);
-unsigned long extfs_read_inode_contents(diskman_ent *d, ino_t in, void* buf,  long count,unsigned long off);
+unsigned long extfs_read_inode_contents(diskman_ent *d, extfs_inode *in, void* buf,  long count,unsigned long off);
 #define EXTFS_ROOTDIR_INODE 2
 
 

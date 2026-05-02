@@ -1,4 +1,4 @@
-OPT_FLAGS=-O0
+OPT_FLAGS=-Og
 
 CFLAGS= -Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -march=k8 -mtune=k8 -I. -Iinclude 
 ASFLAGS=$(CFLAGS)
@@ -44,7 +44,7 @@ sf.iso: sfkrnl.elf
 	cp sfkrnl.elf isodir/boot/
 	grub-mkrescue isodir -o sf.iso 
 test: all
-	qemu-system-x86_64  -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -device nvme-ns,drive=nvme2 -drive file=/dev/nvme0n1p2,if=none,id=nvme2 -bios /usr/share/edk2/ovmf/OVMF_CODE.fd     -cpu kvm64 -monitor stdio -boot splash-time=0
+	qemu-system-x86_64  -D log -S -s -cdrom sf.iso -machine q35  -m 4096 -d int,cpu_reset -drive file=test.img,if=none,id=nvm -snapshot -device nvme,serial=deadbeef,drive=nvm -d int -bios /usr/share/edk2/ovmf/OVMF_CODE.fd     -cpu kvm64 -monitor stdio -boot splash-time=0
 
 clean:
 	rm obj -rf -

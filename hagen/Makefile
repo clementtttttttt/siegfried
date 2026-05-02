@@ -3,9 +3,8 @@ CC := x86_64-none-elf-gcc
 AR := ar
 
 
-INC_PATH:=include
-
-override CFLAGS += -I$(INC_PATH)  -O3 -static
+INC_PATH:=include 
+override CFLAGS += -I../include -I$(INC_PATH)  -O3 -static
 
 # path macros
 BIN_PATH := bin

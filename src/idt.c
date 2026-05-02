@@ -328,6 +328,7 @@ void idt_setup(){
     idtr.addr = &idt_table[0];
     idtr.sz = sizeof(idt_table) - 1;
 
+  ///  idt_set_trap_ent(0x6, idt_invop_handler_s);
 
     idt_set_trap_ent(0xe, idt_pagefault_handler_s);
     idt_set_trap_ent(0xd, idt_gpf_handler_s);
