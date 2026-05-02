@@ -836,19 +836,29 @@ size_t extfs_read_inode_contents(diskman_ent *d, extfs_inode * in, void* buf, lo
 	
 	
 			extfs_blk_list *blks = extfs_parse_extent_tree(d, (extfs_extent_head*)inode_tab.blk_data_ptrs,0);
-			//FIXME: not reading entire extent properly?
-			
-		  do{
-			  long count2 = MIN((long)(blks->num_blks * inf->blksz_bytes), count);
-				read += d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + off,count2,buf);
-				off += count2;
+			extfs_blk_list *root = blks;
+
+			while(count > 0 && blks){
+				unsigned long extent_file_off = blks->blks_f_off * inf->blksz_bytes;
+				unsigned long extent_sz = blks->num_blks * inf->blksz_bytes;
+
+				if(off >= extent_file_off + extent_sz){
+					blks = blks->next;
+					continue;
+				}
+
+				unsigned long extent_off = (off > extent_file_off) ? (off - extent_file_off) : 0;
+				unsigned long avail = extent_sz - extent_off;
+				long count2 = MIN((long)avail, count);
+
+				read += d->read_func(d->inode, blks->blks_off * inf->blksz_bytes + extent_off, count2, buf);
 				buf += count2;
-				count -= blks->num_blks * inf->blksz_bytes;
+				count -= count2;
+				off += count2;
 				blks = blks->next;
-	      }
-          while(count>0 && blks);                
-          
-          extfs_free_blk_list(blks);
+			}
+
+			extfs_free_blk_list(root);
 		  
 
      }
