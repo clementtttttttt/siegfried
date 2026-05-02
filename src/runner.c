@@ -75,7 +75,7 @@ pid_t  runner_spawn_task(unsigned long disk_inode, char *name, char** argv, char
 
 
 	
-	 read = d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),sizeof(elf_head), header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
+	 read = d->fread(f, (void*)((unsigned long)header + sizeof(elf_head)),header->prog_tab_addr, header->prog_tab_ent_sz * header->prog_tab_num_ents, 0);
 
 	if(read<0){
 				k_obj_free(header);
