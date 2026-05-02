@@ -495,7 +495,7 @@ ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
     if(d->fs_type != DISKMAN_FS_EXTFS){
         return 0;
     }     
-    char root_dirents_mem[1024];
+    char root_dirents_mem[4096]; //FIXME: find size of root dirents dynamically
     extfs_dirent * root_dirents = (extfs_dirent*)root_dirents_mem
     ;
 
@@ -545,6 +545,10 @@ ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
 
 }
 
+size_t extfs_get_ino_szin_bytes(extfs_inode *inode_tab){
+	return ((size_t)inode_tab->sz_in_bytes_h << 32 )| inode_tab->sz_in_bytes_l;
+}
+
 long
  extfs_read_dir_dirents(diskman_ent *d, ino_t dir_ino, extfs_dirent *buf){
 //FIXME: a way to get size of dirents
@@ -559,6 +563,7 @@ long
 			return -ENOTDIR;
 		}
 		
+
 
 		
         if(!(inf->req_flags & EXTFS_REQF_EXTENT)){
@@ -593,7 +598,7 @@ long
 			
 			 }
 			 else{
-				 ret = extfs_read_inode_contents(d, dir_ino, buf, 512*2,0);
+				 ret = extfs_read_inode_contents(d, dir_ino, buf, extfs_get_ino_szin_bytes(&inode_tab),0);
 		
 			}
 

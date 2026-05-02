@@ -209,7 +209,7 @@ void tasks_setup(uuid_t root_uuid){
     
     if(runner_spawn_task(dsk, "/sbin/sfinit",0,0,0)<0){ //tid <0 = fail
 	if(runner_spawn_task(dsk, "/sfinit",0,0,0)<0){ //try other paths
-
+		draw_string("Failure while loading /sfinit");
 	}
     }
 
