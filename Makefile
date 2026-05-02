@@ -1,4 +1,4 @@
-OPT_FLAGS=-Og
+OPT_FLAGS=-O0
 
 CFLAGS= -Werror -Wno-array-bounds  -Wno-address-of-packed-member  -std=gnu99 -ffreestanding $(OPT_FLAGS) -Wall -Wextra -g -mno-red-zone  -nostdlib -static  -Wno-unused-parameter -march=k8 -mtune=k8 -I. -Iinclude 
 ASFLAGS=$(CFLAGS)

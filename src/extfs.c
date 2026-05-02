@@ -370,8 +370,7 @@ DISKMAN_FCLOSE_FUNC(extfs_fclose){
 					ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name,ino_t *par);
 
 ino_t extfs_resolve_symlink(ino_t cwd,ino_t disk_id, ino_t symlink_node, extfs_inode *f_info){
-					char symlink_str[f_info->sz_in_bytes_l + 1];
-					mem_set(symlink_str,0,sizeof(symlink_str));
+					char *symlink_str = k_obj_calloc(extfs_get_ino_szin_bytes(f_info)+2,1);
 
 					if(f_info->sz_in_bytes_l < 60){ //stored in extent stuff
 							mem_cpy(symlink_str, f_info->blk_data_ptrs, f_info->sz_in_bytes_l);

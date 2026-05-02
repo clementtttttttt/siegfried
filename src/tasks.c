@@ -342,6 +342,7 @@ void task_scheduler(){
 
 void task_dump_sframe(task_int_sframe *in){
 	unsigned long *in_long = (unsigned long*)in; 
+	++in_long; //skip align_8
 	char *reg_name[] = {
 		"DS",
 		"RAX",
