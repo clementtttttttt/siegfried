@@ -286,14 +286,14 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
 
 
 
-        extfs_extent_head *subh = k_obj_alloc(512);
+        extfs_extent_head *subh=0;
 
         extfs_disk_info *inf = d->fs_disk_info;
 
 
 
         while(start < end){
-
+			subh = k_obj_alloc(512);
             d->read_func(d->inode, ((unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32)) * inf->blksz_bytes  , 512, subh);
 
             unsigned long sects_sz = (sizeof(extfs_extent_int) * subh->ents + sizeof(extfs_extent_head));
@@ -314,10 +314,10 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
             extfs_parse_extent_tree(d, subh, root);
 
             ++start;
+			k_obj_free(subh);
 
         }
 
-        k_obj_free(subh);
 
 
 
@@ -367,6 +367,7 @@ DISKMAN_FCLOSE_FUNC(extfs_fclose){
 		k_obj_free(f);
 		return 0;
 }
+					ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name,ino_t *par);
 
 ino_t extfs_resolve_symlink(ino_t cwd,ino_t disk_id, ino_t symlink_node, extfs_inode *f_info){
 					char symlink_str[f_info->sz_in_bytes_l + 1];
@@ -383,16 +384,16 @@ ino_t extfs_resolve_symlink(ino_t cwd,ino_t disk_id, ino_t symlink_node, extfs_i
 					}
 					draw_string("symlink=");
 					draw_string(symlink_str);
-					ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd,char *path, unsigned long disk_id,char* new_name,ino_t *par);
 					
-					return extfs_find_inode_from_name_and_set_name(cwd,symlink_str, disk_id, 0, 0);
+					//FIXME: add cwd
+					return extfs_find_inode_from_name_and_set_name(symlink_str, disk_id, 0, 0);
 }
 
 
 long
  extfs_read_dir_dirents(diskman_ent *d, extfs_inode *inode_tab, extfs_dirent *buf);
 
-ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned long disk_id,char* new_name,ino_t *par){
+ino_t extfs_find_inode_from_name_and_set_name(char *path, unsigned long disk_id,char* new_name,ino_t *par){
 			str_tok_result res = {0,0};
 
 		ino_t curr_inode;
@@ -403,8 +404,12 @@ ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned lo
 				break;
 			default:
 
-				if(!cwd) curr_inode = curr_task->cwd->inode;
-				else curr_inode = cwd;
+				if(curr_task == 0){
+					draw_string("NO CWD!");
+					return -9; //TODO: handle when tasking isnt enabled
+				}
+				curr_inode = curr_task->cwd->inode;
+				
 				
 				//TODO: open app dir
 				if(curr_inode< 0){
@@ -429,6 +434,7 @@ ino_t extfs_find_inode_from_name_and_set_name(ino_t cwd, char *path, unsigned lo
 		ino_t last = curr_inode;
 		while(res.sz != 0 ){
 
+				name_res = res;
 		
 				mem_set(name, 0, 256);
 				mem_cpy(name , path+res.off, res.sz);
@@ -507,8 +513,7 @@ ino_t extfs_find_finode_from_dir(diskman_ent *d, ino_t dir_inode,char *name){
     extfs_read_inode_struct(&dir_struct, d, dir_inode);
     
     size_t dir_sz = extfs_get_ino_szin_bytes(&dir_struct);
-    char root_dirents_mem[dir_sz]; //FIXME: find size of root dirents dynamically
-    extfs_dirent * root_dirents = (extfs_dirent*)root_dirents_mem
+    extfs_dirent * root_dirents = (extfs_dirent*)k_obj_calloc(dir_sz, 1);
     ;
 
 		/*
@@ -618,15 +623,15 @@ long
 }
 DISKMAN_READ_DIR_FUNC(extfs_freaddir){
 	//FIXME: proper dirent sizing
-			char dir_dirents_mem[4096];
-			mem_set(dir_dirents_mem, 0, 4096);
-        extfs_dirent * dir_dirents = (extfs_dirent*)dir_dirents_mem;
+
 		
 		extfs_inode i;
 		extfs_read_inode_struct(&i, diskman_find_ent(in->di), in->inode);
+		
+		extfs_dirent * dir_dirents = (extfs_dirent*)k_obj_calloc(extfs_get_ino_szin_bytes(&i),1);
 
         extfs_read_dir_dirents(diskman_find_ent(in->di), &i,  dir_dirents);
-        
+       
         unsigned long idx =0 ;
         while(dir_dirents->ent_sz && dir_dirents->inode){
 
@@ -703,7 +708,7 @@ int extfs_find_name_from_parent(diskman_ent *d, ino_t dir_inode, ino_t target,ch
 DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 		char name[NAME_MAX];
 		ino_t par;
-		ino_t dir_inode = extfs_find_inode_from_name_and_set_name(0,path, dm_inode, name, &par);
+		ino_t dir_inode = extfs_find_inode_from_name_and_set_name(path, dm_inode, name, &par);
 		
 		if(dir_inode <= 0){
 				return  dir_inode;
@@ -783,14 +788,8 @@ DISKMAN_OPEN_DIR_FUNC(extfs_fopendir){
 
 DISKMAN_FOPEN_FUNC(extfs_fopen){
 		siegfried_file *f = k_obj_alloc(sizeof(siegfried_file));
-		ino_t cwd;
-		if(!curr_task || !curr_task->cwd){
-			cwd = EXTFS_ROOTDIR_INODE;
-		}
-		else{
-			cwd = curr_task->cwd->inode;
-		}
-		ino_t curr_inode = extfs_find_inode_from_name_and_set_name(cwd,path, disk_id,&f->name[0],0);
+
+		ino_t curr_inode = extfs_find_inode_from_name_and_set_name(path, disk_id,&f->name[0],0);
 		
 		if(curr_inode <= 0){
 								k_obj_free(f);

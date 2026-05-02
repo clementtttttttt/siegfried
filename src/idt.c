@@ -109,7 +109,7 @@ void idt_pagefault_handler(task_trap_sframe *fr){
     draw_string("usr stack=");
     draw_hex((unsigned long)curr_task->user_stack_base);
 
-    	task_dump_sframe((task_int_sframe*)((unsigned long)fr + 8));
+    //task_dump_sframe((task_int_sframe*)((unsigned long)fr + 8));
 
     
     if(curr_task){
@@ -271,7 +271,7 @@ void idt_gpf_handler(task_trap_sframe *frame){
 		    draw_hex(curr_task->tid);
 
 		curr_task->tf = (void*)(((unsigned long)frame));
-		idt_print_stacktrace_depth((unsigned long*)frame->rbp,8);
+	//	idt_print_stacktrace_depth((unsigned long*)frame->rbp,8);
 
         task_exit(139);
     }

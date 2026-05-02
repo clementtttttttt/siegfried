@@ -125,20 +125,14 @@ void nvme_send_io_cmd(nvme_disk *in, unsigned long off_sects, unsigned long opco
 
     in->ctrl->bar->io_sub_queue_tail_doorbell = in->ctrl->io_tail_i;
     //mmio_pokel(&in->ctrl->bar->io_sub_queue_tail_doorbell, in->ctrl->io_tail_i);
-    while(in->ctrl->icq_vaddr[old_iotail_i].phase == in->ctrl->phase){
+    while(in->ctrl->icq_vaddr[old_iotail_i].cint3_raw == 0){
 
 
-    }
-    
-    if((in->ctrl->io_tail_i) == 0x0){
-
-    	in->ctrl->phase = !in->ctrl->phase;
     }
 
      in->ctrl->bar->io_cmpl_queue_tail_doorbell = old_iotail_i;
 
-    in->ctrl->icq_vaddr[old_iotail_i].cmd_id = 0; //overwrite ent;
-    in->ctrl->icq_vaddr[old_iotail_i].stat = 0; //overwrite ent;
+    in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = 0; //overwrite ent;
 
   //  in->ctrl->icq_vaddr[old_iotail_i].cint3_raw = in->ctrl->phase;
 
@@ -220,7 +214,7 @@ DISKMAN_READ_FUNC(nvme_read_disk){
     unsigned long buf_sz = num_bytes ;
 		
 
-    buf_sz += 512 - (buf_sz %512); //round up
+    if(buf_sz % 512) buf_sz += 512 - (buf_sz % 512); //round up
 
  	void *rdbuf = k_obj_alloc(buf_sz);
  	
