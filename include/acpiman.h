@@ -194,3 +194,4 @@ typedef struct acpi_hpet{
 
 void acpiman_setup(void*);
 acpi_sdt_header *acpiman_get_tab(char* magic);
+void acpiman_setup_2();

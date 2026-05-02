@@ -170,6 +170,14 @@ void acpiman_setup(void* rsdp){
 	acpi_fadt *fadt = (acpi_fadt*)acpiman_get_tab("FACP");
 	reset_addr = fadt->reset_reg;
 	reset_value = fadt->reset_value;
+	
 
+	//ACPI_SETUP!!! TODO: working acpimode enable....
+//	draw_string("ACPI MODE ENABLE!!!!");
+//	io_outb(fadt->smi_cmd, fadt->acpi_enable);
 
+}
+
+void acpiman_setup_2(){
+	 //       apic_map_irq(((acpi_fadt*)acpiman_get_tab("FACP"))->sci_int, 0x40);
 }

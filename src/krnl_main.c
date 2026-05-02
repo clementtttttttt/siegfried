@@ -170,6 +170,7 @@ void krnl_main(unsigned int bootmagic, unsigned int* m_info_old){
 	
     apic_setup();
     
+	acpiman_setup_2();
 
     syscall_setup();
 
