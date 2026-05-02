@@ -296,10 +296,10 @@ extfs_blk_list *extfs_parse_extent_tree(diskman_ent *d, extfs_extent_head *head,
 
             d->read_func(d->inode, ((unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32)) * inf->blksz_bytes  , 512, subh);
 
-            unsigned long sects_sz = (sizeof(extfs_extent_int) * subh->ents + sizeof(extfs_extent_head))  + 512;
+            unsigned long sects_sz = (sizeof(extfs_extent_int) * subh->ents + sizeof(extfs_extent_head));
 
             k_obj_free(subh);
-            subh=k_obj_alloc(sects_sz * 512);
+            subh=k_obj_alloc(sects_sz );
 
 
             d->read_func(d->inode, ((unsigned long)start->blk_child_low | ((unsigned long)start->blk_child_h << 32)) * inf->blksz_bytes  , sects_sz, subh);
