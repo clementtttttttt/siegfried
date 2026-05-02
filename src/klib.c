@@ -280,15 +280,12 @@ uuid_t str_to_uuid(const char *str){
 	
 }
 
-int str_cmp (char* str1,  char* str2){
-	if(str_len(str1) > str_len(str2)){
-		return str1[str_len(str2)] - str2[str_len(str2)];
+int str_cmp(char* str1, char* str2){
+	while(*str1 && *str2 && *str1 == *str2){
+		str1++;
+		str2++;
 	}
-	if(str_len(str2) > str_len(str1)){
-		return str1[str_len(str1)] - str2[str_len(str1)];
-	}
-	
-	return str1[str_len(str1)-1] - str2[str_len(str2)-1];
+	return *str1 - *str2;
 }
 
 
